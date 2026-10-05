@@ -7,7 +7,16 @@ use clap_derive::Parser;
 use fixtag_api::{
     auth::auth,
     config::Config,
-    routes::{health::health, login::login, refresh::refresh},
+    routes::{
+        attachments::fetch_attachment,
+        devices::register_token,
+        health::health,
+        incidents::{
+            add_attachment, create_incident, fetch_incident_by_id, fetch_incidents, update_incident,
+        },
+        login::login,
+        refresh::refresh,
+    },
     state::State,
 };
 use std::path::PathBuf;
@@ -32,8 +41,22 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(health))
+        // auth
         .route("/login", post(login))
         .route("/refresh", post(refresh))
+        // devices
+        .route("/devices", post(register_token))
+        // attachments
+        .route("/attachments/{id}", get(fetch_attachment))
+        // incidents
+        .route("/incidents/{id}", put(create_incident))
+        .route("/incidents/{id}/update", post(update_incident))
+        .route(
+            "/incidents/{id}/attachments/{attachment_id}",
+            post(add_attachment),
+        )
+        .route("/incidents/{id}", get(fetch_incident_by_id))
+        .route("/incidents", get(fetch_incidents))
         .route_layer(middleware::from_fn_with_state(state.clone(), auth))
         .with_state(state);
 

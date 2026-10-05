@@ -15,6 +15,7 @@ path = "bin/main.rs"
 anyhow = "1.0.104"
 argon2 = "0.6.0"
 axum = "0.8.9"
+chrono = { version = "0.4.45", features = ["serde"] }
 clap = "4.6.7"
 clap_derive = "4.6.7"
 http = "1.5.0"
@@ -27,4 +28,4 @@ thiserror = "2.0.21"
 tokio = { version = "1.53.2", features = ["rt-multi-thread"] }
 tower-http = "0.7.1"
 utoipa = "6.0.0"
-uuid = { version = "1.27.0", features = ["v4"] }
+uuid = { version = "1.27.0", features = ["v4", "serde"] }
