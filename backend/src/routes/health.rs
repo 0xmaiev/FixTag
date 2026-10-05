@@ -4,7 +4,7 @@ use {
     std::sync::Arc,
 };
 
-pub async fn refresh(State(state): State<Arc<AppState>>) -> Result<String, StatusCode> {
+pub async fn health(State(state): State<Arc<AppState>>) -> Result<String, StatusCode> {
     // placeholder example for other routes
     // todo access state and return db connection / health metrics
     Ok(String::new())
