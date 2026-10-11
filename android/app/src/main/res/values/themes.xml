@@ -1,5 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.FixTag" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
 
-    <style name="Theme.FixTag" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.FixTag" parent="Base.Theme.FixTag" />
+
+    <style name="Theme.FixTag.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.FixTag.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.FixTag.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

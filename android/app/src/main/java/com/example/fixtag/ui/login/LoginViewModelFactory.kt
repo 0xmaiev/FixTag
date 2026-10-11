@@ -2,22 +2,21 @@ package com.example.fixtag.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.fixtag.data.LoginDataSource
-import com.example.fixtag.data.LoginRepository
+import com.example.fixtag.data.Repository
 
 /**
  * ViewModel provider factory to instantiate LoginViewModel.
  * Required given LoginViewModel has a non-empty constructor
  */
-class LoginViewModelFactory : ViewModelProvider.Factory {
+class LoginViewModelFactory(
+    private val repository: Repository
+) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             return LoginViewModel(
-                loginRepository = LoginRepository(
-                    dataSource = LoginDataSource()
-                )
+                repository = repository
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

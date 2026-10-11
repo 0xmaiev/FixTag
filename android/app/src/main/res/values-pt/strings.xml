@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_desc">Assistência técnica de máquinas industriais</string>
+    <string name="password">Palavra-passe</string>
+    <string name="action_sign_in">Entrar</string>
+    <string name="action_register">Registar</string>
+    <string name="forgot_password">Esqueci a palavra-passe</string>
+    <string name="activity_login_title">Entrar</string>
+    <string name="welcome">Bem-vindo, {}!</string>
+    <string name="login_failed">Erro de autenticação.</string>
+    <string name="invalid_email">E-mail inválido.</string>
+    <string name="invalid_password">Palavra-passe inválida.</string>
+
+</resources>
