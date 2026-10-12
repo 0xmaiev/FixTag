@@ -8,30 +8,55 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
-import com.example.fixtag.data.IncidentWithAttachmentsAndUpdates
+import androidx.room.Upsert
+import com.example.fixtag.api.model.AttachmentDto
+import com.example.fixtag.api.model.IncidentUpdateDto
+//import com.example.fixtag.data.IncidentWithAttachmentsAndUpdates
+import com.google.gson.annotations.SerializedName
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @Entity
 data class Incident(
     @PrimaryKey
     val id: Uuid,
-    @ColumnInfo(name = "author_id")
-    val authorId: Uuid,
+    @ColumnInfo(name = "organization_id")
+    val organizationId: Uuid,
+    @ColumnInfo(name = "machine_id")
+    val machineId: Uuid,
+    @ColumnInfo(name = "author_name")
+    val authorName: String,
+    val description: String,
+    val severity: IncidentSeverity,
+    val status: IncidentStatus,
+    val latitude: Double?,
+    val longitude: Double?,
+    @ColumnInfo(name = "accuracy_m")
+    val accuracyM: Float?,
+    @ColumnInfo(name = "reported_at")
+    val reportedAt: Instant,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Instant,
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Instant,
     @ColumnInfo(name = "sync_status")
     val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
 )
 
 @Dao
 interface IncidentDao {
-    @Insert
+    @Upsert
     suspend fun save(incident: Incident)
+
+    @Upsert
+    suspend fun saveAll(incidents: List<Incident>)
 
     @Query("SELECT * FROM incident")
     suspend fun getAll(): List<Incident>
 
-    @Transaction
-    @Query("SELECT * FROM incident WHERE id = :id")
-    abstract fun getAttachmentsByIncident(id: Uuid): List<IncidentWithAttachmentsAndUpdates>
+    //@Transaction
+    //@Query("SELECT * FROM incident WHERE id = :id")
+    //abstract fun getAttachmentsByIncident(id: Uuid): List<IncidentWithAttachmentsAndUpdates>
 
     @Delete
     suspend fun delete(incident: Incident)

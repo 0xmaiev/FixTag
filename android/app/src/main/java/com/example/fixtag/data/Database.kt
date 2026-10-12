@@ -22,41 +22,6 @@ import com.example.fixtag.data.model.AuthDao
 
 const val DATABASE_NAME = "database"
 
-data class UserWithIncidents(
-    @Embedded
-    val user: User,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "author_id"
-    )
-    val incident: List<Incident>
-)
-
-data class UserWithIncidentUpdates(
-    @Embedded
-    val user: User,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "author_id"
-    )
-    val incidentUpdates: List<IncidentUpdate>
-)
-
-data class IncidentWithAttachmentsAndUpdates(
-    @Embedded
-    val incident: Incident,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "incident_id"
-    )
-    val attachments: List<Attachment>,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "incident_id"
-    )
-    val incidentUpdates: List<IncidentUpdate>,
-)
-
 @Database(version = 1, entities = [
     Auth::class,
     User::class,
@@ -65,7 +30,7 @@ data class IncidentWithAttachmentsAndUpdates(
     Attachment::class,
     Machine::class,
 ], exportSchema = false)
-@TypeConverters(UuidConverter::class)
+@TypeConverters(UuidConverter::class, InstantConverter::class)
 abstract class Database : RoomDatabase() {
     companion object {
         @Volatile

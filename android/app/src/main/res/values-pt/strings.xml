@@ -11,5 +11,7 @@
     <string name="login_failed">Erro de autenticação.</string>
     <string name="invalid_email">E-mail inválido.</string>
     <string name="invalid_password">Palavra-passe inválida.</string>
+    <string name="machines_failed">Erro a buscar máquinas.</string>
+    <string name="incidents_failed">Erro a buscar ocorrências.</string>
 
 </resources>

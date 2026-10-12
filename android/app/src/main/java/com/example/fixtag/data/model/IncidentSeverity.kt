@@ -5,3 +5,17 @@ enum class IncidentSeverity {
     Medium,
     Critical
 }
+
+fun incidentSeverityFromString(role: String): IncidentSeverity {
+    return when (role) {
+        "Baixo" -> {
+            IncidentSeverity.Low
+        }
+        "Medio" -> {
+            IncidentSeverity.Medium
+        }
+        else -> {
+            IncidentSeverity.Critical
+        }
+    }
+}

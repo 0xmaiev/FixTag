@@ -15,6 +15,12 @@
     <string name="login_failed">Login failed.</string>
     <string name="invalid_email">Invalid e-mail.</string>
     <string name="invalid_password">Invalid password.</string>
+    <string name="machines_failed">Failed to get machines.</string>
+    <string name="incidents_failed">Failed to get incidents.</string>
+    <string name="incidents_fragment_title">Incidents</string>
+    <string name="machines_fragment_title">Machines</string>
+    <string name="new_incident_fragment_title">New Incident</string>
+    <string name="incident_detail_fragment_title">Incident Detail</string>
     <string name="title_activity_scrolling">ScrollingActivity</string>
     <string name="large_text">
         "Material is the metaphor.\n\n"

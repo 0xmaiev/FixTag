@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.example.fixtag.data.UserWithIncidents
+//import com.example.fixtag.data.UserWithIncidents
 import kotlin.uuid.Uuid
 
 @Entity
@@ -20,7 +20,7 @@ data class User(
     val name: String,
     val email: String,
     @ColumnInfo(name = "role")
-    val role: String,
+    val role: UserRole,
 )
 
 @Dao
@@ -39,9 +39,9 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE name = :name")
     suspend fun findUsersByName(name: String): List<User>
 
-    @Transaction
-    @Query("SELECT * FROM user WHERE id = :id")
-    abstract fun getIncidentsByUser(id: String): List<UserWithIncidents>
+    //@Transaction
+    //@Query("SELECT * FROM user WHERE id = :id")
+    //abstract fun getIncidentsByUser(id: String): List<UserWithIncidents>
 
     @Delete
     suspend fun delete(user: User)

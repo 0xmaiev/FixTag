@@ -13,7 +13,10 @@ class FixTag : Application() {
             apiService = ApiClient.getApiService(this),
             authDao = db.getAuthDao(),
             userDao = db.getUserDao(),
-            incidentDao = db.getIncidentDao()
+            machineDao = db.getMachineDao(),
+            incidentDao = db.getIncidentDao(),
+            incidentUpdateDao = db.getIncidentUpdateDao(),
+            attachmentDao = db.getAttachmentDao()
         )
     }
 

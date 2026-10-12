@@ -45,6 +45,7 @@ android {
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
     }
 }
 
@@ -55,6 +56,10 @@ dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.fragment)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)

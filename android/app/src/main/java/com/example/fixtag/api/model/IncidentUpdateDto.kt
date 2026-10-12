@@ -1,11 +1,10 @@
 package com.example.fixtag.api.model
 
 import com.google.gson.annotations.SerializedName
+import kotlin.time.Instant
 
 data class IncidentUpdateDto(
     val id: String,
-    @SerializedName("author_id")
-    val authorId: String,
     @SerializedName("author_name")
     val authorName: String,
     @SerializedName("message")
@@ -13,5 +12,5 @@ data class IncidentUpdateDto(
     @SerializedName("new_status")
     val newStatus: String?,
     @SerializedName("created_at")
-    val createdAt: Long,
+    val createdAt: String,
 )

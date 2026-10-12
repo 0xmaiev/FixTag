@@ -5,3 +5,18 @@ enum class UserRole {
     Technician,
     Assistance
 }
+
+fun userRoleFromString(role: String): UserRole {
+    return when (role) {
+        "operador" -> {
+            UserRole.Operator
+        }
+        "tecnico" -> {
+            UserRole.Technician
+        }
+        else -> {
+            UserRole.Assistance
+        }
+    }
+}
+

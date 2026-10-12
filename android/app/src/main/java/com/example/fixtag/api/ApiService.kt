@@ -42,6 +42,21 @@ data class CreateIncidentRequest(
     val reportedAt: String,
 )
 
+data class IncidentPage(
+    val items: List<IncidentDto>,
+    @SerializedName("next_cursor")
+    val nextCursor: String?,
+    @SerializedName("has_more")
+    val hasMore: Boolean
+)
+
+data class UpdateIncidentRequest(
+    val id: String,
+    val message: String,
+    @SerializedName("new_status")
+    val newStatus: String?
+)
+
 interface ApiService {
     @POST("/login")
     suspend fun login(
@@ -59,7 +74,7 @@ interface ApiService {
     ): Response<Unit>
 
     @GET("/machines")
-    suspend fun machines(
+    suspend fun getMachines(
         @Query("serial_number") serialNumber: String? = null,
     ): Response<List<MachineDto>>
 
@@ -67,6 +82,15 @@ interface ApiService {
     suspend fun getIncident(
         @Path("id") id: String,
     ): Response<IncidentDto>
+
+    @GET("/incidents")
+    suspend fun getIncidents(
+        @Query("limit") limit: Int? = 50,
+        @Query("cursor") cursor: String?,
+        @Query("status") status: String?,
+        @Query("severity") severity: String?,
+        @Query("machine_id") machineId: String?
+    ): Response<IncidentPage>
 
     @PUT("/incidents/{id}")
     suspend fun createIncident(
@@ -80,6 +104,12 @@ interface ApiService {
         @Path("attachment_id") attachmentId: String,
         @Body raw: RequestBody
     ): Response<AttachmentDto>
+
+    @PUT("/incidents/{id}/update")
+    suspend fun addIncidentUpdate(
+        @Path("id") id: String,
+        @Body request: UpdateIncidentRequest
+    ): Response<IncidentDto>
 
     @GET("/")
     suspend fun health(): Response<Unit>

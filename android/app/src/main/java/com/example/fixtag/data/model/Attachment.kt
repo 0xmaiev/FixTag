@@ -7,6 +7,7 @@ import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Upsert
 import kotlin.uuid.Uuid
 
 @Entity
@@ -20,7 +21,7 @@ data class Attachment(
     @ColumnInfo(name = "content_type")
     val contentType: String,
     @ColumnInfo(name = "size_bytes")
-    val sizeBytes: Long,
+    val sizeBytes: Int,
     @ColumnInfo(name = "path")
     val path: String,
     @ColumnInfo(name = "sync_status")
@@ -29,8 +30,11 @@ data class Attachment(
 
 @Dao
 interface AttachmentDao {
-    @Insert
+    @Upsert
     suspend fun save(attachment: Attachment)
+
+    @Upsert
+    suspend fun saveAll(attachments: List<Attachment>)
 
     @Query("SELECT * FROM attachment")
     suspend fun getAll(): List<Attachment>

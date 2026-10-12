@@ -37,11 +37,6 @@
             android:exported="false"
             android:label="@string/activity_login_title"
             android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".ScrollingActivity"
-            android:exported="false"
-            android:label="@string/title_activity_scrolling"
-            android:theme="@style/Theme.FixTag.NoActionBar" />
     </application>
 
 </manifest>

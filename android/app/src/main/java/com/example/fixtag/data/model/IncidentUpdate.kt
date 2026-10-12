@@ -5,9 +5,11 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Upsert
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -18,7 +20,8 @@ import kotlin.uuid.Uuid
             parentColumns = arrayOf("id"),
             childColumns = arrayOf("incident_id")
         )
-    ]
+    ],
+    indices = [Index(value = ["incident_id"])]
 )
 data class IncidentUpdate(
     @PrimaryKey
@@ -26,7 +29,7 @@ data class IncidentUpdate(
     @ColumnInfo(name = "incident_id")
     val incidentId: Uuid,
     @ColumnInfo(name = "author_name")
-    val authorName: Uuid,
+    val authorName: String,
     @ColumnInfo(name = "message")
     val message: String?,
     @ColumnInfo(name = "new_status")
@@ -37,8 +40,12 @@ data class IncidentUpdate(
 
 @Dao
 interface IncidentUpdateDao {
-    @Insert
+    @Upsert
     suspend fun save(incidentUpdate: IncidentUpdate)
+
+    @Upsert
+    suspend fun saveAll(updates: List<IncidentUpdate>)
+
 
     @Query("SELECT * FROM incident_update")
     suspend fun getAll(): List<IncidentUpdate>
