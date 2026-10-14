@@ -5,6 +5,8 @@ import kotlin.time.Instant
 
 data class IncidentUpdateDto(
     val id: String,
+    @SerializedName("incident_id")
+    val incidentId: String,
     @SerializedName("author_name")
     val authorName: String,
     @SerializedName("message")

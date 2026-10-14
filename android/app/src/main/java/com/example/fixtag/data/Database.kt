@@ -2,8 +2,6 @@ package com.example.fixtag.data
 
 import android.content.Context
 import androidx.room.Database
-import androidx.room.Embedded
-import androidx.room.Relation
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -19,6 +17,8 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserDao
 import com.example.fixtag.data.model.Auth
 import com.example.fixtag.data.model.AuthDao
+import com.example.fixtag.data.model.SyncState
+import com.example.fixtag.data.model.SyncStateDao
 
 const val DATABASE_NAME = "database"
 
@@ -29,6 +29,7 @@ const val DATABASE_NAME = "database"
     IncidentUpdate::class,
     Attachment::class,
     Machine::class,
+    SyncState::class,
 ], exportSchema = false)
 @TypeConverters(UuidConverter::class, InstantConverter::class)
 abstract class Database : RoomDatabase() {
@@ -66,4 +67,7 @@ abstract class Database : RoomDatabase() {
 
     // AttachmentDao is a class annotated with @Dao.
     abstract fun getAttachmentDao(): AttachmentDao
+
+    // SyncStateDao is a class annotated with @Dao.
+    abstract fun getSyncStateDao(): SyncStateDao
 }

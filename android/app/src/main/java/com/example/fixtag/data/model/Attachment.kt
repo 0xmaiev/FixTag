@@ -4,13 +4,30 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.Uuid
 
-@Entity
+
+@Entity(
+    tableName = "attachment",
+    foreignKeys = [
+        ForeignKey(
+            entity = Incident::class,
+            parentColumns = arrayOf("id"),
+            childColumns = arrayOf("incident_id")
+        )
+    ],
+    indices = [Index(value = ["incident_id"])]
+)
 data class Attachment(
     @PrimaryKey
     val id: Uuid,
@@ -23,21 +40,41 @@ data class Attachment(
     @ColumnInfo(name = "size_bytes")
     val sizeBytes: Int,
     @ColumnInfo(name = "path")
-    val path: String,
+    var path: String?,
+    // syncStatus means whether this was synced TO API or not
     @ColumnInfo(name = "sync_status")
-    val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
+    var syncStatus: SyncStatus = SyncStatus.Pending, // Default to pending
+    // fetchStatus means whether we fetched the actual data blob FROM API or not
+    @ColumnInfo(name = "fetch_status")
+    var fetchStatus: SyncStatus = SyncStatus.Pending // Default to pending
 )
 
 @Dao
 interface AttachmentDao {
-    @Upsert
+    // attachments don't change once they exist
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun save(attachment: Attachment)
 
-    @Upsert
+    // attachments don't change once they exist - this method
+    // is used specifically when syncing FROM the server
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveAll(attachments: List<Attachment>)
+
+    @Update
+    suspend fun update(attachment: Attachment)
+
+    @Transaction
+    @Query("SELECT * FROM attachment WHERE incident_id = :incidentId")
+    fun observe(incidentId: Uuid): Flow<List<Attachment>>
 
     @Query("SELECT * FROM attachment")
     suspend fun getAll(): List<Attachment>
+
+    @Query("SELECT * FROM attachment WHERE sync_status = 'Pending'")
+    suspend fun getPending(): List<Attachment>
+
+    @Query("SELECT * FROM attachment WHERE fetch_status = 'Pending'")
+    suspend fun getPendingFetch(): List<Attachment>
 
     @Delete
     suspend fun delete(attachment: Attachment)

@@ -1,4 +1,4 @@
-package com.example.fixtag.ui
+package com.example.fixtag.ui.fragments
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
@@ -7,9 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -19,24 +21,33 @@ import com.example.fixtag.R
 import com.example.fixtag.data.model.Machine
 import kotlinx.coroutines.launch
 
-class MachineAdapter : ListAdapter<Machine, MachineAdapter.UserViewHolder>(UserDiffCallback) {
+class MachineAdapter : ListAdapter<Machine, MachineAdapter.ViewHolder>(UserDiffCallback) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UserViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_machine, parent, false)
-        return UserViewHolder(view)
+        return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class UserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val modelTextView: TextView = itemView.findViewById(R.id.model)
         private val serialNumberTextView: TextView = itemView.findViewById(R.id.serialNumber)
 
         fun bind(machine: Machine) {
             modelTextView.text = machine.model
             serialNumberTextView.text = machine.serialNumber
+
+            itemView.setOnClickListener {
+                val bundle = Bundle()
+                bundle.putString("id", machine.id.toString())
+                findNavController(itemView).navigate(
+                    R.id.machine_details,
+                    bundle
+                )
+            }
         }
     }
 
@@ -90,8 +101,8 @@ class MachinesFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { users ->
-                    machineAdapter.submitList(users)
+                viewModel.machines.collect { machines ->
+                    machineAdapter.submitList(machines)
                 }
             }
         }

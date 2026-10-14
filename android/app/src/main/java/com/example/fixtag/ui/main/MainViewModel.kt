@@ -8,13 +8,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.Result
+import com.example.fixtag.data.SyncScheduler
 import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class MainViewModel(private val repository: Repository) : ViewModel() {
+class MainViewModel(
+    private val repository: Repository,
+    private val syncScheduler: SyncScheduler
+) : ViewModel() {
 
     // Sealed class representing the possible navigation states
     sealed class NavigationState {
@@ -49,37 +53,10 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                     // technicians and assistance route to incidents view
                     _navigationState.value = NavigationState.GoToIncidents
                 }
-                getMachinesInfo()
+                syncScheduler.syncNow()
             } else {
                 Log.d("MainViewModel", "Could not find authentication details")
                 _navigationState.value = NavigationState.GoToLogin
-            }
-        }
-    }
-
-    private fun getMachinesInfo() {
-        viewModelScope.launch {
-            val result = repository.refreshMachines()
-            if (result is Result.Success) {
-                Log.d("MainViewModel", "Successfully fetched ${result.data.size} machines")
-                _machinesResult.value = MachinesResult(success = result.data)
-            } else {
-                Log.d("MainViewModel", "Failed to fetch machines")
-                _machinesResult.value = MachinesResult(error = R.string.machines_failed)
-            }
-        }
-        getIncidents()
-    }
-
-    private fun getIncidents() {
-        viewModelScope.launch {
-            val result = repository.getIncidents()
-            if (result is Result.Success) {
-                Log.d("MainViewModel", "Successfully fetched ${result.data.size} incidents")
-                _incidentsResult.value = IncidentsResult(success = result.data)
-            } else {
-                Log.d("MainViewModel", "Failed to fetch incidents")
-                _incidentsResult.value = IncidentsResult(error = R.string.incidents_failed)
             }
         }
     }

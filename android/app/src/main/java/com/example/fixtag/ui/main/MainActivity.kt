@@ -13,11 +13,15 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.fragment
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.ui.IncidentsFragment
-import com.example.fixtag.ui.MachinesFragment
+import com.example.fixtag.ui.fragments.IncidentDetailFragment
+import com.example.fixtag.ui.fragments.IncidentsFragment
+import com.example.fixtag.ui.fragments.MachineDetailFragment
+import com.example.fixtag.ui.fragments.MachinesFragment
 import com.example.fixtag.ui.login.LoginActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
 import kotlin.uuid.Uuid
 
@@ -26,11 +30,12 @@ class MainActivity : AppCompatActivity() {
     // Instantiate ViewModel with the custom factory
     private val viewModel: MainViewModel by viewModels {
         val app = applicationContext as FixTag
-        MainViewModelFactory(app.repository)
+        MainViewModelFactory(app.repository, app.syncScheduler)
     }
 
     private lateinit var navHostFragment: NavHostFragment
     private lateinit var navController: NavController
+    private lateinit var bottomNavigationView: BottomNavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +43,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
         navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
+        bottomNavigationView = findViewById(R.id.bottom_nav)
 
         // Interaction must happen on a background thread (e.g., using Coroutines)
         lifecycleScope.launch {
@@ -59,11 +65,11 @@ class MainActivity : AppCompatActivity() {
                     }
                     is MainViewModel.NavigationState.GoToMachines -> {
                         Log.d("MainActivity", "Changing view to display machines")
-                        prepareNavigationGraph(R.layout.fragment_machines)
+                        prepareNavigationGraph(R.id.machines)
                     }
                     is MainViewModel.NavigationState.GoToIncidents -> {
                         Log.d("MainActivity", "Changing view to display incidents")
-                        prepareNavigationGraph(R.layout.fragment_incidents)
+                        prepareNavigationGraph(R.id.incidents)
                     }
                 }
             }
@@ -77,13 +83,20 @@ class MainActivity : AppCompatActivity() {
             id = R.id.nav_host,
             startDestination = startDestination
         ) {
-            fragment<IncidentsFragment>(R.layout.fragment_incidents) {
+            fragment<IncidentsFragment>(R.id.incidents) {
                 label = resources.getString(R.string.incidents_fragment_title)
             }
-            fragment<MachinesFragment>(R.layout.fragment_machines)  {
+            fragment<MachinesFragment>(R.id.machines)  {
                 label = resources.getString(R.string.machines_fragment_title)
             }
+            fragment<MachineDetailFragment>(R.id.machine_details)  {
+                label = resources.getString(R.string.machine_details_fragment_title)
+            }
+            fragment<IncidentDetailFragment>(R.id.incident_details)  {
+                label = resources.getString(R.string.incident_details_fragment_title)
+            }
         }
+        bottomNavigationView.setupWithNavController(navController)
     }
 
     private fun navigateToLogin() {

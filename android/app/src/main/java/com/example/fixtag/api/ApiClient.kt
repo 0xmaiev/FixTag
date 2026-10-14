@@ -96,7 +96,7 @@ object ApiClient {
 
                         // Execute the synchronous refresh network call
                         val refreshResponse = runBlocking {
-                            refreshApi!!.refresh(RefreshRequest(currentRefreshToken))
+                            refreshApi!!.refresh(RefreshRequestDto(currentRefreshToken))
                         }
 
                         if (refreshResponse.isSuccessful && refreshResponse.body() != null) {

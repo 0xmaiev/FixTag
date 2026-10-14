@@ -1,4 +1,4 @@
-package com.example.fixtag.ui
+package com.example.fixtag.ui.fragments
 
 import androidx.lifecycle.ViewModel
 

@@ -3,19 +3,34 @@ package com.example.fixtag.data.model
 enum class IncidentSeverity {
     Low,
     Medium,
-    Critical
-}
+    Critical;
 
-fun incidentSeverityFromString(role: String): IncidentSeverity {
-    return when (role) {
-        "Baixo" -> {
-            IncidentSeverity.Low
+    companion object {
+        fun fromCustomString(severity: String): IncidentSeverity {
+            return when (severity) {
+                "Baixo" -> {
+                    IncidentSeverity.Low
+                }
+                "Medio" -> {
+                    IncidentSeverity.Medium
+                }
+                else -> {
+                    IncidentSeverity.Critical
+                }
+            }
         }
-        "Medio" -> {
-            IncidentSeverity.Medium
-        }
-        else -> {
-            IncidentSeverity.Critical
+        fun toCustomString(severity: IncidentSeverity): String {
+            return when (severity) {
+                IncidentSeverity.Low -> {
+                    "Baixo"
+                }
+                IncidentSeverity.Medium -> {
+                    "Medio"
+                }
+                IncidentSeverity.Critical -> {
+                    "Critico"
+                }
+            }
         }
     }
 }

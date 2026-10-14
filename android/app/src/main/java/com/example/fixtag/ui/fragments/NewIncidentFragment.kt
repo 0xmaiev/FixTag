@@ -1,4 +1,4 @@
-package com.example.fixtag.ui
+package com.example.fixtag.ui.fragments
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
@@ -8,13 +8,13 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.fixtag.R
 
-class IncidentDetailFragment : Fragment() {
+class NewIncidentFragment : Fragment() {
 
     companion object {
-        fun newInstance() = IncidentDetailFragment()
+        fun newInstance() = NewIncidentFragment()
     }
 
-    private val viewModel: IncidentDetailViewModel by viewModels()
+    private val viewModel: NewIncidentViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +26,6 @@ class IncidentDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        return inflater.inflate(R.layout.fragment_incident_detail, container, false)
+        return inflater.inflate(R.layout.fragment_new_incident, container, false)
     }
 }

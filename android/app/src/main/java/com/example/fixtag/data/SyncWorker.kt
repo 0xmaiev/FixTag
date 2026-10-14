@@ -5,6 +5,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.example.fixtag.FixTag
+import retrofit2.HttpException
+import java.io.IOException
 
 class SyncWorker(
     context: Context,
@@ -12,24 +14,19 @@ class SyncWorker(
     ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): ListenableWorker.Result {
-        val app = applicationContext as FixTag
-        val repository = app.repository
+        val repository = (applicationContext as FixTag).repository
 
-        val unsyncedItems = repository.getPendingIncidentUploads()
-
-        if (unsyncedItems.isEmpty()) return Result.success()
-
-        var allSucceeded = true
-
-        for (item in unsyncedItems) {
-
-            // TODO
-        }
-
-        if (allSucceeded) {
-            return ListenableWorker.Result.success()
-        } else {
-            return ListenableWorker.Result.retry()
+        return try {
+            // push pending data before syncing
+            repository.pushPending()
+            repository.refreshMachines()
+            repository.syncIncidents()
+            repository.downloadAttachments()
+            Result.success()
+        } catch (e: HttpException) {
+            if (e.code() == 401) Result.failure() else Result.retry() // 401 means refresh failed
+        } catch (e: IOException) {
+            Result.retry()
         }
     }
 }

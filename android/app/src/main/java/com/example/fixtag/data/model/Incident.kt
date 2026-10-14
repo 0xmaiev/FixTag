@@ -4,15 +4,12 @@ import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
-import com.example.fixtag.api.model.AttachmentDto
-import com.example.fixtag.api.model.IncidentUpdateDto
 //import com.example.fixtag.data.IncidentWithAttachmentsAndUpdates
-import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -51,12 +48,23 @@ interface IncidentDao {
     @Upsert
     suspend fun saveAll(incidents: List<Incident>)
 
+    @Query("SELECT * FROM incident WHERE id = :id LIMIT 1")
+    fun observe(id: Uuid): Flow<Incident?>
+
+    @Query("SELECT * FROM incident")
+    fun observeAll(): Flow<List<Incident>>
+
+    @Query("SELECT * FROM incident WHERE organization_id = :organizationId")
+    fun observeByOrganization(organizationId: Uuid): Flow<List<Incident>>
+
+    @Query("SELECT * FROM incident WHERE machine_id = :machineId")
+    fun observeByMachine(machineId: Uuid): Flow<List<Incident>>
+
     @Query("SELECT * FROM incident")
     suspend fun getAll(): List<Incident>
 
-    //@Transaction
-    //@Query("SELECT * FROM incident WHERE id = :id")
-    //abstract fun getAttachmentsByIncident(id: Uuid): List<IncidentWithAttachmentsAndUpdates>
+    @Query("SELECT * FROM incident WHERE sync_status = 'Pending'")
+    suspend fun getPending(): List<Incident>
 
     @Delete
     suspend fun delete(incident: Incident)

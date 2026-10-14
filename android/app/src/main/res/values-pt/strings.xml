@@ -13,5 +13,21 @@
     <string name="invalid_password">Palavra-passe inválida.</string>
     <string name="machines_failed">Erro a buscar máquinas.</string>
     <string name="incidents_failed">Erro a buscar ocorrências.</string>
-
+    <string name="incidents_fragment_title">Ocorrências</string>
+    <string name="machines_fragment_title">Máquinas</string>
+    <string name="new_incident_fragment_title">Nova ocorrência</string>
+    <string name="incident_details_fragment_title">Detalhes da ocorrência</string>
+    <string name="machine_details_fragment_title">Detalhes da máquina</string>
+    <string name="connection_status">Sem ligação</string>
+    <string name="sync_status">%d por enviar</string>
+    <string name="pending_sync">por enviar</string>
+    <string name="stored_locally">guardado neste dispositivo</string>
+    <string name="incident_received">Recebido</string>
+    <string name="incident_analysis">Analisando</string>
+    <string name="incident_resolved">Resolvido</string>
+    <string name="action_settings">Definições</string>
+    <plurals name="machine_history_summary">
+        <item quantity="one">%s ocorrência nos últimos 30d</item>
+        <item quantity="many">%s ocorrência nos últimos 30d</item>
+    </plurals>
 </resources>

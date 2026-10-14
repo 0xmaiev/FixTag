@@ -9,7 +9,9 @@ import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -46,9 +48,15 @@ interface IncidentUpdateDao {
     @Upsert
     suspend fun saveAll(updates: List<IncidentUpdate>)
 
+    @Transaction
+    @Query("SELECT * FROM incident_update WHERE incident_id = :incidentId")
+    fun observe(incidentId: Uuid): Flow<List<IncidentUpdate>>
 
     @Query("SELECT * FROM incident_update")
     suspend fun getAll(): List<IncidentUpdate>
+
+    @Query("SELECT * FROM incident_update WHERE sync_status = 'Pending'")
+    suspend fun getPending(): List<IncidentUpdate>
 
     @Query("SELECT * FROM incident_update WHERE author_name = :authorName")
     suspend fun getIncidentUpdatesByAuthor(authorName: String): List<IncidentUpdate>

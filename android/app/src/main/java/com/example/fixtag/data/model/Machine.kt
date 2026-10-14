@@ -33,8 +33,12 @@ interface MachineDao {
     suspend fun saveAll(machines: List<Machine>)
 
     @Transaction
+    @Query("SELECT * FROM machine WHERE id = :id LIMIT 1")
+    fun observe(id: Uuid): Flow<Machine?>
+
+    @Transaction
     @Query("SELECT * FROM machine")
-    fun observe(): Flow<List<Machine>>
+    fun observeAll(): Flow<List<Machine>>
 
     @Query("SELECT * FROM machine WHERE id = :id")
     suspend fun get(id: Uuid): Machine?
