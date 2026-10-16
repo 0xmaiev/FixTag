@@ -8,27 +8,30 @@ enum class IncidentSeverity {
     companion object {
         fun fromCustomString(severity: String): IncidentSeverity {
             return when (severity) {
-                "Baixo" -> {
+                "baixa" -> {
                     IncidentSeverity.Low
                 }
-                "Medio" -> {
+                "media" -> {
                     IncidentSeverity.Medium
                 }
-                else -> {
+                "critica" -> {
                     IncidentSeverity.Critical
+                }
+                else -> {
+                    throw Exception("invalid incident severity")
                 }
             }
         }
         fun toCustomString(severity: IncidentSeverity): String {
             return when (severity) {
                 IncidentSeverity.Low -> {
-                    "Baixo"
+                    "baixa"
                 }
                 IncidentSeverity.Medium -> {
-                    "Medio"
+                    "media"
                 }
                 IncidentSeverity.Critical -> {
-                    "Critico"
+                    "critica"
                 }
             }
         }

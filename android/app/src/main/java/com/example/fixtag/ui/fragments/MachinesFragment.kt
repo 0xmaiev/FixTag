@@ -6,62 +6,18 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.core.os.bundleOf
+import android.widget.Button
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.Navigation.findNavController
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.data.model.Machine
+import com.example.fixtag.ui.adapters.MachineAdapter
+import com.example.fixtag.ui.viewmodels.MachinesViewModel
 import kotlinx.coroutines.launch
-
-class MachineAdapter : ListAdapter<Machine, MachineAdapter.ViewHolder>(UserDiffCallback) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_machine, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
-    }
-
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val modelTextView: TextView = itemView.findViewById(R.id.model)
-        private val serialNumberTextView: TextView = itemView.findViewById(R.id.serialNumber)
-
-        fun bind(machine: Machine) {
-            modelTextView.text = machine.model
-            serialNumberTextView.text = machine.serialNumber
-
-            itemView.setOnClickListener {
-                val bundle = Bundle()
-                bundle.putString("id", machine.id.toString())
-                findNavController(itemView).navigate(
-                    R.id.machine_details,
-                    bundle
-                )
-            }
-        }
-    }
-
-    // DiffUtil handles smart list updates completely automatically
-    object UserDiffCallback : DiffUtil.ItemCallback<Machine>() {
-        override fun areItemsTheSame(oldItem: Machine, newItem: Machine): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: Machine, newItem: Machine): Boolean {
-            return oldItem == newItem
-        }
-    }
-}
 
 class MachinesFragment : Fragment() {
 
@@ -76,12 +32,15 @@ class MachinesFragment : Fragment() {
         AppViewModelFactory(repository)
     }
 
+
+    private lateinit var newMachineButton: Button
     private lateinit var machineAdapter: MachineAdapter
+    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // TODO: Use the ViewModel
+        machineAdapter = MachineAdapter()
     }
 
     override fun onCreateView(
@@ -94,17 +53,19 @@ class MachinesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. Set up the RecyclerView
-        machineAdapter = MachineAdapter()
-        val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerView)
+        newMachineButton = view.findViewById(R.id.newMachineButton)
+        recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.adapter = machineAdapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.machines.collect { machines ->
+                viewModel.uiState.collect { machines ->
                     machineAdapter.submitList(machines)
                 }
             }
+        }
+        newMachineButton.setOnClickListener {
+            findNavController().navigate(R.id.new_machine)
         }
     }
 

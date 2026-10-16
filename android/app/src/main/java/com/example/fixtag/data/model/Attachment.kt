@@ -14,6 +14,8 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 
@@ -41,13 +43,30 @@ data class Attachment(
     val sizeBytes: Int,
     @ColumnInfo(name = "path")
     var path: String?,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Instant,
     // syncStatus means whether this was synced TO API or not
     @ColumnInfo(name = "sync_status")
     var syncStatus: SyncStatus = SyncStatus.Pending, // Default to pending
     // fetchStatus means whether we fetched the actual data blob FROM API or not
     @ColumnInfo(name = "fetch_status")
     var fetchStatus: SyncStatus = SyncStatus.Pending // Default to pending
-)
+) {
+    companion object {
+        fun create(id: Uuid, incidentId: Uuid, kind: AttachmentKind, contentType: String,
+                   sizeBytes: Int, path: String?): Attachment {
+            return Attachment(
+                id,
+                incidentId,
+                kind,
+                contentType,
+                sizeBytes,
+                path,
+                Clock.System.now()
+            )
+        }
+    }
+}
 
 @Dao
 interface AttachmentDao {

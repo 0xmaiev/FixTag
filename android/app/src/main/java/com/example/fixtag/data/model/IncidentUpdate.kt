@@ -12,6 +12,8 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
 @Entity(
@@ -36,9 +38,26 @@ data class IncidentUpdate(
     val message: String?,
     @ColumnInfo(name = "new_status")
     val newStatus: String?,
+    @ColumnInfo(name = "created_at")
+    val createdAt: Instant,
     @ColumnInfo(name = "sync_status")
     val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
-)
+){
+    companion object {
+        fun create(id: Uuid, incidentId: Uuid, authorName: String, message: String?,
+                   newStatus: String?): IncidentUpdate {
+            return IncidentUpdate(
+                id,
+                incidentId,
+                authorName,
+                message,
+                newStatus,
+                Clock.System.now(),
+                SyncStatus.Pending
+            )
+        }
+    }
+}
 
 @Dao
 interface IncidentUpdateDao {

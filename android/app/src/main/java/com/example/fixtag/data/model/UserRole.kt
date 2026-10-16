@@ -3,20 +3,37 @@ package com.example.fixtag.data.model
 enum class UserRole {
     Operator,
     Technician,
-    Assistance
-}
+    Assistance;
 
-fun userRoleFromString(role: String): UserRole {
-    return when (role) {
-        "operador" -> {
-            UserRole.Operator
+    companion object {
+        fun fromCustomString(role: String): UserRole {
+            return when (role) {
+                "operador" -> {
+                    UserRole.Operator
+                }
+                "tecnico" -> {
+                    UserRole.Technician
+                }
+                "assistencia" -> {
+                    UserRole.Assistance
+                }
+                else -> {
+                    throw Exception("invalid user role")
+                }
+            }
         }
-        "tecnico" -> {
-            UserRole.Technician
-        }
-        else -> {
-            UserRole.Assistance
+        fun toCustomString(role: UserRole): String {
+            return when (role) {
+                UserRole.Operator -> {
+                    "operador"
+                }
+                UserRole.Technician -> {
+                    "tecnico"
+                }
+                UserRole.Assistance -> {
+                    "assistencia"
+                }
+            }
         }
     }
 }
-

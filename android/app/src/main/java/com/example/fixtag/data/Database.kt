@@ -17,14 +17,20 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserDao
 import com.example.fixtag.data.model.Auth
 import com.example.fixtag.data.model.AuthDao
+import com.example.fixtag.data.model.Organization
+import com.example.fixtag.data.model.OrganizationDao
 import com.example.fixtag.data.model.SyncState
 import com.example.fixtag.data.model.SyncStateDao
+import com.example.fixtag.data.model.Technician
+import com.example.fixtag.data.model.TechnicianDao
 
 const val DATABASE_NAME = "database"
 
-@Database(version = 1, entities = [
+@Database(version = 2, entities = [
     Auth::class,
+    Organization::class,
     User::class,
+    Technician::class,
     Incident::class,
     IncidentUpdate::class,
     Attachment::class,
@@ -55,6 +61,12 @@ abstract class Database : RoomDatabase() {
 
     // UserDao is a class annotated with @Dao.
     abstract fun getUserDao(): UserDao
+
+    // OrganizationDao is a class annotated with @Dao.
+    abstract fun getOrganizationDao(): OrganizationDao
+
+    // TechnicianDao is a class annotated with @Dao.
+    abstract fun getTechnicianDao(): TechnicianDao
 
     // MachineDao is a class annotated with @Dao.
     abstract fun getMachineDao(): MachineDao

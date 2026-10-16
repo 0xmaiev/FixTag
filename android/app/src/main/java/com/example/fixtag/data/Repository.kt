@@ -7,12 +7,15 @@ import com.example.fixtag.api.LoginRequestDto
 import com.example.fixtag.data.model.Attachment
 import com.example.fixtag.data.model.Auth
 import com.example.fixtag.data.model.Incident
+import com.example.fixtag.data.model.IncidentAndMachine
 import com.example.fixtag.data.model.IncidentUpdate
 import com.example.fixtag.data.model.Machine
+import com.example.fixtag.data.model.Organization
 import com.example.fixtag.data.model.SyncState
 import com.example.fixtag.data.model.SyncStatus
+import com.example.fixtag.data.model.Technician
 import com.example.fixtag.data.model.User
-import com.example.fixtag.data.model.userRoleFromString
+import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -90,11 +93,56 @@ class Repository(
                     organizationId = orgId,
                     name = userData.name,
                     email = userData.email,
-                    role = userRoleFromString(userData.role)
+                    role = UserRole.fromCustomString(userData.role)
                 )
                 userDao.save(user)
                 this.user = user
                 return Result.Success(user)
+            }
+
+            return Result.Error(Exception("Invalid response body."))
+
+        } catch (e: Exception) {
+            Log.d("Repository", e.toString())
+            return Result.Error(e)
+        }
+    }
+
+    suspend fun refreshTechnicians(): Result<List<Technician>> {
+        try {
+            Log.d("Repository", "Preparing technicians request")
+            val response = apiService.getTechnicians()
+
+            Log.d("Repository", "Got ${response.code()} from /technicians")
+            if (response.isSuccessful && response.body() != null) {
+                val technicianDao = db.getTechnicianDao()
+                val body = response.body()!!
+                val technicians = body.map { it.toEntity() }
+                technicianDao.saveAll(technicians)
+                return Result.Success(technicians)
+            }
+
+            return Result.Error(Exception("Invalid response body."))
+
+        } catch (e: Exception) {
+            Log.d("Repository", e.toString())
+            return Result.Error(e)
+        }
+    }
+
+
+    suspend fun refreshOrganizations(): Result<List<Organization>> {
+        try {
+            Log.d("Repository", "Preparing organizations request")
+            val response = apiService.getOrganizations()
+
+            Log.d("Repository", "Got ${response.code()} from /organizations")
+            if (response.isSuccessful && response.body() != null) {
+                val organizationDao = db.getOrganizationDao()
+                val body = response.body()!!
+                val organizations = body.map { it.toEntity() }
+                organizationDao.upsertAll(organizations)
+                return Result.Success(organizations)
             }
 
             return Result.Error(Exception("Invalid response body."))
@@ -214,16 +262,80 @@ class Repository(
 
     }
 
-    // incidents -> attachments / updates (server FK order)
+    // organizations -> machines -> incidents -> attachments / updates (server FK order)
     suspend fun pushPending() {
+        pushPendingOrganizations()
+        pushPendingMachines()
         pushPendingIncidents()
         pushPendingUpdates()
         pushPendingAttachments()
     }
 
+    // technicians -> organizations  -> incidents -> attachments / updates (server FK order)
+    suspend fun pullMissing() {
+        refreshOrganizations()
+        refreshTechnicians()
+        refreshMachines()
+        syncIncidents()
+        downloadAttachments()
+    }
+
+    suspend fun pushPendingOrganizations() {
+        val organizationDao = db.getOrganizationDao()
+        val pendingOrganizations = organizationDao.getPending()
+
+        if (pendingOrganizations.isEmpty()) {
+            Log.i("Repository", "No pending organizations to push")
+            return
+        }
+
+        Log.i("Repository", "Pushing  ${pendingOrganizations.size} pending organizations")
+
+        db.withTransaction {
+            for (organization in pendingOrganizations) {
+                val request = organization.toRequest()
+                val response = apiService.createOrganization(organization.id.toString(), request)
+                val body = response.body()
+                if (response.isSuccessful && body != null) {
+                    organizationDao.upsert(body.toEntity())
+                    Log.i("Repository", "Successfully pushed organizations")
+                }
+            }
+        }
+    }
+
+    suspend fun pushPendingMachines() {
+        val machineDao = db.getMachineDao()
+        val pendingMachines = machineDao.getPending()
+
+        if (pendingMachines.isEmpty()) {
+            Log.i("Repository", "No pending machines to push")
+            return
+        }
+
+        Log.i("Repository", "Pushing  ${pendingMachines.size} pending machines")
+
+        db.withTransaction {
+            for (machine in pendingMachines) {
+                val request = machine.toRequest()
+                val response = apiService.createMachine(machine.id.toString(), request)
+                val body = response.body()
+                if (response.isSuccessful && body != null) {
+                    machineDao.save(body.toEntity())
+                    Log.i("Repository", "Successfully pushed machines")
+                }
+            }
+        }
+    }
+
     suspend fun pushPendingIncidents() {
         val incidentDao = db.getIncidentDao()
         val pendingIncidents = incidentDao.getPending()
+
+        if (pendingIncidents.isEmpty()) {
+            Log.i("Repository", "No pending incidents to push")
+            return
+        }
 
         Log.i("Repository", "Pushing  ${pendingIncidents.size} pending incidents")
 
@@ -241,20 +353,28 @@ class Repository(
     }
 
     suspend fun pushPendingUpdates() {
+        val incidentDao = db.getIncidentDao()
         val updateDao = db.getIncidentUpdateDao()
         val pendingUpdates = updateDao.getPending()
+
+        if (pendingUpdates.isEmpty()) {
+            Log.i("Repository", "No pending incident updates to push")
+            return
+        }
 
         Log.i("Repository", "Pushing ${pendingUpdates.size} pending incident updates")
 
         db.withTransaction {
             for (update in pendingUpdates) {
                 val request = update.toRequest()
-                val response = apiService.addIncidentUpdate(update.id.toString(), request)
+                val response = apiService.addIncidentUpdate(update.incidentId.toString(), request)
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
-                    val synced = body.updates.find { value -> value.id == update.id.toString() }
-                    if (synced != null) {
-                        updateDao.save(synced.toEntity(update.incidentId))
+                    val updatedIncident = body.toEntity(update.incidentId)
+                    incidentDao.save(updatedIncident)
+                    val syncedUpdate = body.updates.find { value -> value.id == update.id.toString() }
+                    if (syncedUpdate != null) {
+                        updateDao.save(syncedUpdate.toEntity(update.incidentId))
                         Log.i("Repository", "Successfully pushed incident update")
                     }
                 }
@@ -265,6 +385,11 @@ class Repository(
     suspend fun pushPendingAttachments() {
         val attachmentDao = db.getAttachmentDao()
         val pendingAttachments = attachmentDao.getPending()
+
+        if (pendingAttachments.isEmpty()) {
+            Log.i("Repository", "No pending attachments to push")
+            return
+        }
 
         Log.i("Repository", "Pushing  ${pendingAttachments.size} pending attachments")
 
@@ -325,12 +450,24 @@ class Repository(
 
     }
 
+    fun observeOrganizations(): Flow<List<Organization>> {
+        return db.getOrganizationDao().observeAll()
+    }
+
+    fun observeTechnicians(): Flow<List<Technician>> {
+        return db.getTechnicianDao().observeAll()
+    }
+
     fun observeIncidents(): Flow<List<Incident>> {
         return db.getIncidentDao().observeAll()
     }
 
     fun observeIncident(id: Uuid): Flow<Incident?> {
         return db.getIncidentDao().observe(id)
+    }
+
+    fun observeIncidentAndMachine(id: Uuid): Flow<IncidentAndMachine> {
+        return db.getIncidentDao().observeWithMachine(id)
     }
 
     fun observeIncidentsByMachine(machineId: Uuid): Flow<List<Incident>> {
@@ -352,6 +489,36 @@ class Repository(
     fun observeMachines(): Flow<List<Machine>> {
         return db.getMachineDao().observeAll()
     }
+
+    suspend fun createOrganization(organization: Organization): Organization {
+        val organizationDao = db.getOrganizationDao()
+        organizationDao.upsert(organization)
+
+        syncScheduler.syncNow()
+        return organization
+    }
+
+    suspend fun createMachine(machine: Machine) {
+        val machineDao = db.getMachineDao()
+        machineDao.save(machine)
+
+        syncScheduler.syncNow()
+    }
+
+    suspend fun createIncident(incident: Incident) {
+        val incidentDao = db.getIncidentDao()
+        incidentDao.save(incident)
+
+        syncScheduler.syncNow()
+    }
+
+    suspend fun createIncidentUpdate(incidentUpdate: IncidentUpdate) {
+        val incidentUpdateDao = db.getIncidentUpdateDao()
+        incidentUpdateDao.save(incidentUpdate)
+
+        syncScheduler.syncNow()
+    }
+
 }
 
 fun streamToFile(inputStream: BufferedInputStream, fileName: String) {

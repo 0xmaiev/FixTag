@@ -1,48 +1,135 @@
 <resources>
+    <!-- App -->
     <string name="app_name" translatable="false">FixTag</string>
     <string name="app_ver" translatable="false">v0.1</string>
     <string name="app_logo" translatable="false">FixTag Logo</string>
     <string name="app_desc">Technical assistance for industrial equipment</string>
-    <string name="email" translatable="false">Email</string>
-    <string name="password">Password</string>
-    <string name="action_sign_in">Login</string>
-    <string name="action_register">Login</string>
-    <string name="forgot_password">Forgot my password</string>
+
+    <!-- Form labels -->
+    <string name="label_email" translatable="false">Email</string>
+    <string name="label_password">Password</string>
+    <string name="label_name">Name</string>
+    <string name="label_model">Model</string>
+    <string name="label_serial_number">Serial number</string>
+    <string name="label_description">Description</string>
+
+    <!-- Form labels -->
+    <string name="empty_name_error">Name cannot be empty</string>
+    <string name="empty_model_error">Model cannot be empty</string>
+    <string name="empty_serial_number_error">Serial number cannot be empty</string>
+
+    <!-- Form hints -->
+    <string name="name_hint">Organization\'s name</string>
+    <string name="model_hint">Machine model</string>
+    <string name="serial_number_hint">Machine\'s serial number</string>
+
+    <!-- Authentication -->
     <string name="activity_login_title">Login</string>
-    <string name="welcome">Welcome, {}!</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_register">Register</string>
+    <string name="forgot_password">Forgot my password</string>
+    <string name="welcome">Welcome, %s!</string>
     <string name="prompt_email" translatable="false">nome@empresa.pt</string>
     <string name="prompt_password" translatable="false">**************</string>
     <string name="login_failed">Login failed.</string>
     <string name="invalid_email">Invalid e-mail.</string>
     <string name="invalid_password">Invalid password.</string>
-    <string name="machines_failed">Failed to get machines.</string>
-    <string name="incidents_failed">Failed to get incidents.</string>
-    <string name="incidents_fragment_title">Incidents</string>
+
+
+    <!-- Organizations -->
+    <string name="organizations_fragment_title">Organizations</string>
+    <string name="new_organization_fragment_title">New organization</string>
+    <string name="organizations_fetch_failed">Failed to get organizations.</string>
+    <string name="organization_save_failed">Failed to save organization.</string>
+    <string name="pending_organizations_push_failed">Failed to push pending organizations.</string>
+
+    <!-- Various user types -->
+    <string name="technician_select_dialog_title">Select a technician</string>
+    <string name="technicians_fetch_failed">Failed to get technicians.</string>
+    <string name="organization_select_dialog_title">Select an organization</string>
+    <string name="organization_fetch_failed">Failed to get organizations.</string>
+
+    <plurals name="technician_open_incidents">
+        <item quantity="zero">no open incidents</item>
+        <item quantity="one">%d open incident</item>
+        <item quantity="other">%d open incidents</item>
+    </plurals>
+
+    <!-- Machines -->
     <string name="machines_fragment_title">Machines</string>
+    <string name="new_machine_fragment_title">New machine</string>
     <string name="machine_details_fragment_title">Machine details</string>
+    <string name="create_machine_button">Create machine</string>
+    <string name="machines_fetch_failed">Failed to get machines.</string>
+    <string name="machine_save_failed">Failed to save machine.</string>
+    <string name="pending_machines_push_failed">Failed to push pending machines.</string>
+
+    <plurals name="machine_history_summary">
+        <item quantity="zero">no incidents in the past 30d</item>
+        <item quantity="one">%d incident in the past 30d</item>
+        <item quantity="other">%d incidents in the past 30d</item>
+    </plurals>
+
+    <!-- Incidents -->
+    <string name="incidents_fragment_title">Incidents</string>
     <string name="new_incident_fragment_title">New incident</string>
     <string name="incident_details_fragment_title">Incident details</string>
+
+    <string name="incident_received">Received</string>
+    <string name="incident_analysis">Analysing</string>
+    <string name="incident_resolved">Resolved</string>
+    <string name="prompt_description">Explain the incident</string>
+
+    <string name="incidents_failed">Failed to get incidents.</string>
+    <string name="incident_save_failed">Failed to save incident.</string>
+    <string name="pending_incidents_push_failed">Failed to push pending incidents.</string>
+
+    <string name="add_incident_update">Add update</string>
+
+    <!-- Data sync-->
     <string name="connection_status">No connection</string>
     <string name="sync_status">%d to send</string>
     <string name="pending_sync">Unsent</string>
     <string name="stored_locally">saved in this device</string>
-    <string name="incident_received">Received</string>
-    <string name="incident_analysis">Analysing</string>
-    <string name="incident_resolved">Resolved</string>
-    <string name="action_settings">Settings</string>
-    <plurals name="machine_history_summary">
-        <item quantity="one">%s incident in the past 30d</item>
-        <item quantity="other">%s incidents in the past 30d</item>
-    </plurals>
+    <string name="settings">Settings</string>
+
+    <!-- Fragment view sections-->
+    <string name="photos_section_title">Photos</string>
+    <string name="messages_section_title">Messages</string>
+    <string name="incidents_section_title">Incidents</string>
+    <string name="description_section_title">Description</string>
+    <string name="severity_section_title">Severity</string>
+    <string name="status_section_title">Status</string>
+    <string name="response_section_title">Response</string>
+    <string name="associated_organization_section_title">Associated organization</string>
+    <string name="associated_machine_section_title">Associated machine</string>
+    <string name="select">Select</string>
+    <string name="save">Save</string>
 
     <!-- Sample strings for editor display-->
+    <string name="sample_organization_name" translatable="false">Demo Client, Lda.</string>
+
+    <string name="sample_technician_name" translatable="false">George Tech</string>
+    <string name="sample_technician_open_incidents" translatable="false">Crawler Drill</string>
+
     <string name="sample_machine_model" translatable="false">Crawler Drill</string>
     <string name="sample_machine_serial_number" translatable="false">SN 000123</string>
     <string name="sample_machine_status" translatable="false">OK</string>
     <string name="sample_machine_history_summary" translatable="false">1 incident in the past 30d</string>
+
     <string name="sample_incident_severity" translatable="false">Critical</string>
     <string name="sample_incident_description" translatable="false">Loss of pressure in the hydraulic system</string>
     <string name="sample_incident_status" translatable="false">Analysis</string>
+
     <string name="sample_sync_status" translatable="false">1 to send</string>
     <string name="sample_item_sync_status" translatable="false">3h ago</string>
+
+    <string name="sample_incident_update_author_role" translatable="false">Assistance</string>
+    <string name="sample_incident_update_author_name_male" translatable="false">John Doe</string>
+    <string name="sample_incident_update_author_name_female" translatable="false">Jane Doe</string>
+    <string name="sample_incident_update_author_name_user" translatable="false">You</string>
+    <string name="sample_incident_update_message" translatable="false">We\'re reviewing telemetry data. Is the machine still stopped?</string>
+    <string name="sample_incident_update_message_2" translatable="false">Yes, for about an hour now.</string>
+    <string name="sample_incident_update_time_elapsed" translatable="false">20 min. ago</string>
+    <string name="sample_incident_update_time_elapsed_2" translatable="false">5 min. ago</string>
 </resources>

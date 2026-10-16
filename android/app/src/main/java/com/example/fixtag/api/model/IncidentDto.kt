@@ -18,6 +18,10 @@ data class IncidentDto(
     val description: String,
     val severity: String,
     val status: String,
+    @SerializedName("assigned_to")
+    val assignedTo: String?,
+    @SerializedName("assigned_to_name")
+    val assignedToName: String?,
     val latitude: Double?,
     val longitude: Double?,
     @SerializedName("accuracy_m")

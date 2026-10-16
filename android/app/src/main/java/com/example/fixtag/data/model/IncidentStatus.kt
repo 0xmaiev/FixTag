@@ -8,27 +8,30 @@ enum class IncidentStatus {
     companion object {
         fun fromCustomString(status: String): IncidentStatus {
             return when (status) {
-                "Recebido" -> {
+                "recebida" -> {
                     IncidentStatus.Received
                 }
-                "Analise" -> {
+                "em_analise" -> {
                     IncidentStatus.Analysis
                 }
-                else -> {
+                "resolvida" -> {
                     IncidentStatus.Resolved
+                }
+                else -> {
+                    throw Exception("invalid incident severity")
                 }
             }
         }
         fun toCustomString(status: IncidentStatus): String {
             return when (status) {
                 IncidentStatus.Received -> {
-                    "Recebido"
+                    "recebida"
                 }
                 IncidentStatus.Analysis -> {
-                    "Analise"
+                    "em_analise"
                 }
-                else -> {
-                    "Resolvido"
+                IncidentStatus.Resolved -> {
+                    "resolvida"
                 }
             }
         }

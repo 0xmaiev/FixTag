@@ -9,13 +9,7 @@
         android:icon="@drawable/ic_machines"
         android:title="@string/machines_fragment_title"/>
     <item
-        android:id="@+id/machine_details"
+        android:id="@+id/organizations"
         android:icon="@drawable/ic_machines"
-        android:title="@string/machines_fragment_title"
-        android:visible="false"/>
-    <item
-        android:id="@+id/incident_details"
-        android:icon="@drawable/ic_machines"
-        android:title="@string/machines_fragment_title"
-        android:visible="false"/>
+        android:title="@string/organizations_fragment_title"/>
 </menu>

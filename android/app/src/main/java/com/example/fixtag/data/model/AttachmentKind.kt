@@ -8,14 +8,17 @@ enum class AttachmentKind {
     companion object {
         fun fromCustomString(kind: String): AttachmentKind {
             return when (kind) {
-                "Foto" -> {
+                "foto" -> {
                     AttachmentKind.Photo
                 }
-                "Audio" -> {
+                "audio" -> {
                     AttachmentKind.Audio
                 }
-                else -> {
+                "video" -> {
                     AttachmentKind.Video
+                }
+                else -> {
+                    throw Exception("invalid attachment kind")
                 }
             }
         }

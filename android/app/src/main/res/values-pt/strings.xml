@@ -2,22 +2,48 @@
 <resources>
 
     <string name="app_desc">Assistência técnica de máquinas industriais</string>
-    <string name="password">Palavra-passe</string>
+    <string name="label_password">Palavra-passe</string>
     <string name="action_sign_in">Entrar</string>
     <string name="action_register">Registar</string>
     <string name="forgot_password">Esqueci a palavra-passe</string>
+    <string name="label_name">Nome</string>
+    <string name="label_model">Modelo</string>
+    <string name="label_serial_number">Número de série</string>
+    <string name="label_description">Descrição</string>
+    <string name="empty_name_error">Nome não pode ser vazio</string>
+    <string name="empty_model_error">Modelo não pode ser vazio</string>
+    <string name="empty_serial_number_error">Número de série não pode ser vazio</string>
+    <string name="name_hint">Nome da organização</string>
+    <string name="model_hint">Modelo da máquina</string>
+    <string name="serial_number_hint">Número de série da máquina</string>
     <string name="activity_login_title">Entrar</string>
-    <string name="welcome">Bem-vindo, {}!</string>
+    <string name="welcome">Bem-vindo, %s!</string>
     <string name="login_failed">Erro de autenticação.</string>
     <string name="invalid_email">E-mail inválido.</string>
     <string name="invalid_password">Palavra-passe inválida.</string>
-    <string name="machines_failed">Erro a buscar máquinas.</string>
+    <string name="create_machine_button">Criar máquina</string>
+    <string name="machines_fetch_failed">Erro a buscar máquinas.</string>
+    <string name="prompt_description">Relata a ocorrência</string>
     <string name="incidents_failed">Erro a buscar ocorrências.</string>
+    <string name="machine_save_failed">Erro a salvar máquina.</string>
     <string name="incidents_fragment_title">Ocorrências</string>
+    <string name="organizations_fetch_failed">Erro a buscar organizações.</string>
+    <string name="organization_save_failed">Erro a salvar organização.</string>
+    <string name="pending_organizations_push_failed">Erro a enviar dados de organização.</string>
+    <string name="technician_select_dialog_title">Selecione um técnico</string>
+    <string name="technicians_fetch_failed">Erro a buscar técnicos.</string>
+    <string name="organization_select_dialog_title">Selecione uma organização</string>
+    <string name="organization_fetch_failed">Erro a buscar organizações.</string>
     <string name="machines_fragment_title">Máquinas</string>
     <string name="new_incident_fragment_title">Nova ocorrência</string>
+    <string name="new_machine_fragment_title">Nova máquina</string>
+    <string name="new_organization_fragment_title">Nova organização</string>
     <string name="incident_details_fragment_title">Detalhes da ocorrência</string>
+    <string name="organizations_fragment_title">Organizações</string>
     <string name="machine_details_fragment_title">Detalhes da máquina</string>
+    <string name="incident_save_failed">Erro a salvar ocorrência.</string>
+    <string name="pending_machines_push_failed">Erro a enviar dados de máquinas.</string>
+    <string name="pending_incidents_push_failed">Erro a enviar dados de ocorrências.</string>
     <string name="connection_status">Sem ligação</string>
     <string name="sync_status">%d por enviar</string>
     <string name="pending_sync">por enviar</string>
@@ -25,9 +51,26 @@
     <string name="incident_received">Recebido</string>
     <string name="incident_analysis">Analisando</string>
     <string name="incident_resolved">Resolvido</string>
-    <string name="action_settings">Definições</string>
+
     <plurals name="machine_history_summary">
         <item quantity="one">%s ocorrência nos últimos 30d</item>
         <item quantity="many">%s ocorrência nos últimos 30d</item>
     </plurals>
+    <plurals name="technician_open_incidents">
+        <item quantity="one">%d ocorrência aberta</item>
+        <item quantity="many">%d ocorrências abertas</item>
+    </plurals>
+    <string name="settings">Definições</string>
+    <string name="photos_section_title">Fotos</string>
+    <string name="messages_section_title">Mensagens</string>
+    <string name="incidents_section_title">Ocorrências</string>
+    <string name="description_section_title">Descrição</string>
+    <string name="severity_section_title">Gravidade</string>
+    <string name="status_section_title">Estado</string>
+    <string name="response_section_title">Resposta</string>
+    <string name="add_incident_update">Adicionar informação</string>
+    <string name="associated_organization_section_title">Organização associada</string>
+    <string name="associated_machine_section_title">Máquina associada</string>
+    <string name="select">Selecionar</string>
+    <string name="save">Guardar</string>
 </resources>

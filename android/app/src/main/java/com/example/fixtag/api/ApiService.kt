@@ -4,6 +4,8 @@ import com.example.fixtag.api.model.AttachmentDto
 import com.example.fixtag.api.model.TokenResponseDto
 import com.example.fixtag.api.model.IncidentDto
 import com.example.fixtag.api.model.MachineDto
+import com.example.fixtag.api.model.OrganizationDto
+import com.example.fixtag.api.model.TechnicianDto
 import com.google.gson.annotations.SerializedName
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -59,6 +61,18 @@ data class UpdateIncidentRequestDto(
     val newStatus: String?
 )
 
+data class CreateOrganizationRequestDto(
+    val name: String,
+)
+
+data class CreateMachineRequestDto(
+    @SerializedName("organization_id")
+    val organizationId: String,
+    @SerializedName("serial_number")
+    val serialNumber: String,
+    val model: String,
+)
+
 interface ApiService {
     @POST("/login")
     suspend fun login(
@@ -75,10 +89,28 @@ interface ApiService {
         @Body request: RegisterDeviceRequestDto
     ): Response<Unit>
 
+    @GET("/technicians")
+    suspend fun getTechnicians(): Response<List<TechnicianDto>>
+
+    @GET("/organizations")
+    suspend fun getOrganizations(): Response<List<OrganizationDto>>
+
+    @PUT("/organizations/{id}")
+    suspend fun createOrganization(
+        @Path("id") id: String,
+        @Body incident: CreateOrganizationRequestDto
+    ): Response<OrganizationDto>
+
     @GET("/machines")
     suspend fun getMachines(
         @Query("serial_number") serialNumber: String? = null,
     ): Response<List<MachineDto>>
+
+    @PUT("/machines/{id}")
+    suspend fun createMachine(
+        @Path("id") id: String,
+        @Body incident: CreateMachineRequestDto
+    ): Response<MachineDto>
 
     @GET("/incidents/{id}")
     suspend fun getIncident(

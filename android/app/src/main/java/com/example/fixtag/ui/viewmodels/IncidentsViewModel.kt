@@ -1,4 +1,4 @@
-package com.example.fixtag.ui.fragments
+package com.example.fixtag.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,7 +7,6 @@ import com.example.fixtag.data.model.Incident
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class IncidentsViewModel(private val repository: Repository) : ViewModel() {
     val uiState: StateFlow<List<Incident>> = repository.observeIncidents()
@@ -18,10 +17,5 @@ class IncidentsViewModel(private val repository: Repository) : ViewModel() {
             initialValue = emptyList() // The initial state before Room emits data
         )
 
-    init {
-        // Trigger a background network sync immediately when screen loads
-        viewModelScope.launch {
-            repository.syncIncidents()
-        }
-    }
+    init { }
 }

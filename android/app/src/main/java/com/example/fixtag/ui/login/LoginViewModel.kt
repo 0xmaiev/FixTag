@@ -9,10 +9,28 @@ import androidx.lifecycle.viewModelScope
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.Result
 import com.example.fixtag.R
+import com.example.fixtag.data.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+/**
+ * Data validation state of the login form.
+ */
+data class LoginFormState(
+    val emailError: Int? = null,
+    val passwordError: Int? = null,
+    val isDataValid: Boolean = false
+)
+
+/**
+ * Authentication result : success (user details) or error message.
+ */
+data class LoginResult(
+    val success: User? = null,
+    val error: Int? = null
+)
 
 class LoginViewModel(private val repository: Repository) : ViewModel() {
 

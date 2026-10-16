@@ -30,13 +30,6 @@ class MainViewModel(
 
     private val _navigationState = MutableStateFlow<NavigationState>(NavigationState.Loading)
     val navigationState: StateFlow<NavigationState> = _navigationState.asStateFlow()
-
-    private val _machinesResult = MutableLiveData<MachinesResult>()
-    val machinesResult: LiveData<MachinesResult> = _machinesResult
-
-    private val _incidentsResult = MutableLiveData<IncidentsResult>()
-    val incidentsResult: LiveData<IncidentsResult> = _incidentsResult
-
     init {
         checkUserStatus()
     }

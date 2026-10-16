@@ -20,6 +20,10 @@ import com.example.fixtag.ui.fragments.IncidentDetailFragment
 import com.example.fixtag.ui.fragments.IncidentsFragment
 import com.example.fixtag.ui.fragments.MachineDetailFragment
 import com.example.fixtag.ui.fragments.MachinesFragment
+import com.example.fixtag.ui.fragments.NewIncidentFragment
+import com.example.fixtag.ui.fragments.NewMachineFragment
+import com.example.fixtag.ui.fragments.NewOrganizationFragment
+import com.example.fixtag.ui.fragments.OrganizationsFragment
 import com.example.fixtag.ui.login.LoginActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
@@ -89,11 +93,23 @@ class MainActivity : AppCompatActivity() {
             fragment<MachinesFragment>(R.id.machines)  {
                 label = resources.getString(R.string.machines_fragment_title)
             }
+            fragment< OrganizationsFragment>(R.id.organizations)  {
+                label = resources.getString(R.string.organizations_fragment_title)
+            }
             fragment<MachineDetailFragment>(R.id.machine_details)  {
                 label = resources.getString(R.string.machine_details_fragment_title)
             }
             fragment<IncidentDetailFragment>(R.id.incident_details)  {
                 label = resources.getString(R.string.incident_details_fragment_title)
+            }
+            fragment<NewIncidentFragment>(R.id.new_incident)  {
+                label = resources.getString(R.string.new_incident_fragment_title)
+            }
+            fragment<NewMachineFragment>(R.id.new_machine)  {
+                label = resources.getString(R.string.new_machine_fragment_title)
+            }
+            fragment<NewOrganizationFragment>(R.id.new_organization)  {
+                label = resources.getString(R.string.new_organization_fragment_title)
             }
         }
         bottomNavigationView.setupWithNavController(navController)

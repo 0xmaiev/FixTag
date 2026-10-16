@@ -17,11 +17,9 @@ class SyncWorker(
         val repository = (applicationContext as FixTag).repository
 
         return try {
-            // push pending data before syncing
+            // push pending data before pulling
             repository.pushPending()
-            repository.refreshMachines()
-            repository.syncIncidents()
-            repository.downloadAttachments()
+            repository.pullMissing()
             Result.success()
         } catch (e: HttpException) {
             if (e.code() == 401) Result.failure() else Result.retry() // 401 means refresh failed
