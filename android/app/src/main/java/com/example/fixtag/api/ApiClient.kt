@@ -105,7 +105,7 @@ object ApiClient {
 
                             // Save the newly minted tokens into Room
                             runBlocking {
-                                db.getAuthDao().save(
+                                db.getAuthDao().upsert(
                                     Auth(
                                         userId = auth.userId,
                                         accessToken = newTokens.accessToken,

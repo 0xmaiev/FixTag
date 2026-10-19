@@ -2,67 +2,27 @@ package com.example.fixtag.ui.fragments
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
-import android.text.format.DateUtils
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.Navigation.findNavController
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.FixTag
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.R
 import com.example.fixtag.data.model.IncidentSeverity
-import com.example.fixtag.data.model.IncidentUpdate
+import com.example.fixtag.ui.adapters.MessageAdapter
 import com.example.fixtag.ui.viewmodels.IncidentDetailViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 import kotlin.uuid.Uuid
-
-
-class MessageAdapter : ListAdapter<IncidentUpdate, MessageAdapter.ViewHolder>(UserDiffCallback) {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_update, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
-    }
-
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val authorNameTextView: TextView = itemView.findViewById(R.id.authorName)
-        private val authorRoleTextView: TextView = itemView.findViewById(R.id.authorRole)
-        private val timeElapsedTextView: TextView = itemView.findViewById(R.id.timeElapsed)
-        private val messageTextView: TextView = itemView.findViewById(R.id.message)
-
-        fun bind(incidentUpdate: IncidentUpdate) {
-            authorNameTextView.text = incidentUpdate.authorName
-            val elapsed = DateUtils.getRelativeTimeSpanString( incidentUpdate.createdAt.toEpochMilliseconds())
-            timeElapsedTextView.text = elapsed
-        }
-    }
-
-    // DiffUtil handles smart list updates completely automatically
-    object UserDiffCallback : DiffUtil.ItemCallback<IncidentUpdate>() {
-        override fun areItemsTheSame(oldItem: IncidentUpdate, newItem: IncidentUpdate): Boolean {
-            return oldItem.id == newItem.id
-        }
-
-        override fun areContentsTheSame(oldItem: IncidentUpdate, newItem: IncidentUpdate): Boolean {
-            return oldItem == newItem
-        }
-    }
-}
 
 class IncidentDetailFragment : Fragment() {
 
@@ -70,8 +30,6 @@ class IncidentDetailFragment : Fragment() {
         fun newInstance() = IncidentDetailFragment()
     }
 
-    private lateinit var incidentId: Uuid
-    private lateinit var backButton: Button
     private lateinit var incidentDescription: TextView
     private lateinit var incidentSeverity: TextView
     private lateinit var machineModel: TextView
@@ -108,7 +66,8 @@ class IncidentDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        backButton = view.findViewById(R.id.backButton)
+        view.findViewById<MaterialToolbar>(R.id.toolbar)
+            .setNavigationOnClickListener { findNavController().navigateUp() }
         incidentSeverity = view.findViewById(R.id.incidentSeverity)
         incidentDescription = view.findViewById(R.id.incidentDescription)
         machineModel = view.findViewById(R.id.machineModel)
@@ -149,10 +108,6 @@ class IncidentDetailFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        backButton.setOnClickListener {
-            findNavController(view).navigateUp()
         }
     }
 

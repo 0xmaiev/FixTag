@@ -4,6 +4,8 @@
     <string name="app_ver" translatable="false">v0.1</string>
     <string name="app_logo" translatable="false">FixTag Logo</string>
     <string name="app_desc">Technical assistance for industrial equipment</string>
+    <string name="camera_permission_needed">Camera permission is required.</string>
+    <string name="mic_permission_needed">Microphone permission is required.</string>
 
     <!-- Form labels -->
     <string name="label_email" translatable="false">Email</string>
@@ -14,9 +16,12 @@
     <string name="label_description">Description</string>
 
     <!-- Form labels -->
+    <string name="empty_organization_error">Organization must be selected</string>
+    <string name="empty_machine_error">Machine must be selected</string>
     <string name="empty_name_error">Name cannot be empty</string>
     <string name="empty_model_error">Model cannot be empty</string>
     <string name="empty_serial_number_error">Serial number cannot be empty</string>
+    <string name="empty_description_error">Text or audio description is required.</string>
 
     <!-- Form hints -->
     <string name="name_hint">Organization\'s name</string>
@@ -35,12 +40,13 @@
     <string name="invalid_email">Invalid e-mail.</string>
     <string name="invalid_password">Invalid password.</string>
 
-
     <!-- Organizations -->
     <string name="organizations_fragment_title">Organizations</string>
     <string name="new_organization_fragment_title">New organization</string>
     <string name="organizations_fetch_failed">Failed to get organizations.</string>
     <string name="organization_save_failed">Failed to save organization.</string>
+    <string name="organization_saved">Organization successfully saved.</string>
+    <string name="no_organization_selected">No organization selected</string>
     <string name="pending_organizations_push_failed">Failed to push pending organizations.</string>
 
     <!-- Various user types -->
@@ -48,6 +54,7 @@
     <string name="technicians_fetch_failed">Failed to get technicians.</string>
     <string name="organization_select_dialog_title">Select an organization</string>
     <string name="organization_fetch_failed">Failed to get organizations.</string>
+    <string name="machine_select_dialog_title">Select a machine</string>
 
     <plurals name="technician_open_incidents">
         <item quantity="zero">no open incidents</item>
@@ -62,6 +69,8 @@
     <string name="create_machine_button">Create machine</string>
     <string name="machines_fetch_failed">Failed to get machines.</string>
     <string name="machine_save_failed">Failed to save machine.</string>
+    <string name="machine_saved">Machine successfully saved.</string>
+    <string name="no_machine_selected">No machine selected</string>
     <string name="pending_machines_push_failed">Failed to push pending machines.</string>
 
     <plurals name="machine_history_summary">
@@ -75,11 +84,15 @@
     <string name="new_incident_fragment_title">New incident</string>
     <string name="incident_details_fragment_title">Incident details</string>
 
+    <string name="severity_low">Low</string>
+    <string name="severity_medium">Medium</string>
+    <string name="severity_critical">Critical</string>
+
     <string name="incident_received">Received</string>
     <string name="incident_analysis">Analysing</string>
     <string name="incident_resolved">Resolved</string>
     <string name="prompt_description">Explain the incident</string>
-
+    <string name="incident_saved">Incident successfully saved.</string>
     <string name="incidents_failed">Failed to get incidents.</string>
     <string name="incident_save_failed">Failed to save incident.</string>
     <string name="pending_incidents_push_failed">Failed to push pending incidents.</string>
@@ -105,6 +118,7 @@
     <string name="associated_machine_section_title">Associated machine</string>
     <string name="select">Select</string>
     <string name="save">Save</string>
+    <string name="remove">Remove</string>
 
     <!-- Sample strings for editor display-->
     <string name="sample_organization_name" translatable="false">Demo Client, Lda.</string>

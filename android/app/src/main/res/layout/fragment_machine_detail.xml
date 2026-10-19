@@ -7,47 +7,15 @@
     android:orientation="vertical"
     tools:context=".ui.fragments.MachineDetailFragment">
 
-    <LinearLayout
-        android:id="@+id/headerLinearLayout"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/material_dynamic_neutral10"
-        android:orientation="horizontal"
-        android:paddingStart="10dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="5dp">
-
-        <Button
-            android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_margin="10dp"
-            android:background="@color/material_dynamic_neutral10"
-            android:gravity="center|start"
-            android:maxWidth="35dp"
-            android:maxHeight="35dp"
-            android:minWidth="10dp"
-            android:minHeight="10dp"
-            android:textColor="@color/white"
-            android:textColorLink="@color/material_dynamic_neutral10"
-            android:textSize="11sp"
-            app:icon="@android:drawable/ic_media_rew"
-            app:iconGravity="top"
-            app:iconSize="25dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_margin="10dp"
-            android:gravity="center|start"
-            android:text="@string/machine_details_fragment_title"
-            android:textColor="@color/white"
-            android:textSize="24sp" />
-
-    </LinearLayout>
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/white"
+        app:title="@string/machine_details_fragment_title"
+        app:titleTextColor="@color/white" />
 
     <LinearLayout
         android:id="@+id/machineLinearLayout"

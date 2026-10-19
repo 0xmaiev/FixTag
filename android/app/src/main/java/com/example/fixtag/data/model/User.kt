@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 //import com.example.fixtag.data.UserWithIncidents
 import kotlin.uuid.Uuid
 
@@ -26,7 +27,11 @@ data class User(
 @Dao
 interface UserDao {
     @Upsert
-    suspend fun save(user: User)
+    suspend fun upsert(user: User)
+
+    @Transaction
+    @Query("SELECT * FROM user LIMIT 1")
+    fun observe(): Flow<User?>
 
     @Query("SELECT * FROM user WHERE id = :id")
     suspend fun get(id: Uuid): User?

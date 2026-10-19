@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.uuid.Uuid
 
@@ -28,14 +29,11 @@ import kotlin.uuid.Uuid
 data class NewMachineFormState(
     val organizationError: Int? = null,
     val modelError: Int? = null,
-    val serialNumberError: Int? = null,
-    val isDataValid: Boolean = false
-)
+    val serialNumberError: Int? = null
+) {
+    val isDataValid get() = organizationError == null && modelError == null && serialNumberError == null
+}
 
-data class NewMachineFormResult(
-    val success: Machine? = null,
-    val error: Int? = null
-)
 
 class NewMachineViewModel(
     private val repository: Repository,
@@ -46,75 +44,54 @@ class NewMachineViewModel(
     private val machineId: String = savedStateHandle[MACHINE_ID_HANDLE]
         ?: Uuid.random().toString().also { savedStateHandle[MACHINE_ID_HANDLE] = it }
 
-    private val _form = MutableLiveData<NewMachineFormState>()
-    val form: LiveData<NewMachineFormState> = _form
+    private val _form = MutableStateFlow(NewMachineFormState())
+    val form: StateFlow<NewMachineFormState> = _form.asStateFlow()
 
-    private val _result = MutableLiveData<NewMachineFormResult>()
-    val result: LiveData<NewMachineFormResult> = _result
-
-    private var _organizationId: StateFlow<String?> = savedStateHandle.getStateFlow(ORGANIZATION_ID_HANDLE, null)
+    // the dialog's pick is the one form value no view keeps for us
+    private val organizationId: StateFlow<String?> = savedStateHandle.getStateFlow(ORGANIZATION_ID_HANDLE, null)
 
     // the chosen client's name for the form, looked up from Room
     val organization: StateFlow<Organization?> =
-        combine(_organizationId, repository.observeOrganizations()) { id, all -> all.find { it.id.toString() == id } }
+        combine(organizationId, repository.observeOrganizations()) { id, all -> all.find { it.id.toString() == id } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    val _model: MutableLiveData<String?> = savedStateHandle.getLiveData(MACHINE_MODEL_HANDLE, null)
-    val _serialNumber: MutableLiveData<String?> = savedStateHandle.getLiveData(
-        MACHINE_SERIAL_NUMBER_HANDLE, null
-    )
-
     // Submit function to
-    fun submit() {
-        // State.* comes from `InputBaseViewModel`
-        if (state.value != State.Editing) return // ignores double taps
+    fun submit(model: String, serialNumber: String) {
+        val organizationId = organizationId.value
+        _form.value = validate(organizationId, model, serialNumber)
+        // early exit - State.* comes from `InputBaseViewModel`
+        if (!_form.value.isDataValid || organizationId == null || state.value != State.Editing) return  // ignores double taps
         state.value = State.Saving
         viewModelScope.launch {
-            val machine = Machine.create(
+            repository.createMachine(Machine.create(
                 Uuid.parse(machineId),
-                Uuid.parse(_organizationId.value!!),
-                _serialNumber.value!!,
-                _model.value!!
-            )
-            repository.createMachine(machine)
+                Uuid.parse(organizationId),
+                serialNumber.trim().uppercase(), // normalizing serial alphanumeric value
+                model.trim()
+            ))
             state.value = State.Saved
         }
     }
 
-    fun formDataChanged(organizationId: String, model: String, serialNumber: String) {
-        var organizationIdError: Int? = null
+    // the server will trim and reject empty names, so "   " has to fail here too
+    private fun validate(organizationId: String?, model: String, serialNumber: String): NewMachineFormState {
+        var organizationError: Int? = null
         var modelError: Int? = null
         var serialNumberError: Int? = null
 
-        if (organizationId.isEmpty()) {
-            organizationIdError = R.string.empty_model_error
-            return
-        }
-        savedStateHandle[ORGANIZATION_ID_HANDLE] = organizationId
+        if (organizationId == null) { organizationError = R.string.empty_organization_error }
+        if (model.isBlank()) { modelError = R.string.empty_model_error }
+        if (serialNumber.isBlank()) { serialNumberError = R.string.empty_serial_number_error }
 
-        if (model.isEmpty()) {
-            modelError = R.string.empty_model_error
-            return
-        }
-        _model.value = model
-
-        if (serialNumber.isEmpty()) {
-            serialNumberError = R.string.empty_model_error
-            return
-        }
-        _serialNumber.value = serialNumber
-
-        if (organizationIdError != null || modelError != null || serialNumberError != null) {
-            _form.value = NewMachineFormState(
-                organizationIdError,
-                modelError,
-                serialNumberError
-            )
-            return
-        }
-
-        _form.value = NewMachineFormState(
-            isDataValid = true
+        return NewMachineFormState(
+            organizationError,
+            modelError,
+            serialNumberError
         )
+    }
+
+    fun selectOrganization(id: String) {
+        savedStateHandle[ORGANIZATION_ID_HANDLE] = id
+        _form.update { it.copy(organizationError = null) } // only clears the error this fixes
     }
 }

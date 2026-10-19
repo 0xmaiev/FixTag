@@ -10,7 +10,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
-import androidx.room.Transaction
 import androidx.room.Upsert
 //import com.example.fixtag.data.IncidentWithAttachmentsAndUpdates
 import kotlinx.coroutines.flow.Flow
@@ -97,10 +96,10 @@ data class IncidentAndMachine(
 @Dao
 interface IncidentDao {
     @Upsert
-    suspend fun save(incident: Incident)
+    suspend fun upsert(incident: Incident)
 
     @Upsert
-    suspend fun saveAll(incidents: List<Incident>)
+    suspend fun upsertAll(incidents: List<Incident>)
 
     @Query("SELECT * FROM incident WHERE id = :id LIMIT 1")
     fun observe(id: Uuid): Flow<Incident?>

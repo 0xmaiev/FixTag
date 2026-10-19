@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
+import com.example.fixtag.data.model.Organization
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.ORGANIZATION_ID_KEY
 import com.example.fixtag.ui.SELECT_ORGANIZATION_REQUEST_KEY
@@ -25,7 +26,9 @@ import com.example.fixtag.ui.viewmodels.OrganizationsViewModel
 import kotlinx.coroutines.launch
 
 // A dialog-based list with single item selection.
-class OrganizationSelectDialogFragment : DialogFragment() {
+class OrganizationSelectDialogFragment(
+    private val initialSelection: Organization?
+) : DialogFragment() {
 
     companion object {
         fun newInstance() = OrganizationSelectDialogFragment
@@ -46,15 +49,11 @@ class OrganizationSelectDialogFragment : DialogFragment() {
         super.onCreate(savedInstanceState ?: Bundle())
 
         adapter = OrganizationSelectAdapter { organization ->
-            if (organization != null) {
-                val bundle = Bundle()
-                bundle.putString(ORGANIZATION_ID_KEY, organization.id.toString())
-                setFragmentResult(SELECT_ORGANIZATION_REQUEST_KEY, bundle)
-            } else {
-                // since we are only returning one value we can clear the whole result as a stopgap
-                clearFragmentResult(ORGANIZATION_ID_KEY)
-            }
+            val bundle = Bundle()
+            bundle.putString(ORGANIZATION_ID_KEY, organization?.id.toString())
+            setFragmentResult(SELECT_ORGANIZATION_REQUEST_KEY, bundle)
         }
+        adapter.setInitialSelection(initialSelection?.id)
 
         // allow canceling by pressing back button
         setCancelable(true)

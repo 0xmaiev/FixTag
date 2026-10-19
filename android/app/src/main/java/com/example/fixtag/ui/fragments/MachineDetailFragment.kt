@@ -21,6 +21,7 @@ import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.MACHINE_ID_KEY
 import com.example.fixtag.ui.adapters.IncidentAdapter
 import com.example.fixtag.ui.viewmodels.MachineDetailViewModel
+import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.DurationUnit
@@ -41,7 +42,6 @@ class MachineDetailFragment : Fragment() {
 
     private lateinit var machineId: Uuid
     private lateinit var incidentAdapter: IncidentAdapter
-    private lateinit var backButton: Button
     private lateinit var newIncidentButton: Button
     private lateinit var machineModel: TextView
     private lateinit var machineSerialNumber: TextView
@@ -66,7 +66,8 @@ class MachineDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        backButton = view.findViewById(R.id.backButton)
+        view.findViewById<MaterialToolbar>(R.id.toolbar)
+            .setNavigationOnClickListener { findNavController().navigateUp() }
         newIncidentButton = view.findViewById(R.id.newIncidentButton)
         machineModel = view.findViewById(R.id.model)
         machineSerialNumber = view.findViewById(R.id.serialNumber)
@@ -96,10 +97,6 @@ class MachineDetailFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        backButton.setOnClickListener {
-            findNavController(view).navigateUp()
         }
 
         newIncidentButton.setOnClickListener {

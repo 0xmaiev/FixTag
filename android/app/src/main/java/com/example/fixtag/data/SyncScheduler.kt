@@ -18,12 +18,12 @@ const val SYNC_PERIODIC: String = "sync-periodic"
 // Interval between periodic syncs
 const val SYNC_PERIOD: Long = 15
 
-// TODO: Add SharedPreferences to store connection type configs
+// TODO: Add datastore for preferences to store connection type configs
 
 class SyncScheduler(private val workManager: WorkManager) {
     private val online = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiredNetworkType(NetworkType.UNMETERED)
+            //.setRequiredNetworkType(NetworkType.UNMETERED)
             .build()
 
     fun syncNow() {

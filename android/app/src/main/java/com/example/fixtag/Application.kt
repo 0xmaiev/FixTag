@@ -23,6 +23,7 @@ class FixTag : Application() {
             db = db,
             syncScheduler = syncScheduler,
             apiService = ApiClient.getApiService(this),
+            filesDir = filesDir
         )
     }
 

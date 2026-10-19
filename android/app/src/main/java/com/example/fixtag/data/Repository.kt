@@ -2,6 +2,7 @@ package com.example.fixtag.data
 
 import android.util.Log
 import androidx.room.withTransaction
+import com.example.fixtag.ATTACHMENTS_DIR
 import com.example.fixtag.api.ApiService
 import com.example.fixtag.api.LoginRequestDto
 import com.example.fixtag.data.model.Attachment
@@ -22,12 +23,9 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
-import java.io.BufferedInputStream
 import java.io.File
+import java.io.IOException
 import kotlin.uuid.Uuid
-
-// Directory for local attachment storage
-const val FILE_DIR: String = "filesDir/attachments/"
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -38,6 +36,7 @@ class Repository(
     private val db: Database,
     private val syncScheduler: SyncScheduler,
     private val apiService: ApiService,
+    private val filesDir: File,
 ) {
 
     // in-memory cache of the loggedInUser object
@@ -87,7 +86,7 @@ class Repository(
                     refreshToken = body.refreshToken,
                     accessToken = body.accessToken
                 )
-                authDao.save(auth)
+                authDao.upsert(auth)
                 val user = User(
                     id = userId,
                     organizationId = orgId,
@@ -95,7 +94,7 @@ class Repository(
                     email = userData.email,
                     role = UserRole.fromCustomString(userData.role)
                 )
-                userDao.save(user)
+                userDao.upsert(user)
                 this.user = user
                 return Result.Success(user)
             }
@@ -118,7 +117,7 @@ class Repository(
                 val technicianDao = db.getTechnicianDao()
                 val body = response.body()!!
                 val technicians = body.map { it.toEntity() }
-                technicianDao.saveAll(technicians)
+                technicianDao.upsertAll(technicians)
                 return Result.Success(technicians)
             }
 
@@ -163,67 +162,11 @@ class Repository(
                 val machineDao = db.getMachineDao()
                 val body = response.body()!!
                 val machines = body.map { it.toEntity() }
-                machineDao.saveAll(machines)
+                machineDao.upsertAll(machines)
                 return Result.Success(machines)
             }
 
             return Result.Error(Exception("Invalid response body."))
-
-        } catch (e: Exception) {
-            Log.d("Repository", e.toString())
-            return Result.Error(e)
-        }
-    }
-
-
-    suspend fun getIncidents(): Result<List<Incident>> {
-        try {
-            Log.d("Repository", "Preparing incidents request")
-            val response = apiService.getIncidents(limit = 50, null,  null, null, null)
-
-            Log.d("Repository", "Got ${response.code()} from /incidents")
-            if (response.isSuccessful && response.body() != null) {
-                val incidentDao = db.getIncidentDao()
-                val incidentUpdateDao = db.getIncidentUpdateDao()
-                val attachmentDao = db.getAttachmentDao()
-                val body = response.body()!!
-
-                val incidents = buildList {
-                    for (incidentDto in body.items) {
-
-                        val incidentId = Uuid.parse(incidentDto.id)
-
-                        // build attachments list
-                        val attachments = buildList {
-                            for (attachmentDto in incidentDto.attachments) {
-                                val attachment = attachmentDto.toEntity(incidentId)
-                                add(attachment)
-                            }
-                        }
-
-                        // build updates list
-                        val updates = buildList {
-                            for (updateDto in incidentDto.updates) {
-                                val update = updateDto.toEntity(incidentId)
-                                add(update)
-                            }
-                        }
-
-                        val incident = incidentDto.toEntity(incidentId)
-                        add(incident)
-
-                        // save incident before updates and attachments due to FK and indices
-                        incidentDao.save(incident)
-                        incidentUpdateDao.saveAll(updates)
-                        attachmentDao.saveAll(attachments)
-                    }
-
-                }
-                return Result.Success(incidents)
-            }
-
-            return Result.Error(Exception("Invalid response body."))
-
         } catch (e: Exception) {
             Log.d("Repository", e.toString())
             return Result.Error(e)
@@ -249,9 +192,9 @@ class Repository(
                 for (dto in page.items) {
                     val incidentId = Uuid.parse(dto.id)
                     // save incident before updates and attachments due to FK and indices
-                    incidentDao.save(dto.toEntity(incidentId))
-                    incidentUpdateDao.saveAll(dto.updates.map { it.toEntity(incidentId) })
-                    attachmentDao.saveAll(dto.attachments.map { it.toEntity(incidentId)})
+                    incidentDao.upsert(dto.toEntity(incidentId))
+                    incidentUpdateDao.upsertAll(dto.updates.map { it.toEntity(incidentId) })
+                    attachmentDao.insertAll(dto.attachments.map { it.toEntity(incidentId)})
                 }
                 cursor = page.nextCursor
                 if (cursor != null) {
@@ -291,17 +234,19 @@ class Repository(
 
         Log.i("Repository", "Pushing  ${pendingOrganizations.size} pending organizations")
 
-        db.withTransaction {
+        val organizations = buildList {
             for (organization in pendingOrganizations) {
                 val request = organization.toRequest()
                 val response = apiService.createOrganization(organization.id.toString(), request)
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
-                    organizationDao.upsert(body.toEntity())
                     Log.i("Repository", "Successfully pushed organizations")
+                    add(body.toEntity())
                 }
             }
         }
+        organizationDao.upsertAll(organizations)
+        Log.i("Repository", "Successfully upserted ${organizations.size} organizations")
     }
 
     suspend fun pushPendingMachines() {
@@ -314,18 +259,19 @@ class Repository(
         }
 
         Log.i("Repository", "Pushing  ${pendingMachines.size} pending machines")
-
-        db.withTransaction {
+        val machines = buildList {
             for (machine in pendingMachines) {
                 val request = machine.toRequest()
                 val response = apiService.createMachine(machine.id.toString(), request)
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
-                    machineDao.save(body.toEntity())
                     Log.i("Repository", "Successfully pushed machines")
+                    add(body.toEntity())
                 }
             }
         }
+        machineDao.upsertAll(machines)
+        Log.i("Repository", "Successfully upserted ${machines.size} machines")
     }
 
     suspend fun pushPendingIncidents() {
@@ -338,18 +284,19 @@ class Repository(
         }
 
         Log.i("Repository", "Pushing  ${pendingIncidents.size} pending incidents")
-
-        db.withTransaction {
+        val incidents = buildList {
             for (incident in pendingIncidents) {
                 val request = incident.toRequest()
                 val response = apiService.createIncident(incident.id.toString(), request)
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
-                    incidentDao.save(body.toEntity(incident.id))
                     Log.i("Repository", "Successfully pushed incident")
+                    add(body.toEntity(incident.id))
                 }
             }
         }
+        incidentDao.upsertAll(incidents)
+        Log.i("Repository", "Successfully upserted ${incidents.size} incidents")
     }
 
     suspend fun pushPendingUpdates() {
@@ -364,22 +311,32 @@ class Repository(
 
         Log.i("Repository", "Pushing ${pendingUpdates.size} pending incident updates")
 
-        db.withTransaction {
-            for (update in pendingUpdates) {
-                val request = update.toRequest()
-                val response = apiService.addIncidentUpdate(update.incidentId.toString(), request)
-                val body = response.body()
-                if (response.isSuccessful && body != null) {
-                    val updatedIncident = body.toEntity(update.incidentId)
-                    incidentDao.save(updatedIncident)
-                    val syncedUpdate = body.updates.find { value -> value.id == update.id.toString() }
-                    if (syncedUpdate != null) {
-                        updateDao.save(syncedUpdate.toEntity(update.incidentId))
-                        Log.i("Repository", "Successfully pushed incident update")
-                    }
+        val incidents = mutableListOf<Incident>()
+        val updates = mutableListOf<IncidentUpdate>()
+
+        pendingUpdates.forEach { update ->
+            val request = update.toRequest()
+            val response = apiService.addIncidentUpdate(update.incidentId.toString(), request)
+            val body = response.body()
+            if (response.isSuccessful && body != null) {
+                Log.i("Repository", "Successfully pushed incident update")
+                val updatedIncident = body.toEntity(update.incidentId)
+                incidents.add(updatedIncident)
+                val syncedUpdate = body.updates.find { value -> value.id == update.id.toString() }
+                if (syncedUpdate != null) {
+                    updates.add(syncedUpdate.toEntity(update.incidentId))
                 }
             }
         }
+        // at once or nothing at all
+        db.withTransaction {
+            incidentDao.upsertAll(incidents)
+            updateDao.upsertAll(updates)
+        }
+        Log.i(
+            "Repository",
+            "Successfully upserted ${updates.size} updates and their respective incidents"
+        )
     }
 
     suspend fun pushPendingAttachments() {
@@ -393,7 +350,10 @@ class Repository(
 
         Log.i("Repository", "Pushing  ${pendingAttachments.size} pending attachments")
 
-        for (attachment in pendingAttachments) {
+        val updateList = mutableListOf<Attachment>()
+        val deleteList = mutableListOf<Attachment>()
+
+        pendingAttachments.forEach { attachment ->
             // the path is always going to be non-null when it's pending sync
             val attachmentFile = File(attachment.path!!)
             // but we can check if the file actually exists beforehand
@@ -406,48 +366,65 @@ class Repository(
                     request
                 )
                 val body = response.body()
-                if (response.isSuccessful && body != null) {
-                    val syncedAttachment = body.toEntity(
-                        attachment.incidentId,
-                    )
-                    syncedAttachment.path = attachment.path
-                    syncedAttachment.fetchStatus = SyncStatus.Synced
-                    attachmentDao.save(syncedAttachment)
-                    Log.i("Repository", "Successfully pushed attachment")
-                } else {
-                    attachment.syncStatus = SyncStatus.Failed
-                    attachmentDao.update(attachment)
+                when {
+                    response.isSuccessful && body != null -> {
+                        val syncedAttachment = body.toEntity(
+                            attachment.incidentId,
+                        )
+                        syncedAttachment.path = attachment.path             // keep our local path
+                        syncedAttachment.fetchStatus = SyncStatus.Synced
+                        updateList.add(syncedAttachment)
+                        Log.i("Repository", "Successfully pushed attachment")
+                    }
+                    response.code() >= 500 -> {
+                        Log.i(
+                            "Repository",
+                            "Discarding temp attachments batch of ${updateList.size} updates and ${deleteList.size} deletes"
+                        )
+                        throw HttpException(response)
+                    } // the worker retries with backoff
+                    else -> attachment.syncStatus = SyncStatus.Failed       // 400, 413 too large, 415 wrong type
                 }
             } else {
-                attachmentDao.delete(attachment)
-                Log.i("Repository", "Removed attachment with non-existing file")
+                // file does not exist so delete
+                deleteList.add(attachment)
             }
         }
+        db.withTransaction {
+            attachmentDao.updateAll(updateList)
+            attachmentDao.deleteAll(deleteList)
+        }
+        Log.i(
+            "Repository",
+            "Successfully updated ${updateList.size} and deleted ${deleteList.size} attachments"
+        )
     }
+
+    private val attachmentsDir = File(filesDir, ATTACHMENTS_DIR)
 
     suspend fun downloadAttachments() {
         val attachmentDao = db.getAttachmentDao()
-        val pendingAttachments = attachmentDao.getPendingFetch()
-
-        for (attachment in pendingAttachments) {
-            val filePath = withContext(Dispatchers.IO) {
-                val response = apiService.downloadAttachment(attachment.id.toString())
-                val body = response.body()
-
-                if (response.isSuccessful && body != null) {
-                    val fileName = attachment.id.toString().slice(0..8)
-                    streamToFile(body.byteStream().buffered(), fileName)
-                    fileName
-                } else {
-                    null
+        for (attachment in attachmentDao.getPendingFetch()) {
+            val body = apiService.downloadAttachment(attachment.id.toString()).body() ?: continue  // retried next sync
+            val file = File(attachmentsDir, "${attachment.id}.${attachment.kind.extension}")
+            withContext(Dispatchers.IO) {
+                attachmentsDir.mkdirs()
+                val tmp = File.createTempFile("download", ".part", attachmentsDir)
+                try {
+                    body.byteStream().use { input -> tmp.outputStream().use { input.copyTo(it) } }
+                    if (!tmp.renameTo(file)) throw IOException("couldn't rename $tmp")
+                } finally {
+                    tmp.delete()  // no-op after a successful rename
                 }
             }
-            // update attachment
-            attachment.path = filePath
+            attachment.path = file.absolutePath
             attachment.fetchStatus = SyncStatus.Synced
             attachmentDao.update(attachment)
         }
+    }
 
+    fun observeUser(): Flow<User?> {
+        return db.getUserDao().observe()
     }
 
     fun observeOrganizations(): Flow<List<Organization>> {
@@ -500,45 +477,36 @@ class Repository(
 
     suspend fun createMachine(machine: Machine) {
         val machineDao = db.getMachineDao()
-        machineDao.save(machine)
+        machineDao.upsert(machine)
 
         syncScheduler.syncNow()
     }
 
-    suspend fun createIncident(incident: Incident) {
+    suspend fun createIncident(incident: Incident, attachments: List<Attachment>) {
         val incidentDao = db.getIncidentDao()
-        incidentDao.save(incident)
+        val attachmentDao = db.getAttachmentDao()
+
+        // write everything at once or nothing at all
+        db.withTransaction {
+            incidentDao.upsert(incident)
+            attachmentDao.insertAll(attachments)
+        }
+
+        syncScheduler.syncNow()
+    }
+
+    suspend fun createAttachments(attachments: List<Attachment>) {
+        val attachmentDao = db.getAttachmentDao()
+        attachmentDao.insertAll(attachments)
 
         syncScheduler.syncNow()
     }
 
     suspend fun createIncidentUpdate(incidentUpdate: IncidentUpdate) {
         val incidentUpdateDao = db.getIncidentUpdateDao()
-        incidentUpdateDao.save(incidentUpdate)
+        incidentUpdateDao.upsert(incidentUpdate)
 
         syncScheduler.syncNow()
     }
 
-}
-
-fun streamToFile(inputStream: BufferedInputStream, fileName: String) {
-    val fileDir = File(FILE_DIR)
-    val tmpFile = File.createTempFile(
-        "tmp",
-        fileName,
-        fileDir
-    )
-    var offset = 0
-    inputStream.use {
-        reader ->
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            var read = reader.read(buffer, offset, DEFAULT_BUFFER_SIZE)
-            while (read != -1) {
-                tmpFile.appendBytes(buffer)
-                offset += read
-                read = reader.read(buffer, offset, DEFAULT_BUFFER_SIZE)
-            }
-    }
-    val destFile = File(FILE_DIR + fileName)
-    tmpFile.renameTo(destFile)
 }

@@ -11,7 +11,10 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
@@ -21,7 +24,11 @@ import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.ORGANIZATION_ID_KEY
 import com.example.fixtag.ui.SELECT_ORGANIZATION_REQUEST_KEY
 import com.example.fixtag.ui.dialogs.OrganizationSelectDialogFragment
+import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewMachineViewModel
+import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.launch
+import kotlin.uuid.Uuid
 
 class NewMachineFragment: Fragment() {
 
@@ -36,10 +43,8 @@ class NewMachineFragment: Fragment() {
         ItemViewModelFactory(repository)
     }
 
-    private lateinit var back: Button
     private lateinit var selectOrganization: Button
     private lateinit var createMachine: Button
-    private lateinit var loading: ProgressBar
     private lateinit var model: TextView
     private lateinit var serialNumber: TextView
     private lateinit var organization: TextView
@@ -59,84 +64,65 @@ class NewMachineFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        back = view.findViewById(R.id.backButton)
+        view.findViewById<MaterialToolbar>(R.id.toolbar)
+            .setNavigationOnClickListener { findNavController().navigateUp() }
         selectOrganization = view.findViewById(R.id.selectOrganizationButton)
         createMachine = view.findViewById(R.id.createMachineButton)
-        loading = view.findViewById(R.id.loading)
         model = view.findViewById(R.id.model)
         serialNumber = view.findViewById(R.id.serialNumber)
         organization = view.findViewById(R.id.organization)
 
-        // navigate back
-        back.setOnClickListener { findNavController().navigateUp() }
         // select associated organization
         selectOrganization.setOnClickListener {
             // shown as this fragment's child, so the result comes back here
-            OrganizationSelectDialogFragment().show(childFragmentManager,
+            OrganizationSelectDialogFragment(viewModel.organization.value).show(childFragmentManager,
                 SELECT_ORGANIZATION_REQUEST_KEY
             )
         }
         // create the machine
         createMachine.setOnClickListener {
-            viewModel.submit()
+            viewModel.submit(model.text.toString(), serialNumber.text.toString())
         }
         // set listener for result from ´OrganizationSelectDialogFragment`
         childFragmentManager.setFragmentResultListener(
             SELECT_ORGANIZATION_REQUEST_KEY,
             viewLifecycleOwner) { _, result ->
             result.getString(ORGANIZATION_ID_KEY)?.let {
-                viewModel.formDataChanged(
-                    it,
-                    model.text.toString(),
-                    serialNumber.text.toString()
-                )
+                viewModel.selectOrganization(it)
             }
         }
-        // react to form validation
-        viewModel.form.observe(viewLifecycleOwner, Observer {
-            val state = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            createMachine.isEnabled = state.isDataValid
-
-            if (state.modelError != null) {
-                model.error = getString(state.modelError)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.form.collect { form ->
+                        createMachine.isEnabled = form.isDataValid
+                        organization.error = form.organizationError?.let { getString(it) }
+                        model.error = form.modelError?.let { getString(it) }
+                        serialNumber.error = form.serialNumberError?.let { getString(it) }
+                    }
+                }
+                launch {
+                    viewModel.organization.collect {
+                        value -> organization.text = value?.name ?: getString(R.string.no_organization_selected)
+                    }
+                }
+                launch {
+                    viewModel.uiState.collect { state ->
+                        if (state == InputBaseViewModel.State.Saved) {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.machine_saved,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            findNavController().popBackStack()
+                        }
+                    }
+                }
             }
-            if (state.serialNumberError != null) {
-                serialNumber.error = getString(state.serialNumberError)
-            }
-        })
-        viewModel.result.observe(viewLifecycleOwner, Observer {
-            val result = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (result.error != null) {
-                showCreationError(result.error)
-            } else if (result.success != null) {
-                handleCreationSuccess(result.success)
-            }
-        })
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-    }
-
-    private fun handleCreationSuccess(machine: Machine?) {
-        val machine = machine!!
-
-        val welcome = getString(R.string.welcome, machine.serialNumber)
-
-        Toast.makeText(
-            context,
-            welcome,
-            Toast.LENGTH_LONG
-        ).show()
-
-        findNavController().popBackStack()
-    }
-
-    private fun showCreationError(@StringRes errorString: Int) {
-        Toast.makeText(context, errorString, Toast.LENGTH_SHORT).show()
     }
 }

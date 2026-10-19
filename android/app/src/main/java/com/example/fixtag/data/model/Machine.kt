@@ -6,7 +6,6 @@ import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
@@ -58,10 +57,10 @@ data class Machine(
 @Dao
 interface MachineDao {
     @Upsert
-    suspend fun save(machine: Machine)
+    suspend fun upsert(machine: Machine)
 
     @Upsert
-    suspend fun saveAll(machines: List<Machine>)
+    suspend fun upsertAll(machines: List<Machine>)
 
     @Transaction
     @Query("SELECT * FROM machine WHERE id = :id LIMIT 1")

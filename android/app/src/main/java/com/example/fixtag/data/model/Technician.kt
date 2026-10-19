@@ -38,10 +38,10 @@ data class Technician(
 @Dao
 interface TechnicianDao {
     @Upsert
-    suspend fun save(technician: Technician)
+    suspend fun upsert(technician: Technician)
 
     @Upsert
-    suspend fun saveAll(technicians: List<Technician>)
+    suspend fun upsertAll(technicians: List<Technician>)
 
     @Query("SELECT * FROM technician WHERE id = :id")
     suspend fun get(id: Uuid): Technician?

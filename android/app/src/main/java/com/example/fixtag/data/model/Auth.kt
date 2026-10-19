@@ -29,7 +29,7 @@ interface AuthDao {
     // Upsert instead of replace because replacing strategy removes before re-inserting,
     // even though there's no issues with FKs or indices this is better in general.
     @Upsert
-    suspend fun save(auth: Auth)
+    suspend fun upsert(auth: Auth)
 
     @Transaction
     @Query("SELECT * FROM auth WHERE id = 0 LIMIT 1")

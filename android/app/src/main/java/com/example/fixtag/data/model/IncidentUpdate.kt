@@ -6,7 +6,6 @@ import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
-import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
@@ -62,10 +61,10 @@ data class IncidentUpdate(
 @Dao
 interface IncidentUpdateDao {
     @Upsert
-    suspend fun save(incidentUpdate: IncidentUpdate)
+    suspend fun upsert(incidentUpdate: IncidentUpdate)
 
     @Upsert
-    suspend fun saveAll(updates: List<IncidentUpdate>)
+    suspend fun upsertAll(updates: List<IncidentUpdate>)
 
     @Transaction
     @Query("SELECT * FROM incident_update WHERE incident_id = :incidentId")

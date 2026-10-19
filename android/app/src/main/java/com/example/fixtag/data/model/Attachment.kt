@@ -12,7 +12,6 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -72,15 +71,18 @@ data class Attachment(
 interface AttachmentDao {
     // attachments don't change once they exist
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun save(attachment: Attachment)
+    suspend fun insert(attachment: Attachment)
 
     // attachments don't change once they exist - this method
     // is used specifically when syncing FROM the server
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun saveAll(attachments: List<Attachment>)
+    suspend fun insertAll(attachments: List<Attachment>)
 
     @Update
     suspend fun update(attachment: Attachment)
+
+    @Update
+    suspend fun updateAll(attachment: List<Attachment>)
 
     @Transaction
     @Query("SELECT * FROM attachment WHERE incident_id = :incidentId")
@@ -97,4 +99,7 @@ interface AttachmentDao {
 
     @Delete
     suspend fun delete(attachment: Attachment)
+
+    @Delete
+    suspend fun deleteAll(attachments: List<Attachment>)
 }

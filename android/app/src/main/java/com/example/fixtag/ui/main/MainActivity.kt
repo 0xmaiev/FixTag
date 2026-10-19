@@ -13,6 +13,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.fragment
 import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.fragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
@@ -83,35 +84,39 @@ class MainActivity : AppCompatActivity() {
 
     private fun prepareNavigationGraph(startDestination: Int) {
         // Inflate layout
-        navController.graph = navController.createGraph(
-            id = R.id.nav_host,
-            startDestination = startDestination
-        ) {
-            fragment<IncidentsFragment>(R.id.incidents) {
-                label = resources.getString(R.string.incidents_fragment_title)
+        navController.graph =
+            navController.createGraph(startDestination = startDestination.toString(), route = R.id.nav_host.toString()) {
+                fragment<IncidentsFragment>(route = R.id.incidents.toString()) {
+                    label = this@MainActivity.resources.getString(R.string.incidents_fragment_title)
+                }
+                fragment<MachinesFragment>(route = R.id.machines.toString()) {
+                    label = this@MainActivity.resources.getString(R.string.machines_fragment_title)
+                }
+                fragment<OrganizationsFragment>(route = R.id.organizations.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.organizations_fragment_title)
+                }
+                fragment<MachineDetailFragment>(route = R.id.machine_details.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.machine_details_fragment_title)
+                }
+                fragment<IncidentDetailFragment>(route = R.id.incident_details.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.incident_details_fragment_title)
+                }
+                fragment<NewIncidentFragment>(route = R.id.new_incident.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.new_incident_fragment_title)
+                }
+                fragment<NewMachineFragment>(route = R.id.new_machine.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.new_machine_fragment_title)
+                }
+                fragment<NewOrganizationFragment>(route = R.id.new_organization.toString()) {
+                    label =
+                        this@MainActivity.resources.getString(R.string.new_organization_fragment_title)
+                }
             }
-            fragment<MachinesFragment>(R.id.machines)  {
-                label = resources.getString(R.string.machines_fragment_title)
-            }
-            fragment< OrganizationsFragment>(R.id.organizations)  {
-                label = resources.getString(R.string.organizations_fragment_title)
-            }
-            fragment<MachineDetailFragment>(R.id.machine_details)  {
-                label = resources.getString(R.string.machine_details_fragment_title)
-            }
-            fragment<IncidentDetailFragment>(R.id.incident_details)  {
-                label = resources.getString(R.string.incident_details_fragment_title)
-            }
-            fragment<NewIncidentFragment>(R.id.new_incident)  {
-                label = resources.getString(R.string.new_incident_fragment_title)
-            }
-            fragment<NewMachineFragment>(R.id.new_machine)  {
-                label = resources.getString(R.string.new_machine_fragment_title)
-            }
-            fragment<NewOrganizationFragment>(R.id.new_organization)  {
-                label = resources.getString(R.string.new_organization_fragment_title)
-            }
-        }
         bottomNavigationView.setupWithNavController(navController)
     }
 

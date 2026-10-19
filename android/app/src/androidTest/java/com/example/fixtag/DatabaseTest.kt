@@ -40,7 +40,7 @@ class DatabaseTest {
     @Test
     fun writeUserAndReadInList() = runTest {
         val user = User(Uuid.random(), "Jorge", "Cliente", "Operador")
-        userDao.save(user)
+        userDao.upsert(user)
         val byName = userDao.findUsersByName("Jorge")
         assertEquals(byName.single(), user)
     }

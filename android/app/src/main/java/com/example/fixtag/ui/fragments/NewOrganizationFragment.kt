@@ -15,7 +15,10 @@ import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
@@ -24,8 +27,11 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.afterTextChanged
 import com.example.fixtag.ui.main.MainActivity
+import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewIncidentViewModel
 import com.example.fixtag.ui.viewmodels.NewOrganizationViewModel
+import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.launch
 
 class NewOrganizationFragment: Fragment() {
 
@@ -40,10 +46,8 @@ class NewOrganizationFragment: Fragment() {
         ItemViewModelFactory(repository)
     }
 
-    private lateinit var back: Button
     private lateinit var createOrganization: Button
     private lateinit var name: EditText
-    private lateinit var loading: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,17 +64,15 @@ class NewOrganizationFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        back = view.findViewById(R.id.backButton)
+        view.findViewById<MaterialToolbar>(R.id.toolbar)
+            .setNavigationOnClickListener { findNavController().navigateUp() }
         createOrganization = view.findViewById(R.id.createOrganizationButton)
         name = view.findViewById(R.id.name)
-        loading = view.findViewById(R.id.loading)
 
         // react to ui interactions
 
-        // navigate back
-        back.setOnClickListener { findNavController().navigateUp() }
         // create the machine
-        createOrganization.setOnClickListener { viewModel.submit() }
+        createOrganization.setOnClickListener { viewModel.submit(name.text.toString()) }
         name.apply {
             // set afterTextChanged on the text edit field
             afterTextChanged {
@@ -79,55 +81,32 @@ class NewOrganizationFragment: Fragment() {
             // react to enter key being pressed on the text input
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
-                    EditorInfo.IME_ACTION_DONE -> viewModel.submit()
+                    EditorInfo.IME_ACTION_DONE -> viewModel.submit(name.text.toString())
                 }
                 false
             }
         }
-
-        // react to form validation
-        viewModel.form.observe(viewLifecycleOwner, Observer {
-            val state = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            createOrganization.isEnabled = state.isDataValid
-
-            if (state.nameError != null) {
-                name.error = getString(state.nameError)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.form.collect { form ->
+                        createOrganization.isEnabled = form.isDataValid
+                        name.error = form.nameError?.let { getString(it) }
+                    }
+                }
+                launch {
+                    viewModel.uiState.collect { state ->
+                        if (state == InputBaseViewModel.State.Saved) {
+                            Toast.makeText(requireContext(), R.string.organization_saved, Toast.LENGTH_SHORT).show()
+                            findNavController().popBackStack()
+                        }
+                    }
+                }
             }
-        })
-        // react to result
-        viewModel.result.observe(viewLifecycleOwner, Observer {
-            val result = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (result.error != null) {
-                showCreationError(result.error)
-            } else if (result.success != null) {
-                handleCreationSuccess(result.success)
-            }
-        })
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-    }
-
-    private fun handleCreationSuccess(organization: Organization?) {
-        val organization = organization!!
-
-        val welcome = getString(R.string.welcome, organization.name)
-
-        Toast.makeText(
-            context,
-            welcome,
-            Toast.LENGTH_LONG
-        ).show()
-
-        findNavController().popBackStack()
-    }
-
-    private fun showCreationError(@StringRes errorString: Int) {
-        Toast.makeText(context, errorString, Toast.LENGTH_SHORT).show()
     }
 }

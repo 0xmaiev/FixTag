@@ -7,170 +7,278 @@
     android:orientation="vertical"
     tools:context=".ui.fragments.NewIncidentFragment">
 
-    <LinearLayout
-        android:id="@+id/headerLinearLayout"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/material_dynamic_neutral10"
-        android:orientation="horizontal"
-        android:paddingStart="10dp"
-        android:paddingTop="5dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="5dp">
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/white"
+        app:title="@string/new_incident_fragment_title"
+        app:titleTextColor="@color/white" />
 
-        <Button
-            android:id="@+id/backButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_margin="10dp"
-            android:background="@color/material_dynamic_neutral10"
-            android:gravity="center|start"
-            android:maxWidth="35dp"
-            android:maxHeight="35dp"
-            android:minWidth="10dp"
-            android:minHeight="10dp"
-            android:textColor="@color/white"
-            android:textColorLink="@color/material_dynamic_neutral10"
-            android:textSize="11sp"
-            app:icon="@android:drawable/ic_media_rew"
-            app:iconGravity="top"
-            app:iconSize="25dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_margin="10dp"
-            android:gravity="center|start"
-            android:text="@string/new_incident_fragment_title"
-            android:textColor="@color/white"
-            android:textSize="24sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/machineLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/model"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start"
-            android:layout_margin="5dp"
-            android:gravity="center|start"
-            android:text="@string/sample_machine_model"
-            android:textSize="20sp" />
-
-        <TextView
-            android:id="@+id/serialNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_margin="5dp"
-            android:gravity="center"
-            android:text="@string/sample_machine_serial_number"
-            android:textSize="18sp" />
-
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/changeMachineButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|end"
-            android:layout_margin="5dp"
-            android:background="@color/cardview_dark_background"
-            android:gravity="center|end"
-            android:padding="5dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:text="@string/select"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/descriptionSectionLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="vertical">
-        <LinearLayout
-            android:id="@+id/descriptionLinearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10dp"
-            android:orientation="vertical">
-            <TextView
-                android:id="@+id/descriptionSectionTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center|start"
-                android:layout_margin="5dp"
-                android:gravity="center|start"
-                android:text="@string/description_section_title"
-                android:textSize="14sp" />
-            <EditText
-                android:id="@+id/descriptionEditText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:labelFor="@id/descriptionSectionTitle"
-                android:inputType="text"
-                android:hint="@string/prompt_description"/>
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/severityLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/photoAttachmentsLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/geolocationLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:orientation="horizontal">
-    </LinearLayout>
-
-    <FrameLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/createIncidentButton"
+        <!-- a card stacks its children like a FrameLayout, so it gets exactly one -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center"
-            android:layout_margin="20dp"
-            android:layout_marginStart="50dp"
-            android:layout_marginEnd="50dp"
-            android:elevation="6dp"
-            android:text="@string/save"
-            android:textAlignment="center"
-            android:textColor="@color/material_dynamic_primary100"
-            app:chipBackgroundColor="@color/material_dynamic_primary10" />
+            android:layout_margin="10dp"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="2dp">
 
-    </FrameLayout>
+            <LinearLayout
+                android:id="@+id/formLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <LinearLayout
+                    android:id="@+id/associatedMachineLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/associatedOrganizationLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="15dp"
+                        android:gravity="center"
+                        android:text="@string/associated_machine_section_title"
+                        android:textSize="18sp" />
+
+                    <LinearLayout
+                        android:id="@+id/machineLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/model"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center|start"
+                            android:layout_margin="5dp"
+                            android:gravity="center|start"
+                            android:text="@string/sample_machine_model"
+                            android:textSize="20sp" />
+
+                        <TextView
+                            android:id="@+id/serialNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_margin="5dp"
+                            android:gravity="center"
+                            android:text="@string/sample_machine_serial_number"
+                            android:textSize="18sp" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <Button
+                            android:id="@+id/selectMachineButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center|end"
+                            android:layout_marginStart="5dp"
+                            android:gravity="center|end"
+                            android:text="@string/select"
+                            android:textColor="@color/white"
+                            android:textSize="15sp"
+                            app:iconPadding="0dp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/descriptionSectionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/descriptionSectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|start"
+                        android:layout_margin="5dp"
+                        android:gravity="center|start"
+                        android:text="@string/description_section_title"
+                        android:textSize="14sp" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/description"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:gravity="start|center_horizontal|fill_horizontal"
+                            android:hint="@string/prompt_description"
+                            android:importantForAutofill="no"
+                            android:inputType="textMultiLine|textCapSentences"
+                            android:labelFor="@id/descriptionSectionTitle"
+                            android:minLines="3" />
+
+                        <Button
+                            android:id="@+id/recordAudioButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_margin="10dp"
+                            android:layout_weight="1"
+                            android:gravity="center|end"
+                            android:maxWidth="30dp"
+                            android:maxHeight="40dp"
+                            android:minWidth="20dp"
+                            android:minHeight="20dp"
+                            android:textSize="11sp"
+                            app:iconGravity="top"
+                            app:iconSize="25dp"
+                            app:icon="@android:drawable/presence_audio_online" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/severityLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/severitySectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|start"
+                        android:layout_margin="5dp"
+                        android:gravity="center|start"
+                        android:text="@string/severity_section_title"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/severity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        app:checkedChip="@+id/severityMediumChip"
+                        app:selectionRequired="true"
+                        app:singleLine="true"
+                        app:singleSelection="true">
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/severityLowChip"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="@string/severity_low" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/severityMediumChip"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="@string/severity_medium" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/severityCriticalChip"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="5dp"
+                            android:text="@string/severity_critical" />
+
+                    </com.google.android.material.chip.ChipGroup>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/photosLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/photosSectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|start"
+                        android:layout_margin="5dp"
+                        android:gravity="center|start"
+                        android:text="@string/photos_section_title"
+                        android:textSize="14sp" />
+                    <LinearLayout
+                        android:id="@+id/photosGroupLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="10dp"
+                        android:orientation="vertical">
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/attachments"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:clipToPadding="false"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                        <Button
+                            android:id="@+id/addPhotoButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_margin="10dp"
+                            android:gravity="center|end"
+                            android:maxWidth="30dp"
+                            android:maxHeight="40dp"
+                            android:minWidth="20dp"
+                            android:minHeight="20dp"
+                            android:textSize="11sp"
+                            app:icon="@android:drawable/ic_menu_camera"
+                            app:iconGravity="top"
+                            app:iconSize="25dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/geolocationLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="horizontal">
+                </LinearLayout>
+                
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+    </ScrollView>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/createIncidentButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="20dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:elevation="6dp"
+        android:text="@string/save"
+        android:textAlignment="center"
+        android:textColor="@color/material_dynamic_primary100"
+        app:chipBackgroundColor="@color/material_dynamic_primary10" />
 
 </LinearLayout>
