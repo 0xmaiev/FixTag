@@ -7,6 +7,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.fixtag.BuildConfig
 import java.util.concurrent.TimeUnit
 
 // Name for the one time sync work
@@ -27,6 +28,7 @@ class SyncScheduler(private val workManager: WorkManager) {
             .build()
 
     fun syncNow() {
+        if (BuildConfig.OFFLINE_DEMO) return  // no server in the demo variant
         val request = OneTimeWorkRequestBuilder<SyncWorker>()
             .setConstraints(online)
             .build()
@@ -38,6 +40,7 @@ class SyncScheduler(private val workManager: WorkManager) {
     }
 
     fun schedulePeriodic() {
+        if (BuildConfig.OFFLINE_DEMO) return  // no server in the demo variant
         val request = PeriodicWorkRequestBuilder<SyncWorker>(
             SYNC_PERIOD,
             TimeUnit.MINUTES

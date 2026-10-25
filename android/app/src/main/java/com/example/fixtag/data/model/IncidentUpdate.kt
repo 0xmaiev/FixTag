@@ -81,4 +81,7 @@ interface IncidentUpdateDao {
 
     @Delete
     suspend fun delete(incidentUpdate: IncidentUpdate)
+
+    @Query("DELETE FROM incident_update WHERE incident_id = :incidentId")
+    suspend fun deleteByIncident(incidentId: Uuid)
 }

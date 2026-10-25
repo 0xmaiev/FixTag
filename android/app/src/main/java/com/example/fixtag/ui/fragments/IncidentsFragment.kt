@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +17,10 @@ import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.ui.adapters.IncidentAdapter
+import com.example.fixtag.ui.confirmDeletePending
+import com.example.fixtag.ui.main.MainViewModel
+import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.IncidentsViewModel
 import kotlinx.coroutines.launch
 
@@ -24,6 +29,11 @@ class IncidentsFragment : Fragment() {
 
     companion object {
         fun newInstance() = IncidentsFragment()
+    }
+
+    private val mainViewModel: MainViewModel by activityViewModels {
+        val app = requireContext().applicationContext as FixTag
+        MainViewModelFactory(app.repository, app.syncScheduler)
     }
 
     private val viewModel: IncidentsViewModel by viewModels {
@@ -40,7 +50,11 @@ class IncidentsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        incidentAdapter = IncidentAdapter()
+        incidentAdapter = IncidentAdapter(onDelete = { incident ->
+            confirmDeletePending(incident.description, R.string.delete_pending_message) {
+                viewModel.delete(incident)
+            }
+        })
     }
 
     override fun onCreateView(
@@ -65,10 +79,10 @@ class IncidentsFragment : Fragment() {
                 }
             }
         }
-
         newIncidentButton.setOnClickListener {
             findNavController().navigate(R.id.new_incident)
         }
+        showPendingCount(view, mainViewModel.pendingCount)
     }
 
 }

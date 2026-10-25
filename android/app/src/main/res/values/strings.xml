@@ -4,6 +4,8 @@
     <string name="app_ver" translatable="false">v0.1</string>
     <string name="app_logo" translatable="false">FixTag Logo</string>
     <string name="app_desc">Technical assistance for industrial equipment</string>
+    <string name="demo_login_operator">Operator</string>
+    <string name="demo_login_assistance">Assistance</string>
     <string name="camera_permission_needed">Camera permission is required.</string>
     <string name="mic_permission_needed">Microphone permission is required.</string>
 
@@ -73,10 +75,12 @@
     <string name="no_machine_selected">No machine selected</string>
     <string name="pending_machines_push_failed">Failed to push pending machines.</string>
 
+    <string name="machine_ok" translatable="false">OK</string>
+    <string name="machine_open_incidents">%d open</string>
+    <string name="machine_no_recent_incidents">No incidents in the past 30 days</string>
     <plurals name="machine_history_summary">
-        <item quantity="zero">no incidents in the past 30d</item>
-        <item quantity="one">%d incident in the past 30d</item>
-        <item quantity="other">%d incidents in the past 30d</item>
+        <item quantity="one">%d incident in the past 30 days</item>
+        <item quantity="other">%d incidents in the past 30 days</item>
     </plurals>
 
     <!-- Incidents -->
@@ -119,6 +123,11 @@
     <string name="select">Select</string>
     <string name="save">Save</string>
     <string name="remove">Remove</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="record_audio">Audio recording</string>
+    <string name="take_photo">Photo capture</string>
+
 
     <!-- Sample strings for editor display-->
     <string name="sample_organization_name" translatable="false">Demo Client, Lda.</string>
@@ -146,4 +155,8 @@
     <string name="sample_incident_update_message_2" translatable="false">Yes, for about an hour now.</string>
     <string name="sample_incident_update_time_elapsed" translatable="false">20 min. ago</string>
     <string name="sample_incident_update_time_elapsed_2" translatable="false">5 min. ago</string>
+    <string name="delete_pending_title">Delete?</string>
+    <string name="delete_pending_message">«%1$s» has not been sent, so it only exists in this device. This action is irreversible.</string>
+    <string name="delete_machine_in_use">Delete the incidents of this machine first.</string>
+    <string name="delete_organization_in_use">Delete the machines of this organization first.</string>
 </resources>

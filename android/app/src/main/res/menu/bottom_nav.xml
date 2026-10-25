@@ -10,6 +10,6 @@
         android:title="@string/machines_fragment_title"/>
     <item
         android:id="@+id/organizations"
-        android:icon="@drawable/ic_machines"
+        android:icon="@drawable/ic_organization"
         android:title="@string/organizations_fragment_title"/>
 </menu>

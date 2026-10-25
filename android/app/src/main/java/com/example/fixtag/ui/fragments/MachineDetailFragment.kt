@@ -20,10 +20,12 @@ import com.example.fixtag.R
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.MACHINE_ID_KEY
 import com.example.fixtag.ui.adapters.IncidentAdapter
+import com.example.fixtag.ui.recentIncidentsText
 import com.example.fixtag.ui.viewmodels.MachineDetailViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.DurationUnit
 import kotlin.uuid.Uuid
 
@@ -81,10 +83,10 @@ class MachineDetailFragment : Fragment() {
                 launch {
                     viewModel.incidents.collect { data ->
                         val now = Clock.System.now()
-                        val incidentsLastMonth = data.count {
-                            item -> (now - item.createdAt).toInt(DurationUnit.SECONDS) < 30 * 24 * 60 * 60
-                        }
-                        machineHistorySummary.text = resources.getQuantityString(R.plurals.machine_history_summary, incidentsLastMonth)
+                        machineHistorySummary.text = requireContext()
+                            .recentIncidentsText(data.count {
+                            now - it.incident.reportedAt < 30.days
+                        })
                     }
                 }
                 launch {

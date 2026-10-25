@@ -1,8 +1,13 @@
 package com.example.fixtag.data
 
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.room.withTransaction
 import com.example.fixtag.ATTACHMENTS_DIR
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.api.ApiService
 import com.example.fixtag.api.LoginRequestDto
 import com.example.fixtag.data.model.Attachment
@@ -19,12 +24,15 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
 import retrofit2.HttpException
 import java.io.File
 import java.io.IOException
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.uuid.Uuid
 
 /**
@@ -36,8 +44,11 @@ class Repository(
     private val db: Database,
     private val syncScheduler: SyncScheduler,
     private val apiService: ApiService,
-    private val filesDir: File,
+    val filesDir: File,
+    private val session: DataStore<Preferences>
 ) {
+
+    private val currentUserId = stringPreferencesKey("current_user_id")
 
     // in-memory cache of the loggedInUser object
     var user: User? = null
@@ -46,26 +57,51 @@ class Repository(
     val isLoggedIn: Boolean
         get() = user != null
 
+    enum class DeleteResult { Deleted, NotPending, InUse }
+
     init {
         // If user credentials will be cached in local storage, it is recommended it be encrypted
         // @see https://developer.android.com/training/articles/keystore
         user = null
     }
 
+    // demo variant: choosing a profile is the whole login
+    suspend fun loginDemo(userId: Uuid): User {
+        seedDemoData()
+        session.edit { it[currentUserId] = userId.toString() }
+        return checkNotNull(db.getUserDao().get(userId)).also { user = it }
+    }
+
+    // fills an empty database once; later launches keep whatever changed during the demo
+    private suspend fun seedDemoData() {
+        if (db.getOrganizationDao().getAll().isNotEmpty()) return
+        val now = Clock.System.now()
+        db.withTransaction {  // parents before children, for the foreign keys
+            db.getOrganizationDao().upsertAll(DemoSeed.organizations(now))
+            DemoSeed.users.forEach { db.getUserDao().upsert(it) }
+            db.getMachineDao().upsertAll(DemoSeed.machines(now))
+            db.getIncidentDao().upsertAll(DemoSeed.incidents(now))
+        }
+    }
+
     suspend fun logout() {
-        db.getAuthDao().clear()   // otherwise the next launch restores the session again
+        if (BuildConfig.OFFLINE_DEMO) session.edit { it.remove(currentUserId) }
+        else db.getAuthDao().clear()    // otherwise the next launch restores the session again
         user = null
     }
 
     suspend fun restoreSession(): User? {
         user?.let { return it }
-        val authDao = db.getAuthDao()
-        val auth = authDao.get() ?: return null
-        val userDao = db.getUserDao()
-        user = userDao.get(auth.userId)
+        val userId = if (BuildConfig.OFFLINE_DEMO) {
+            session.data.first()[currentUserId]?.let(Uuid::parse)
+        } else {
+            db.getAuthDao().get()?.userId
+        } ?: return null
+        user = db.getUserDao().get(userId)
         return user
     }
 
+    // non-demo variant: actually perform login
     suspend fun login(email: String, password: String): Result<User> {
         try {
             val request = LoginRequestDto(email, password)
@@ -435,20 +471,13 @@ class Repository(
         return db.getTechnicianDao().observeAll()
     }
 
-    fun observeIncidents(): Flow<List<Incident>> {
-        return db.getIncidentDao().observeAll()
-    }
+    fun observeIncidents(): Flow<List<IncidentAndMachine>> = db.getIncidentDao().observeAllWithMachine()
 
-    fun observeIncident(id: Uuid): Flow<Incident?> {
-        return db.getIncidentDao().observe(id)
-    }
+    fun observeIncidentsByMachine(machineId: Uuid): Flow<List<IncidentAndMachine>> =
+        db.getIncidentDao().observeByMachineWithMachine(machineId)
 
     fun observeIncidentAndMachine(id: Uuid): Flow<IncidentAndMachine> {
         return db.getIncidentDao().observeWithMachine(id)
-    }
-
-    fun observeIncidentsByMachine(machineId: Uuid): Flow<List<Incident>> {
-        return db.getIncidentDao().observeByMachine(machineId)
     }
 
     fun observeIncidentUpdates(incidentId: Uuid): Flow<List<IncidentUpdate>> {
@@ -466,6 +495,10 @@ class Repository(
     fun observeMachines(): Flow<List<Machine>> {
         return db.getMachineDao().observeAll()
     }
+
+    fun observePendingCount() = db.getSyncStateDao().observePendingCount()
+
+    fun observeMachinesWithStats() = db.getMachineDao().observeAllWithStats(since = Clock.System.now() - 30.days)
 
     suspend fun createOrganization(organization: Organization): Organization {
         val organizationDao = db.getOrganizationDao()
@@ -507,6 +540,43 @@ class Repository(
         incidentUpdateDao.upsert(incidentUpdate)
 
         syncScheduler.syncNow()
+    }
+
+    // a pending report only exists on this phone, so it goes together with its photos and messages
+    suspend fun deletePendingIncident(id: Uuid): DeleteResult {
+        var files = emptyList<String>()
+        val result = db.withTransaction {
+            val incident = db.getIncidentDao().get(id)
+            if (incident == null || incident.syncStatus != SyncStatus.Pending) {
+                return@withTransaction DeleteResult.NotPending
+            }
+            val attachments = db.getAttachmentDao().getByIncident(id)
+            files = attachments.mapNotNull { it.path }
+            db.getAttachmentDao().deleteAll(attachments)  // children first, for the foreign keys
+            db.getIncidentUpdateDao().deleteByIncident(id)
+            db.getIncidentDao().delete(incident)
+            DeleteResult.Deleted
+        }
+        files.forEach { File(it).delete() }  // only once the rows are really gone
+        return result
+    }
+
+    suspend fun deletePendingMachine(id: Uuid): DeleteResult = db.withTransaction {
+        val machine = db.getMachineDao().get(id)
+        when {
+            machine == null || machine.syncStatus != SyncStatus.Pending -> DeleteResult.NotPending
+            db.getIncidentDao().countByMachine(id) > 0 -> DeleteResult.InUse
+            else -> { db.getMachineDao().delete(machine); DeleteResult.Deleted }
+        }
+    }
+
+    suspend fun deletePendingOrganization(id: Uuid): DeleteResult = db.withTransaction {
+        val organization = db.getOrganizationDao().get(id)
+        when {
+            organization == null || organization.syncStatus != SyncStatus.Pending -> DeleteResult.NotPending
+            db.getMachineDao().countByOrganization(id) > 0 -> DeleteResult.InUse
+            else -> { db.getOrganizationDao().delete(organization); DeleteResult.Deleted }
+        }
     }
 
 }

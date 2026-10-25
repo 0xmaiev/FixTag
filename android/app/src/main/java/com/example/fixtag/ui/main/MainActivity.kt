@@ -83,40 +83,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun prepareNavigationGraph(startDestination: Int) {
-        // Inflate layout
-        navController.graph =
-            navController.createGraph(startDestination = startDestination.toString(), route = R.id.nav_host.toString()) {
-                fragment<IncidentsFragment>(route = R.id.incidents.toString()) {
-                    label = this@MainActivity.resources.getString(R.string.incidents_fragment_title)
-                }
-                fragment<MachinesFragment>(route = R.id.machines.toString()) {
-                    label = this@MainActivity.resources.getString(R.string.machines_fragment_title)
-                }
-                fragment<OrganizationsFragment>(route = R.id.organizations.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.organizations_fragment_title)
-                }
-                fragment<MachineDetailFragment>(route = R.id.machine_details.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.machine_details_fragment_title)
-                }
-                fragment<IncidentDetailFragment>(route = R.id.incident_details.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.incident_details_fragment_title)
-                }
-                fragment<NewIncidentFragment>(route = R.id.new_incident.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.new_incident_fragment_title)
-                }
-                fragment<NewMachineFragment>(route = R.id.new_machine.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.new_machine_fragment_title)
-                }
-                fragment<NewOrganizationFragment>(route = R.id.new_organization.toString()) {
-                    label =
-                        this@MainActivity.resources.getString(R.string.new_organization_fragment_title)
-                }
-            }
+        navController.graph = navController.navInflater.inflate(R.navigation.nav_graph).apply {
+            setStartDestination(startDestination)  // operators start on machines, everyone else on incidents
+        }
         bottomNavigationView.setupWithNavController(navController)
     }
 
@@ -127,9 +96,5 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
         finish() // Closes the current MainActivity instance
-    }
-
-    private fun navigateToIncidentDetails(incidentId: Uuid) {
-        //navController.navigate(route = IncidentDetail(id = incidentId))
     }
 }

@@ -3,6 +3,7 @@ package com.example.fixtag.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -54,6 +55,18 @@ data class Machine(
     }
 }
 
+// a machine plus the counts its list row shows; Room fills the extra columns from the query
+data class MachineWithStats(
+    @Embedded
+    val machine: Machine,
+    @ColumnInfo(name = "open_incidents")
+    val openIncidents: Int,
+    @ColumnInfo(name = "critical_incidents")
+    val criticalIncidents: Int,
+    @ColumnInfo(name = "recent_incidents")
+    val recentIncidents: Int,
+)
+
 @Dao
 interface MachineDao {
     @Upsert
@@ -70,6 +83,19 @@ interface MachineDao {
     @Query("SELECT * FROM machine")
     fun observeAll(): Flow<List<Machine>>
 
+    @Query("""
+        SELECT machine.*,
+            (SELECT COUNT(*) FROM incident WHERE incident.machine_id = machine.id
+                AND incident.status != 'Resolved') AS open_incidents,
+            (SELECT COUNT(*) FROM incident WHERE incident.machine_id = machine.id
+                AND incident.status != 'Resolved' AND incident.severity = 'Critical') AS critical_incidents,
+            (SELECT COUNT(*) FROM incident WHERE incident.machine_id = machine.id
+                AND incident.reported_at >= :since) AS recent_incidents
+        FROM machine
+        ORDER BY machine.serial_number
+    """)
+    fun observeAllWithStats(since: Instant): Flow<List<MachineWithStats>>
+
     @Query("SELECT * FROM machine WHERE id = :id")
     suspend fun get(id: Uuid): Machine?
 
@@ -78,6 +104,13 @@ interface MachineDao {
 
     @Query("SELECT * FROM machine WHERE sync_status = 'Pending'")
     suspend fun getPending(): List<Machine>
+
+    @Transaction
+    @Query("SELECT * FROM machine WHERE model = :model")
+    suspend fun findMachinesByModel(model: String): List<Machine>
+
+    @Query("SELECT COUNT(*) FROM machine WHERE organization_id = :organizationId")
+    suspend fun countByOrganization(organizationId: Uuid): Int
 
     @Delete
     suspend fun delete(machine: Machine)

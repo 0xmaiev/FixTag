@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.Incident
+import com.example.fixtag.data.model.IncidentAndMachine
 import com.example.fixtag.data.model.Machine
 import com.example.fixtag.ui.MACHINE_ID_KEY
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,7 @@ class MachineDetailViewModel(
                 initialValue = null // The initial state before Room emits data
             )
 
-    val incidents: Flow<List<Incident>> =
+    val incidents: Flow<List<IncidentAndMachine>> =
         repository.observeIncidentsByMachine(id)
             .stateIn(
                 scope = viewModelScope,

@@ -107,6 +107,27 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/demoProfiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/demoOperator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/demo_login_operator" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/demoAssistance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/demo_login_assistance" />
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/FooterLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

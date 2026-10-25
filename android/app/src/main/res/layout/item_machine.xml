@@ -31,24 +31,23 @@
                 android:gravity="center"
                 android:text="@string/sample_machine_serial_number"
                 android:textSize="16sp" />
+
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center|end"
-                android:layout_margin="5dp"
-                android:background="@android:color/holo_green_dark"
-                android:gravity="center|end"
-                android:padding="2dp"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:text="@string/sample_machine_status"
-                android:textColor="@color/white"
-                android:textSize="18sp" />
+            <ImageButton
+                android:id="@+id/deleteButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical|end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/delete"
+                android:src="@drawable/ic_delete"
+                android:visibility="gone"
+                app:tint="?attr/colorError" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -66,6 +65,7 @@
                 android:gravity="center|start"
                 android:text="@string/sample_machine_model"
                 android:textSize="20sp" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -76,13 +76,29 @@
 
             <TextView
                 android:id="@+id/description"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/sample_machine_history_summary"
+                tools:text="@string/sample_machine_history_summary"
                 android:textAlignment="center"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/machineStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|end"
+                android:layout_margin="5dp"
+                android:background="@android:color/holo_green_dark"
+                android:gravity="center|end"
+                android:padding="2dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                tools:text="@string/sample_machine_status"
+                android:textColor="@color/white"
+                android:textSize="18sp" />
         </LinearLayout>
 
     </LinearLayout>

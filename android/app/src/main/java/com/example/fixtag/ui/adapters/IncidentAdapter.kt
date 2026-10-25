@@ -5,20 +5,27 @@ import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.navigation.Navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.R
 import com.example.fixtag.data.model.Incident
+import com.example.fixtag.data.model.IncidentAndMachine
 import com.example.fixtag.data.model.IncidentSeverity
 import com.example.fixtag.data.model.IncidentStatus
 import com.example.fixtag.data.model.SyncStatus
 import com.example.fixtag.ui.INCIDENT_ID_KEY
+import com.example.fixtag.ui.showSeverity
 
 
-class IncidentAdapter : ListAdapter<Incident, IncidentAdapter.ViewHolder>(UserDiffCallback) {
+class IncidentAdapter(
+    private val onDelete: ((Incident) -> Unit)? = null,
+) : ListAdapter<IncidentAndMachine, IncidentAdapter.ViewHolder>(UserDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_incident, parent, false)
@@ -29,34 +36,27 @@ class IncidentAdapter : ListAdapter<Incident, IncidentAdapter.ViewHolder>(UserDi
         holder.bind(getItem(position))
     }
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        // TODO: need to attach machine data too
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val modelTextView: TextView = itemView.findViewById(R.id.model)
         private val serialNumberTextView: TextView = itemView.findViewById(R.id.serialNumber)
         private val severityTextView: TextView = itemView.findViewById(R.id.severity)
         private val descriptionTextView: TextView = itemView.findViewById(R.id.description)
         private val statusTextView: TextView = itemView.findViewById(R.id.status)
         private val syncStatusTextView: TextView = itemView.findViewById(R.id.syncStatus)
+        private val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
 
-        fun bind(incident: Incident) {
-            val severityBackgroundColor = when(incident.severity) {
-                IncidentSeverity.Low -> {
-                    R.color.grey_blue
-                }
-                IncidentSeverity.Medium -> {
-                    R.color.yellow
-                }
-                IncidentSeverity.Critical -> {
-                    R.color.red
-                }
-            }
-            severityTextView.text = incident.severity.toString()
-            severityTextView.setBackgroundColor(severityBackgroundColor)
-            descriptionTextView.text = incident.description
-            val status = when(incident.syncStatus) {
+        fun bind(data: IncidentAndMachine) {
+            modelTextView.text = data.machine.model
+            serialNumberTextView.text = data.machine.serialNumber
+            deleteButton.isVisible = onDelete != null && data.incident.syncStatus == SyncStatus.Pending
+            deleteButton.setOnClickListener { onDelete?.invoke(data.incident) }
+            severityTextView.text = data.incident.severity.toString()
+            severityTextView.showSeverity(data.incident.severity)
+            descriptionTextView.text = data.incident.description
+            val status = when(data.incident.syncStatus) {
                 SyncStatus.Pending ->  itemView.context.getString(R.string.pending_sync)
                 else -> {
-                    when(incident.status) {
+                    when(data.incident.status) {
                         IncidentStatus.Received -> itemView.context.getString(R.string.incident_received)
                         IncidentStatus.Analysis -> itemView.context.getString(R.string.incident_analysis)
                         IncidentStatus.Resolved -> itemView.context.getString(R.string.incident_resolved)
@@ -64,10 +64,10 @@ class IncidentAdapter : ListAdapter<Incident, IncidentAdapter.ViewHolder>(UserDi
                 }
             }
             statusTextView.text = status
-            val syncStatus = when(incident.syncStatus) {
+            val syncStatus = when(data.incident.syncStatus) {
                 SyncStatus.Pending ->  itemView.context.getString(R.string.stored_locally)
                 else -> {
-                    val elapsed = DateUtils.getRelativeTimeSpanString( incident.createdAt.toEpochMilliseconds())
+                    val elapsed = DateUtils.getRelativeTimeSpanString( data.incident.createdAt.toEpochMilliseconds())
                     elapsed
                 }
             }
@@ -75,7 +75,7 @@ class IncidentAdapter : ListAdapter<Incident, IncidentAdapter.ViewHolder>(UserDi
 
             itemView.setOnClickListener {
                 val bundle = Bundle()
-                bundle.putString(INCIDENT_ID_KEY, incident.id.toString())
+                bundle.putString(INCIDENT_ID_KEY, data.incident.id.toString())
                 findNavController(itemView).navigate(
                     R.id.incident_details,
                     bundle
@@ -85,12 +85,12 @@ class IncidentAdapter : ListAdapter<Incident, IncidentAdapter.ViewHolder>(UserDi
     }
 
     // DiffUtil handles smart list updates completely automatically
-    object UserDiffCallback : DiffUtil.ItemCallback<Incident>() {
-        override fun areItemsTheSame(oldItem: Incident, newItem: Incident): Boolean {
-            return oldItem.id == newItem.id
+    object UserDiffCallback : DiffUtil.ItemCallback<IncidentAndMachine>() {
+        override fun areItemsTheSame(oldItem: IncidentAndMachine, newItem: IncidentAndMachine): Boolean {
+            return oldItem.incident.id == newItem.incident.id
         }
 
-        override fun areContentsTheSame(oldItem: Incident, newItem: Incident): Boolean {
+        override fun areContentsTheSame(oldItem: IncidentAndMachine, newItem: IncidentAndMachine): Boolean {
             return oldItem == newItem
         }
     }

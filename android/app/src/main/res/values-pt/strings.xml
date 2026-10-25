@@ -2,6 +2,10 @@
 <resources>
 
     <string name="app_desc">Assistência técnica de máquinas industriais</string>
+    <string name="demo_login_operator">Operador</string>
+    <string name="demo_login_assistance">Assistência</string>
+    <string name="camera_permission_needed">Permissão da câmara é necessária.</string>
+    <string name="mic_permission_needed">Permissão do microfone é necessária.</string>
     <string name="label_password">Palavra-passe</string>
     <string name="action_sign_in">Entrar</string>
     <string name="action_register">Registar</string>
@@ -27,6 +31,7 @@
     <string name="create_machine_button">Criar máquina</string>
     <string name="machines_fetch_failed">Erro a buscar máquinas.</string>
     <string name="prompt_description">Relata a ocorrência</string>
+    <string name="incident_saved">Ocorrência guardada com sucesso.</string>
     <string name="incidents_failed">Erro a buscar ocorrências.</string>
     <string name="machine_save_failed">Erro a salvar máquina.</string>
     <string name="incidents_fragment_title">Ocorrências</string>
@@ -39,6 +44,7 @@
     <string name="technicians_fetch_failed">Erro a buscar técnicos.</string>
     <string name="organization_select_dialog_title">Selecione uma organização</string>
     <string name="organization_fetch_failed">Erro a buscar organizações.</string>
+    <string name="machine_select_dialog_title">Selecione uma máquina.</string>
     <string name="machines_fragment_title">Máquinas</string>
     <string name="new_incident_fragment_title">Nova ocorrência</string>
     <string name="new_machine_fragment_title">Nova máquina</string>
@@ -48,6 +54,7 @@
     <string name="machine_details_fragment_title">Detalhes da máquina</string>
     <string name="incident_save_failed">Erro a salvar ocorrência.</string>
     <string name="machine_saved">Máquina guardada com sucesso.</string>
+    <string name="no_machine_selected">Sem máquina selecionada</string>
     <string name="pending_machines_push_failed">Erro a enviar dados de máquinas.</string>
     <string name="pending_incidents_push_failed">Erro a enviar dados de ocorrências.</string>
     <string name="connection_status">Sem ligação</string>
@@ -60,10 +67,12 @@
     <string name="incident_received">Recebido</string>
     <string name="incident_analysis">Analisando</string>
     <string name="incident_resolved">Resolvido</string>
-
+    <string name="machine_open_incidents">%d em aberto</string>
+    <string name="machine_no_recent_incidents">Sem ocorrências nos últimos 30 dias</string>
     <plurals name="machine_history_summary">
-        <item quantity="one">%s ocorrência nos últimos 30d</item>
-        <item quantity="many">%s ocorrência nos últimos 30d</item>
+        <item quantity="one">%d ocorrência nos últimos 30 dias</item>
+        <item quantity="many">%d ocorrências nos últimos 30 dias</item>
+        <item quantity="other">%d ocorrências nos últimos 30 dias</item>
     </plurals>
     <plurals name="technician_open_incidents">
         <item quantity="one">%d ocorrência aberta</item>
@@ -82,4 +91,11 @@
     <string name="associated_machine_section_title">Máquina associada</string>
     <string name="select">Selecionar</string>
     <string name="save">Guardar</string>
+    <string name="remove">Remover</string>
+    <string name="delete">Apagar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="delete_pending_title">Apagar?</string>
+    <string name="delete_pending_message">«%1$s» ainda não foi enviado, por isso só existe neste dispositivo. Não é possível desfazer.</string>
+    <string name="delete_machine_in_use">Apague primeiro as ocorrências desta máquina.</string>
+    <string name="delete_organization_in_use">Apague primeiro as máquinas desta organização.</string>
 </resources>

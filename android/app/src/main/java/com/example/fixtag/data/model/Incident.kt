@@ -10,6 +10,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Relation
+import androidx.room.Transaction
 import androidx.room.Upsert
 //import com.example.fixtag.data.IncidentWithAttachmentsAndUpdates
 import kotlinx.coroutines.flow.Flow
@@ -104,6 +105,7 @@ interface IncidentDao {
     @Query("SELECT * FROM incident WHERE id = :id LIMIT 1")
     fun observe(id: Uuid): Flow<Incident?>
 
+    @Transaction
     @Query("SELECT * FROM incident WHERE id = :id LIMIT 1")
     fun observeWithMachine(id: Uuid): Flow<IncidentAndMachine>
 
@@ -116,11 +118,25 @@ interface IncidentDao {
     @Query("SELECT * FROM incident WHERE machine_id = :machineId")
     fun observeByMachine(machineId: Uuid): Flow<List<Incident>>
 
+    @Transaction
+    @Query("SELECT * FROM incident ORDER BY reported_at DESC")
+    fun observeAllWithMachine(): Flow<List<IncidentAndMachine>>
+
+    @Transaction
+    @Query("SELECT * FROM incident WHERE machine_id = :machineId ORDER BY reported_at DESC")
+    fun observeByMachineWithMachine(machineId: Uuid): Flow<List<IncidentAndMachine>>
+
+    @Query("SELECT * FROM incident WHERE id = :id")
+    suspend fun get(id: Uuid): Incident?
+
     @Query("SELECT * FROM incident")
     suspend fun getAll(): List<Incident>
 
     @Query("SELECT * FROM incident WHERE sync_status = 'Pending'")
     suspend fun getPending(): List<Incident>
+
+    @Query("SELECT COUNT(*) FROM incident WHERE machine_id = :machineId")
+    suspend fun countByMachine(machineId: Uuid): Int
 
     @Delete
     suspend fun delete(incident: Incident)

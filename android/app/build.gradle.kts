@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -37,9 +38,30 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
+
+    flavorDimensions += "mode"
+
+    productFlavors {
+        create("full") {
+            dimension = "mode";
+            buildConfigField("boolean", "OFFLINE_DEMO", "false")
+        }
+        create("demo") {
+            dimension = "mode"
+            applicationIdSuffix = ".demo"  // installs next to the full app
+            buildConfigField("boolean", "OFFLINE_DEMO", "true")
+        }
+    }
+
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
@@ -51,7 +73,6 @@ kotlin {
 }
 
 dependencies {
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.annotation)
@@ -72,6 +93,7 @@ dependencies {
     implementation(libs.androidx.sqlite.framework)
     implementation(libs.androidx.sqlite.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.retrofit)

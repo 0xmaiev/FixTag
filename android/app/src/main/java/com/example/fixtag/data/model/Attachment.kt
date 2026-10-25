@@ -88,6 +88,9 @@ interface AttachmentDao {
     @Query("SELECT * FROM attachment WHERE incident_id = :incidentId")
     fun observe(incidentId: Uuid): Flow<List<Attachment>>
 
+    @Query("SELECT * FROM attachment WHERE incident_id = :incidentId")
+    suspend fun getByIncident(incidentId: Uuid): List<Attachment>
+
     @Query("SELECT * FROM attachment")
     suspend fun getAll(): List<Attachment>
 

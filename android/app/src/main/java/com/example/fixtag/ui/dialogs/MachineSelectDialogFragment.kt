@@ -47,9 +47,9 @@ class MachineSelectDialogFragment(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState ?: Bundle())
 
-        adapter = MachineSelectAdapter { machine ->
+        adapter = MachineSelectAdapter { data ->
             val bundle = Bundle()
-            bundle.putString(MACHINE_ID_KEY, machine?.id.toString())
+            bundle.putString(MACHINE_ID_KEY, data?.machine?.id.toString())
             setFragmentResult(SELECT_MACHINE_REQUEST_KEY, bundle)
         }
         adapter.setInitialSelection(initialSelection?.id)

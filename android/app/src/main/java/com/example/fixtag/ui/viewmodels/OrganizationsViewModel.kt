@@ -20,4 +20,6 @@ class OrganizationsViewModel(private val repository: Repository) : ViewModel() {
         )
 
     init { }
+
+    suspend fun delete(organization: Organization) = repository.deletePendingOrganization(organization.id)
 }

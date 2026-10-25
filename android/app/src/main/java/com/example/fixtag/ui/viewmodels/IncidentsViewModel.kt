@@ -4,12 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.Incident
+import com.example.fixtag.data.model.IncidentAndMachine
+import com.example.fixtag.data.model.Machine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMap
 import kotlinx.coroutines.flow.stateIn
 
 class IncidentsViewModel(private val repository: Repository) : ViewModel() {
-    val uiState: StateFlow<List<Incident>> = repository.observeIncidents()
+    val uiState: StateFlow<List<IncidentAndMachine>> = repository.observeIncidents()
         .stateIn(
             scope = viewModelScope,
             // Keeps the flow active for 5 seconds after UI rotates/disconnects
@@ -18,4 +22,6 @@ class IncidentsViewModel(private val repository: Repository) : ViewModel() {
         )
 
     init { }
+
+    suspend fun delete(incident: Incident) = repository.deletePendingIncident(incident.id)
 }

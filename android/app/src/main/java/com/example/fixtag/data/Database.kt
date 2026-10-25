@@ -26,17 +26,21 @@ import com.example.fixtag.data.model.TechnicianDao
 
 const val DATABASE_NAME = "database"
 
-@Database(version = 2, entities = [
-    Auth::class,
-    Organization::class,
-    User::class,
-    Technician::class,
-    Incident::class,
-    IncidentUpdate::class,
-    Attachment::class,
-    Machine::class,
-    SyncState::class,
-], exportSchema = false)
+@Database(version = 1,
+    entities = [
+        Auth::class,
+        Organization::class,
+        User::class,
+        Technician::class,
+        Incident::class,
+        IncidentUpdate::class,
+        Attachment::class,
+        Machine::class,
+        SyncState::class,
+    ],
+    exportSchema = true,
+    autoMigrations = []
+)
 @TypeConverters(UuidConverter::class, InstantConverter::class)
 abstract class Database : RoomDatabase() {
     companion object {
@@ -49,7 +53,7 @@ abstract class Database : RoomDatabase() {
                 val instance = Room.databaseBuilder<com.example.fixtag.data.Database>(
                     context.applicationContext,
                     DATABASE_NAME,
-                ).fallbackToDestructiveMigration(dropAllTables = true).build()
+                ).fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true).build()
                 INSTANCE = instance
                 instance
             }

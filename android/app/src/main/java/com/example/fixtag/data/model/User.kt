@@ -9,7 +9,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-//import com.example.fixtag.data.UserWithIncidents
 import kotlin.uuid.Uuid
 
 @Entity
@@ -43,10 +42,6 @@ interface UserDao {
     @Transaction
     @Query("SELECT * FROM user WHERE name = :name")
     suspend fun findUsersByName(name: String): List<User>
-
-    //@Transaction
-    //@Query("SELECT * FROM user WHERE id = :id")
-    //abstract fun getIncidentsByUser(id: String): List<UserWithIncidents>
 
     @Delete
     suspend fun delete(user: User)

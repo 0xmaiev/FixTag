@@ -103,16 +103,10 @@ class NewIncidentViewModel(
         )
     }
 
-    fun submit(description: String, severityChips: ChipGroup) {
+    fun submit(description: String, severity: IncidentSeverity) {
         val machine = machine.value
         val user = repository.user
         _form.value = validate(machine, description)
-        val severity = when(severityChips.checkedChipId) {
-            R.id.severityLowChip -> IncidentSeverity.Low
-            R.id.severityMediumChip -> IncidentSeverity.Medium
-            R.id.severityCriticalChip -> IncidentSeverity.Critical
-            else -> return // shouldn't ever happen
-        }
         // early exit - State.* comes from `InputBaseViewModel`
         if (!_form.value.isDataValid || machine == null ||
             user == null || state.value != State.Editing) return  // ignores double taps
@@ -166,5 +160,12 @@ class NewIncidentViewModel(
     fun selectMachine(id: String) {
         savedStateHandle[MACHINE_ID_HANDLE] = id
         _form.update { it.copy(machineError = null) } // only clears the error this fixes
+    }
+    
+    // leaving the form without saving: no row will ever point at these files
+    override fun onCleared() {
+        if (state.value == State.Editing) AttachmentKind.entries.forEach { kind ->
+            files(kind).value.forEach { File(it).delete() }
+        }
     }
 }

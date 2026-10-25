@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -16,6 +17,10 @@ import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.ui.adapters.OrganizationAdapter
+import com.example.fixtag.ui.confirmDeletePending
+import com.example.fixtag.ui.main.MainViewModel
+import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.OrganizationsViewModel
 import kotlinx.coroutines.launch
 
@@ -23,6 +28,11 @@ class OrganizationsFragment : Fragment() {
 
     companion object {
         fun newInstance() = OrganizationsFragment()
+    }
+
+    private val mainViewModel: MainViewModel by activityViewModels {
+        val app = requireContext().applicationContext as FixTag
+        MainViewModelFactory(app.repository, app.syncScheduler)
     }
 
     private val viewModel: OrganizationsViewModel by viewModels {
@@ -39,7 +49,11 @@ class OrganizationsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        organizationAdapter = OrganizationAdapter()
+        organizationAdapter = OrganizationAdapter(onDelete = { organization ->
+            confirmDeletePending(organization.name, R.string.delete_organization_in_use) {
+                viewModel.delete(organization)
+            }
+        })
     }
 
     override fun onCreateView(
@@ -66,6 +80,7 @@ class OrganizationsFragment : Fragment() {
         newOrganization.setOnClickListener {
             findNavController().navigate(R.id.new_organization)
         }
+        showPendingCount(view, mainViewModel.pendingCount)
     }
 
 }

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.uuid.Uuid
 
 /**
  * Data validation state of the login form.
@@ -49,6 +50,12 @@ class LoginViewModel(private val repository: Repository) : ViewModel() {
 
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
+
+    fun loginAsDemoProfile(userId: Uuid) {
+        viewModelScope.launch {
+            _loginResult.value = LoginResult(success = repository.loginDemo(userId))
+        }
+    }
 
     fun login(email: String, password: String) {
         _uiState.value = State.Loading

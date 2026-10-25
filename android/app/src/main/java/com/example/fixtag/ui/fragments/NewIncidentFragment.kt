@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.data.model.AttachmentKind
+import com.example.fixtag.data.model.IncidentSeverity
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.MACHINE_ID_KEY
 import com.example.fixtag.ui.SELECT_MACHINE_REQUEST_KEY
@@ -88,12 +90,12 @@ class NewIncidentFragment : Fragment() {
     private lateinit var model: TextView
     private lateinit var serialNumber: TextView
     private lateinit var createIncident: Button
-    private lateinit var addPhoto: Button
+    private lateinit var addPhoto: ImageButton
     private lateinit var addVideo: Button
-    private lateinit var addAudio: Button
+    private lateinit var addAudio: ImageButton
     private lateinit var selectMachine: Button
     private lateinit var description: EditText
-    private lateinit var severity: ChipGroup
+    private lateinit var severityChips: ChipGroup
     private lateinit var attachmentAdapter: AttachmentAdapter
     private lateinit var recyclerView: RecyclerView
     private var recorder: MediaRecorder? = null
@@ -124,7 +126,7 @@ class NewIncidentFragment : Fragment() {
         model = view.findViewById(R.id.model)
         serialNumber = view.findViewById(R.id.serialNumber)
         description = view.findViewById(R.id.description)
-        severity = view.findViewById(R.id.severity)
+        severityChips = view.findViewById(R.id.severity)
         recyclerView = view.findViewById(R.id.attachments)
 
         attachmentAdapter = AttachmentAdapter(
@@ -161,6 +163,11 @@ class NewIncidentFragment : Fragment() {
         }
         // create the incident
         createIncident.setOnClickListener {
+            val severity = when(severityChips.checkedChipId) {
+                R.id.severityLowChip -> IncidentSeverity.Low
+                R.id.severityMediumChip -> IncidentSeverity.Medium
+                else -> IncidentSeverity.Critical
+            }
             viewModel.submit(description.text.toString(), severity)
         }
         // set listener for result from ´MachineSelectDialogFragment`

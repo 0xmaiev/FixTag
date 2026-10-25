@@ -6,6 +6,7 @@ import com.example.fixtag.data.Database
 import com.example.fixtag.data.Repository
 import com.example.fixtag.api.ApiClient
 import com.example.fixtag.data.SyncScheduler
+import com.example.fixtag.data.sessionStore
 
 class FixTag : Application() {
     private val db by lazy { Database.getDatabase(this) }
@@ -23,7 +24,8 @@ class FixTag : Application() {
             db = db,
             syncScheduler = syncScheduler,
             apiService = ApiClient.getApiService(this),
-            filesDir = filesDir
+            filesDir = filesDir,
+            session = sessionStore
         )
     }
 

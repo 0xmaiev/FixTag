@@ -9,12 +9,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.R
 import com.example.fixtag.data.model.Machine
+import com.example.fixtag.data.model.MachineWithStats
 
 class MachineSelectAdapter(
-    onItemSelected: (Machine?) -> Unit
-) : BaseSelectAdapter<Machine, MachineSelectAdapter.ViewHolder>(
+    onItemSelected: (MachineWithStats?) -> Unit
+) : BaseSelectAdapter<MachineWithStats, MachineSelectAdapter.ViewHolder>(
     MachineDiffCallback(),
-    itemIdProvider = { it.id }, // Tell the base class how to get the ID
+    itemIdProvider = { it.machine.id }, // Tell the base class how to get the ID
     onItemSelected = onItemSelected
 ) {
 
@@ -35,9 +36,9 @@ class MachineSelectAdapter(
         private val modelTextView: TextView = itemView.findViewById(R.id.model)
         private val serialNumberTextView: TextView = itemView.findViewById(R.id.serialNumber)
 
-        fun bind(machine: Machine, isSelected: Boolean) {
-            modelTextView.text = machine.model
-            serialNumberTextView.text = machine.serialNumber
+        fun bind(data: MachineWithStats, isSelected: Boolean) {
+            modelTextView.text = data.machine.model
+            serialNumberTextView.text = data.machine.serialNumber
 
             val context = itemView.context
             val colorRes = if (isSelected) R.color.grey_blue_selected else R.color.grey_blue
@@ -45,14 +46,14 @@ class MachineSelectAdapter(
 
             itemView.setOnClickListener {
                 // Route the click event through the base class logic
-                handleItemClick(machine)
+                handleItemClick(data)
             }
         }
     }
 }
 
 // Standard DiffUtil for performance optimization
-class MachineDiffCallback : DiffUtil.ItemCallback<Machine>() {
-    override fun areItemsTheSame(oldItem: Machine, newItem: Machine) = oldItem.id == newItem.id
-    override fun areContentsTheSame(oldItem: Machine, newItem: Machine) = oldItem == newItem
+class MachineDiffCallback : DiffUtil.ItemCallback<MachineWithStats>() {
+    override fun areItemsTheSame(oldItem: MachineWithStats, newItem: MachineWithStats) = oldItem.machine.id == newItem.machine.id
+    override fun areContentsTheSame(oldItem: MachineWithStats, newItem: MachineWithStats) = oldItem == newItem
 }

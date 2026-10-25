@@ -11,8 +11,10 @@ import com.example.fixtag.data.Result
 import com.example.fixtag.data.SyncScheduler
 import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MainViewModel(
@@ -30,8 +32,19 @@ class MainViewModel(
 
     private val _navigationState = MutableStateFlow<NavigationState>(NavigationState.Loading)
     val navigationState: StateFlow<NavigationState> = _navigationState.asStateFlow()
+
+    val pendingCount: StateFlow<Int> = repository.observePendingCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     init {
         checkUserStatus()
+    }
+
+    private fun switchProfile() {
+        viewModelScope.launch {
+            repository.logout()
+            _navigationState.value = NavigationState.GoToLogin
+        }
     }
 
     private fun checkUserStatus() {
