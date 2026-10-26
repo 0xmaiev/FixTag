@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
 }
 
 android {
@@ -37,26 +38,54 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
+
+    flavorDimensions += "mode"
+
+    productFlavors {
+        create("full") {
+            dimension = "mode";
+            buildConfigField("boolean", "OFFLINE_DEMO", "false")
+        }
+        create("demo") {
+            dimension = "mode"
+            applicationIdSuffix = ".demo"  // installs next to the full app
+            buildConfigField("boolean", "OFFLINE_DEMO", "true")
+        }
+    }
+
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
+        freeCompilerArgs.add("-opt-in=kotlin.time.ExperimentalTime")
+        freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
     }
 }
 
 dependencies {
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.annotation)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.fragment)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.legacy.support.v4)
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.cardview)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.room.runtime)
@@ -64,11 +93,13 @@ dependencies {
     implementation(libs.androidx.sqlite.framework)
     implementation(libs.androidx.sqlite.ktx)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.material)
     implementation(libs.okhttp)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.gson)
+    implementation(libs.coil)
 
     testImplementation(libs.junit)
 

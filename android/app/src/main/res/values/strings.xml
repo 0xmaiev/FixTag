@@ -1,109 +1,163 @@
 <resources>
+    <!-- App -->
     <string name="app_name" translatable="false">FixTag</string>
     <string name="app_ver" translatable="false">v0.1</string>
     <string name="app_logo" translatable="false">FixTag Logo</string>
     <string name="app_desc">Technical assistance for industrial equipment</string>
-    <string name="email" translatable="false">Email</string>
-    <string name="password">Password</string>
-    <string name="action_sign_in">Login</string>
-    <string name="action_register">Login</string>
-    <string name="forgot_password">Forgot my password</string>
+    <string name="demo_login_operator">Operator</string>
+    <string name="demo_login_assistance">Assistance</string>
+    <string name="camera_permission_needed">Camera permission is required.</string>
+    <string name="mic_permission_needed">Microphone permission is required.</string>
+
+    <!-- Form labels -->
+    <string name="label_email" translatable="false">Email</string>
+    <string name="label_password">Password</string>
+    <string name="label_name">Name</string>
+    <string name="label_model">Model</string>
+    <string name="label_serial_number">Serial number</string>
+    <string name="label_description">Description</string>
+
+    <!-- Form labels -->
+    <string name="empty_organization_error">Organization must be selected</string>
+    <string name="empty_machine_error">Machine must be selected</string>
+    <string name="empty_name_error">Name cannot be empty</string>
+    <string name="empty_model_error">Model cannot be empty</string>
+    <string name="empty_serial_number_error">Serial number cannot be empty</string>
+    <string name="empty_description_error">Text or audio description is required.</string>
+
+    <!-- Form hints -->
+    <string name="name_hint">Organization\'s name</string>
+    <string name="model_hint">Machine model</string>
+    <string name="serial_number_hint">Machine\'s serial number</string>
+
+    <!-- Authentication -->
     <string name="activity_login_title">Login</string>
-    <string name="welcome">Welcome, {}!</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_register">Register</string>
+    <string name="forgot_password">Forgot my password</string>
+    <string name="welcome">Welcome, %s!</string>
     <string name="prompt_email" translatable="false">nome@empresa.pt</string>
     <string name="prompt_password" translatable="false">**************</string>
     <string name="login_failed">Login failed.</string>
     <string name="invalid_email">Invalid e-mail.</string>
     <string name="invalid_password">Invalid password.</string>
-    <string name="title_activity_scrolling">ScrollingActivity</string>
-    <string name="large_text">
-        "Material is the metaphor.\n\n"
 
-        "A material metaphor is the unifying theory of a rationalized space and a system of motion."
-        "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
-        "technologically advanced and open to imagination and magic.\n"
-        "Surfaces and edges of the material provide visual cues that are grounded in reality. The "
-        "use of familiar tactile attributes helps users quickly understand affordances. Yet the "
-        "flexibility of the material creates new affordances that supercede those in the physical "
-        "world, without breaking the rules of physics.\n"
-        "The fundamentals of light, surface, and movement are key to conveying how objects move, "
-        "interact, and exist in space and in relation to each other. Realistic lighting shows "
-        "seams, divides space, and indicates moving parts.\n\n"
+    <!-- Organizations -->
+    <string name="organizations_fragment_title">Organizations</string>
+    <string name="new_organization_fragment_title">New organization</string>
+    <string name="organizations_fetch_failed">Failed to get organizations.</string>
+    <string name="organization_save_failed">Failed to save organization.</string>
+    <string name="organization_saved">Organization successfully saved.</string>
+    <string name="no_organization_selected">No organization selected</string>
+    <string name="pending_organizations_push_failed">Failed to push pending organizations.</string>
 
-        "Bold, graphic, intentional.\n\n"
+    <!-- Various user types -->
+    <string name="technician_select_dialog_title">Select a technician</string>
+    <string name="technicians_fetch_failed">Failed to get technicians.</string>
+    <string name="organization_select_dialog_title">Select an organization</string>
+    <string name="organization_fetch_failed">Failed to get organizations.</string>
+    <string name="machine_select_dialog_title">Select a machine</string>
 
-        "The foundational elements of print based design typography, grids, space, scale, color, "
-        "and use of imagery guide visual treatments. These elements do far more than please the "
-        "eye. They create hierarchy, meaning, and focus. Deliberate color choices, edge to edge "
-        "imagery, large scale typography, and intentional white space create a bold and graphic "
-        "interface that immerse the user in the experience.\n"
-        "An emphasis on user actions makes core functionality immediately apparent and provides "
-        "waypoints for the user.\n\n"
+    <plurals name="technician_open_incidents">
+        <item quantity="zero">no open incidents</item>
+        <item quantity="one">%d open incident</item>
+        <item quantity="other">%d open incidents</item>
+    </plurals>
 
-        "Motion provides meaning.\n\n"
+    <!-- Machines -->
+    <string name="machines_fragment_title">Machines</string>
+    <string name="new_machine_fragment_title">New machine</string>
+    <string name="machine_details_fragment_title">Machine details</string>
+    <string name="create_machine_button">Create machine</string>
+    <string name="machines_fetch_failed">Failed to get machines.</string>
+    <string name="machine_save_failed">Failed to save machine.</string>
+    <string name="machine_saved">Machine successfully saved.</string>
+    <string name="no_machine_selected">No machine selected</string>
+    <string name="pending_machines_push_failed">Failed to push pending machines.</string>
 
-        "Motion respects and reinforces the user as the prime mover. Primary user actions are "
-        "inflection points that initiate motion, transforming the whole design.\n"
-        "All action takes place in a single environment. Objects are presented to the user without "
-        "breaking the continuity of experience even as they transform and reorganize.\n"
-        "Motion is meaningful and appropriate, serving to focus attention and maintain continuity. "
-        "Feedback is subtle yet clear. Transitions are efﬁcient yet coherent.\n\n"
+    <string name="machine_ok" translatable="false">OK</string>
+    <string name="machine_open_incidents">%d open</string>
+    <string name="machine_no_recent_incidents">No incidents in the past 30 days</string>
+    <plurals name="machine_history_summary">
+        <item quantity="one">%d incident in the past 30 days</item>
+        <item quantity="other">%d incidents in the past 30 days</item>
+    </plurals>
 
-        "3D world.\n\n"
+    <!-- Incidents -->
+    <string name="incidents_fragment_title">Incidents</string>
+    <string name="new_incident_fragment_title">New incident</string>
+    <string name="incident_details_fragment_title">Incident details</string>
 
-        "The material environment is a 3D space, which means all objects have x, y, and z "
-        "dimensions. The z-axis is perpendicularly aligned to the plane of the display, with the "
-        "positive z-axis extending towards the viewer. Every sheet of material occupies a single "
-        "position along the z-axis and has a standard 1dp thickness.\n"
-        "On the web, the z-axis is used for layering and not for perspective. The 3D world is "
-        "emulated by manipulating the y-axis.\n\n"
+    <string name="severity_low">Low</string>
+    <string name="severity_medium">Medium</string>
+    <string name="severity_critical">Critical</string>
 
-        "Light and shadow.\n\n"
+    <string name="incident_received">Received</string>
+    <string name="incident_analysis">Analysing</string>
+    <string name="incident_resolved">Resolved</string>
+    <string name="prompt_description">Explain the incident</string>
+    <string name="incident_saved">Incident successfully saved.</string>
+    <string name="incidents_failed">Failed to get incidents.</string>
+    <string name="incident_save_failed">Failed to save incident.</string>
+    <string name="pending_incidents_push_failed">Failed to push pending incidents.</string>
 
-        "Within the material environment, virtual lights illuminate the scene. Key lights create "
-        "directional shadows, while ambient light creates soft shadows from all angles.\n"
-        "Shadows in the material environment are cast by these two light sources. In Android "
-        "development, shadows occur when light sources are blocked by sheets of material at "
-        "various positions along the z-axis. On the web, shadows are depicted by manipulating the "
-        "y-axis only. The following example shows the card with a height of 6dp.\n\n"
+    <string name="add_incident_update">Add update</string>
 
-        "Resting elevation.\n\n"
+    <!-- Data sync-->
+    <string name="connection_status">No connection</string>
+    <string name="sync_status">%d to send</string>
+    <string name="pending_sync">Unsent</string>
+    <string name="stored_locally">saved in this device</string>
+    <string name="settings">Settings</string>
 
-        "All material objects, regardless of size, have a resting elevation, or default elevation "
-        "that does not change. If an object changes elevation, it should return to its resting "
-        "elevation as soon as possible.\n\n"
+    <!-- Fragment view sections-->
+    <string name="photos_section_title">Photos</string>
+    <string name="messages_section_title">Messages</string>
+    <string name="incidents_section_title">Incidents</string>
+    <string name="description_section_title">Description</string>
+    <string name="severity_section_title">Severity</string>
+    <string name="status_section_title">Status</string>
+    <string name="response_section_title">Response</string>
+    <string name="associated_organization_section_title">Associated organization</string>
+    <string name="associated_machine_section_title">Associated machine</string>
+    <string name="select">Select</string>
+    <string name="save">Save</string>
+    <string name="remove">Remove</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="record_audio">Audio recording</string>
+    <string name="take_photo">Photo capture</string>
+    <string name="switch_profile">Switch profile</string>
 
-        "Component elevations.\n\n"
 
-        "The resting elevation for a component type is consistent across apps (e.g., FAB elevation "
-        "does not vary from 6dp in one app to 16dp in another app).\n"
-        "Components may have different resting elevations across platforms, depending on the depth "
-        "of the environment (e.g., TV has a greater depth than mobile or desktop).\n\n"
+    <!-- Sample strings for editor display-->
+    <string name="sample_organization_name" translatable="false">Demo Client, Lda.</string>
 
-        "Responsive elevation and dynamic elevation offsets.\n\n"
+    <string name="sample_technician_name" translatable="false">George Tech</string>
+    <string name="sample_technician_open_incidents" translatable="false">Crawler Drill</string>
 
-        "Some component types have responsive elevation, meaning they change elevation in response "
-        "to user input (e.g., normal, focused, and pressed) or system events. These elevation "
-        "changes are consistently implemented using dynamic elevation offsets.\n"
-        "Dynamic elevation offsets are the goal elevation that a component moves towards, relative "
-        "to the component’s resting state. They ensure that elevation changes are consistent "
-        "across actions and component types. For example, all components that lift on press have "
-        "the same elevation change relative to their resting elevation.\n"
-        "Once the input event is completed or cancelled, the component will return to its resting "
-        "elevation.\n\n"
+    <string name="sample_machine_model" translatable="false">Crawler Drill</string>
+    <string name="sample_machine_serial_number" translatable="false">SN 000123</string>
+    <string name="sample_machine_status" translatable="false">OK</string>
+    <string name="sample_machine_history_summary" translatable="false">1 incident in the past 30d</string>
 
-        "Avoiding elevation interference.\n\n"
+    <string name="sample_incident_severity" translatable="false">Critical</string>
+    <string name="sample_incident_description" translatable="false">Loss of pressure in the hydraulic system</string>
+    <string name="sample_incident_status" translatable="false">Analysis</string>
 
-        "Components with responsive elevations may encounter other components as they move between "
-        "their resting elevations and dynamic elevation offsets. Because material cannot pass "
-        "through other material, components avoid interfering with one another any number of ways, "
-        "whether on a per component basis or using the entire app layout.\n"
-        "On a component level, components can move or be removed before they cause interference. "
-        "For example, a floating action button (FAB) can disappear or move off screen before a "
-        "user picks up a card, or it can move if a snackbar appears.\n"
-        "On the layout level, design your app layout to minimize opportunities for interference. "
-        "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
-        "when a user tries to pick up one of cards.\n\n"
-    </string>
-    <string name="action_settings">Settings</string>
+    <string name="sample_sync_status" translatable="false">1 to send</string>
+    <string name="sample_item_sync_status" translatable="false">3h ago</string>
+
+    <string name="sample_incident_update_author_role" translatable="false">Assistance</string>
+    <string name="sample_incident_update_author_name_male" translatable="false">John Doe</string>
+    <string name="sample_incident_update_author_name_female" translatable="false">Jane Doe</string>
+    <string name="sample_incident_update_author_name_user" translatable="false">You</string>
+    <string name="sample_incident_update_message" translatable="false">We\'re reviewing telemetry data. Is the machine still stopped?</string>
+    <string name="sample_incident_update_message_2" translatable="false">Yes, for about an hour now.</string>
+    <string name="sample_incident_update_time_elapsed" translatable="false">20 min. ago</string>
+    <string name="sample_incident_update_time_elapsed_2" translatable="false">5 min. ago</string>
+    <string name="delete_pending_title">Delete?</string>
+    <string name="delete_pending_message">«%1$s» has not been sent, so it only exists in this device. This action is irreversible.</string>
+    <string name="delete_machine_in_use">Delete the incidents of this machine first.</string>
+    <string name="delete_organization_in_use">Delete the machines of this organization first.</string>
 </resources>

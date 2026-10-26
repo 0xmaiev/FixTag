@@ -3,6 +3,7 @@ package com.example.fixtag.api.model
 import com.example.fixtag.data.model.IncidentSeverity
 import com.example.fixtag.data.model.IncidentStatus
 import com.google.gson.annotations.SerializedName
+import kotlin.time.Instant
 
 data class IncidentDto(
     val id: String,
@@ -15,18 +16,22 @@ data class IncidentDto(
     @SerializedName("author_name")
     val authorName: String,
     val description: String,
-    val severity: IncidentSeverity,
-    val status: IncidentStatus,
+    val severity: String,
+    val status: String,
+    @SerializedName("assigned_to")
+    val assignedTo: String?,
+    @SerializedName("assigned_to_name")
+    val assignedToName: String?,
     val latitude: Double?,
     val longitude: Double?,
     @SerializedName("accuracy_m")
     val accuracyM: Float?,
     @SerializedName("reported_at")
-    val reportedAt: Long,
+    val reportedAt: String,
     @SerializedName("created_at")
-    val createdAt: Long,
+    val createdAt: String,
     @SerializedName("updated_at")
-    val updatedAt: Long,
+    val updatedAt: String,
     val attachments: List<AttachmentDto>,
     val updates: List<IncidentUpdateDto>,
 )

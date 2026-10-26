@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <item name="machine_details" type="id"/>
+    <item name="incident_details" type="id"/>
+    <item name="organization_details" type="id"/>
+    <item name="new_incident" type="id"/>
+    <item name="new_machine" type="id"/>
+    <item name="new_organization" type="id"/>
+</resources>

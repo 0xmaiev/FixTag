@@ -2,13 +2,11 @@ package com.example.fixtag.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Upsert
 import kotlin.uuid.Uuid
 
 // The authentication table, stores the user's refresh token
@@ -28,9 +26,10 @@ data class Auth(
 
 @Dao
 interface AuthDao {
-    // On conflict, we want to replace the existing row.
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun save(auth: Auth)
+    // Upsert instead of replace because replacing strategy removes before re-inserting,
+    // even though there's no issues with FKs or indices this is better in general.
+    @Upsert
+    suspend fun upsert(auth: Auth)
 
     @Transaction
     @Query("SELECT * FROM auth WHERE id = 0 LIMIT 1")

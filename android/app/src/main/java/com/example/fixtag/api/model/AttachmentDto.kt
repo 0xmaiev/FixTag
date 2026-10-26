@@ -10,5 +10,7 @@ data class AttachmentDto(
     @SerializedName("content_type")
     val contentType: String,
     @SerializedName("size_bytes")
-    val sizeBytes: String,
+    val sizeBytes: Int,
+    @SerializedName("created_at")
+    val createdAt: String,
 )

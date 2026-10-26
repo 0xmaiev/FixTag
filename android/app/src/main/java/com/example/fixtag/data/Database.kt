@@ -2,8 +2,6 @@ package com.example.fixtag.data
 
 import android.content.Context
 import androidx.room.Database
-import androidx.room.Embedded
-import androidx.room.Relation
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -19,53 +17,31 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserDao
 import com.example.fixtag.data.model.Auth
 import com.example.fixtag.data.model.AuthDao
+import com.example.fixtag.data.model.Organization
+import com.example.fixtag.data.model.OrganizationDao
+import com.example.fixtag.data.model.SyncState
+import com.example.fixtag.data.model.SyncStateDao
+import com.example.fixtag.data.model.Technician
+import com.example.fixtag.data.model.TechnicianDao
 
 const val DATABASE_NAME = "database"
 
-data class UserWithIncidents(
-    @Embedded
-    val user: User,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "author_id"
-    )
-    val incident: List<Incident>
+@Database(version = 1,
+    entities = [
+        Auth::class,
+        Organization::class,
+        User::class,
+        Technician::class,
+        Incident::class,
+        IncidentUpdate::class,
+        Attachment::class,
+        Machine::class,
+        SyncState::class,
+    ],
+    exportSchema = true,
+    autoMigrations = []
 )
-
-data class UserWithIncidentUpdates(
-    @Embedded
-    val user: User,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "author_id"
-    )
-    val incidentUpdates: List<IncidentUpdate>
-)
-
-data class IncidentWithAttachmentsAndUpdates(
-    @Embedded
-    val incident: Incident,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "incident_id"
-    )
-    val attachments: List<Attachment>,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "incident_id"
-    )
-    val incidentUpdates: List<IncidentUpdate>,
-)
-
-@Database(version = 1, entities = [
-    Auth::class,
-    User::class,
-    Incident::class,
-    IncidentUpdate::class,
-    Attachment::class,
-    Machine::class,
-], exportSchema = false)
-@TypeConverters(UuidConverter::class)
+@TypeConverters(UuidConverter::class, InstantConverter::class)
 abstract class Database : RoomDatabase() {
     companion object {
         @Volatile
@@ -77,7 +53,7 @@ abstract class Database : RoomDatabase() {
                 val instance = Room.databaseBuilder<com.example.fixtag.data.Database>(
                     context.applicationContext,
                     DATABASE_NAME,
-                ).fallbackToDestructiveMigration(dropAllTables = true).build()
+                ).fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true).build()
                 INSTANCE = instance
                 instance
             }
@@ -90,6 +66,12 @@ abstract class Database : RoomDatabase() {
     // UserDao is a class annotated with @Dao.
     abstract fun getUserDao(): UserDao
 
+    // OrganizationDao is a class annotated with @Dao.
+    abstract fun getOrganizationDao(): OrganizationDao
+
+    // TechnicianDao is a class annotated with @Dao.
+    abstract fun getTechnicianDao(): TechnicianDao
+
     // MachineDao is a class annotated with @Dao.
     abstract fun getMachineDao(): MachineDao
 
@@ -101,4 +83,7 @@ abstract class Database : RoomDatabase() {
 
     // AttachmentDao is a class annotated with @Dao.
     abstract fun getAttachmentDao(): AttachmentDao
+
+    // SyncStateDao is a class annotated with @Dao.
+    abstract fun getSyncStateDao(): SyncStateDao
 }

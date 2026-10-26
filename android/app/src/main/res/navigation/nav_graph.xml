@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@+id/incidents">
+
+    <fragment android:id="@+id/incidents"
+        android:name="com.example.fixtag.ui.fragments.IncidentsFragment"
+        android:label="@string/incidents_fragment_title" />
+    <fragment android:id="@+id/machines"
+        android:name="com.example.fixtag.ui.fragments.MachinesFragment"
+        android:label="@string/machines_fragment_title" />
+    <fragment android:id="@+id/organizations"
+        android:name="com.example.fixtag.ui.fragments.OrganizationsFragment"
+        android:label="@string/organizations_fragment_title" />
+    <fragment android:id="@+id/machine_details"
+        android:name="com.example.fixtag.ui.fragments.MachineDetailFragment"
+        android:label="@string/machine_details_fragment_title" />
+    <fragment android:id="@+id/incident_details"
+        android:name="com.example.fixtag.ui.fragments.IncidentDetailFragment"
+        android:label="@string/incident_details_fragment_title" />
+    <fragment android:id="@+id/new_incident"
+        android:name="com.example.fixtag.ui.fragments.NewIncidentFragment"
+        android:label="@string/new_incident_fragment_title" />
+    <fragment android:id="@+id/new_machine"
+        android:name="com.example.fixtag.ui.fragments.NewMachineFragment"
+        android:label="@string/new_machine_fragment_title" />
+    <fragment android:id="@+id/new_organization"
+        android:name="com.example.fixtag.ui.fragments.NewOrganizationFragment"
+        android:label="@string/new_organization_fragment_title" />
+</navigation>

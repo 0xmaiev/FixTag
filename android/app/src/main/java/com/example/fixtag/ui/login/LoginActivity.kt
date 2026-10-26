@@ -10,8 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -23,13 +21,17 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.example.fixtag.AppViewModelFactory
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.FixTag
 import com.example.fixtag.databinding.ActivityLoginBinding
 import com.example.fixtag.R
+import com.example.fixtag.data.DemoSeed
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.User
 import com.example.fixtag.ui.main.MainActivity
+import com.example.fixtag.ui.afterTextChanged
 import kotlinx.coroutines.launch
 
 class LoginActivity: AppCompatActivity() {
@@ -58,7 +60,7 @@ class LoginActivity: AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null && !BuildConfig.OFFLINE_DEMO) {
             val missing = buildList {
                 if (!isGranted(Manifest.permission.INTERNET)) {
                     add(Manifest.permission.INTERNET)
@@ -74,6 +76,21 @@ class LoginActivity: AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        if (BuildConfig.OFFLINE_DEMO) {
+            findViewById<View>(R.id.LoginFormLayout).isVisible = false
+            val demoProfiles = binding.demoProfiles
+            val demoOperator = binding.demoOperator
+            val demoAssistance = binding.demoAssistance
+
+            demoProfiles?.isVisible = true
+            demoOperator?.setOnClickListener {
+                loginViewModel.loginAsDemoProfile(DemoSeed.OPERATOR)
+            }
+            demoAssistance?.setOnClickListener {
+                loginViewModel.loginAsDemoProfile(DemoSeed.ASSISTANCE)
+            }
         }
 
         val username = binding.etEmail
@@ -131,24 +148,22 @@ class LoginActivity: AppCompatActivity() {
                 }
                 false
             }
-
-            login.setOnClickListener {
-                loading.visibility = View.VISIBLE
-                loginViewModel.login(username.text.toString(), password.text.toString())
-            }
         }
 
+        login.setOnClickListener {
+            loading.visibility = View.VISIBLE
+            loginViewModel.login(username.text.toString(), password.text.toString())
+        }
     }
 
     private fun handleLoginSuccess(user: User?) {
         val user = user!!
 
-        val welcome = getString(R.string.welcome)
-        val displayName = user.name
+        val welcome = getString(R.string.welcome, user.name)
 
         Toast.makeText(
             applicationContext,
-            "$welcome $displayName",
+            welcome,
             Toast.LENGTH_LONG
         ).show()
 
@@ -157,7 +172,7 @@ class LoginActivity: AppCompatActivity() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
         startActivity(intent)
-        setResult(Activity.RESULT_OK)
+        setResult(RESULT_OK)
 
         finish()
     }
@@ -165,19 +180,4 @@ class LoginActivity: AppCompatActivity() {
     private fun showLoginFailed(@StringRes errorString: Int) {
         Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
-}
-
-/**
- * Extension function to simplify setting an afterTextChanged action to EditText components.
- */
-fun EditText.afterTextChanged(afterTextChanged: (String) -> Unit) {
-    this.addTextChangedListener(object : TextWatcher {
-        override fun afterTextChanged(editable: Editable?) {
-            afterTextChanged.invoke(editable.toString())
-        }
-
-        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-
-        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-    })
 }

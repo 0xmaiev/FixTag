@@ -9,4 +9,6 @@ data class MachineDto(
     @SerializedName("serial_number")
     val serialNumber: String,
     val model: String,
+    @SerializedName("created_at")
+    val createdAt: String,
 )
