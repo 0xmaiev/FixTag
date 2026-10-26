@@ -82,6 +82,7 @@ class MachineDetailFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.incidents.collect { data ->
+                        incidentAdapter.submitList(data)
                         val now = Clock.System.now()
                         machineHistorySummary.text = requireContext()
                             .recentIncidentsText(data.count {
@@ -100,10 +101,9 @@ class MachineDetailFragment : Fragment() {
                 }
             }
         }
-
         newIncidentButton.setOnClickListener {
             val bundle = Bundle()
-            bundle.putString(MACHINE_ID_KEY, machineId.toString())
+            bundle.putString(MACHINE_ID_KEY, viewModel.id.toString())
             findNavController().navigate(
                 R.id.new_incident,
                 bundle

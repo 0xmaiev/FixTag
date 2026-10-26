@@ -44,6 +44,7 @@ class IncidentsFragment : Fragment() {
     }
 
     private lateinit var newIncidentButton: Button
+    private lateinit var switchProfileButton: Button
     private lateinit var incidentAdapter: IncidentAdapter
     private lateinit var recyclerView: RecyclerView
 
@@ -69,6 +70,7 @@ class IncidentsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         newIncidentButton = view.findViewById(R.id.newIncidentButton)
+        switchProfileButton = view.findViewById(R.id.switchProfileButton)
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.adapter = incidentAdapter
 
@@ -81,6 +83,9 @@ class IncidentsFragment : Fragment() {
         }
         newIncidentButton.setOnClickListener {
             findNavController().navigate(R.id.new_incident)
+        }
+        switchProfileButton.setOnClickListener {
+            mainViewModel.switchProfile()
         }
         showPendingCount(view, mainViewModel.pendingCount)
     }

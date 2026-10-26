@@ -16,10 +16,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
+import com.example.fixtag.data.model.UserRole
 import com.example.fixtag.ui.adapters.MachineAdapter
 import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.showFor
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.MachinesViewModel
 import kotlinx.coroutines.launch
@@ -43,6 +45,7 @@ class MachinesFragment : Fragment() {
     }
 
 
+    private lateinit var switchProfileButton: Button
     private lateinit var newMachineButton: Button
     private lateinit var machineAdapter: MachineAdapter
     private lateinit var recyclerView: RecyclerView
@@ -67,6 +70,7 @@ class MachinesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        switchProfileButton = view.findViewById(R.id.switchProfileButton)
         newMachineButton = view.findViewById(R.id.newMachineButton)
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.adapter = machineAdapter
@@ -81,7 +85,11 @@ class MachinesFragment : Fragment() {
         newMachineButton.setOnClickListener {
             findNavController().navigate(R.id.new_machine)
         }
+        switchProfileButton.setOnClickListener {
+            mainViewModel.switchProfile()
+        }
         showPendingCount(view, mainViewModel.pendingCount)
+        showFor(newMachineButton, mainViewModel.role, UserRole.Assistance)
     }
 
 }

@@ -33,6 +33,9 @@ class MainViewModel(
     private val _navigationState = MutableStateFlow<NavigationState>(NavigationState.Loading)
     val navigationState: StateFlow<NavigationState> = _navigationState.asStateFlow()
 
+    private val _role = MutableStateFlow<UserRole?>(null)
+    val role: StateFlow<UserRole?> = _role.asStateFlow()
+
     val pendingCount: StateFlow<Int> = repository.observePendingCount()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
@@ -40,7 +43,7 @@ class MainViewModel(
         checkUserStatus()
     }
 
-    private fun switchProfile() {
+    fun switchProfile() {
         viewModelScope.launch {
             repository.logout()
             _navigationState.value = NavigationState.GoToLogin
@@ -51,6 +54,7 @@ class MainViewModel(
         viewModelScope.launch {
             val user = repository.restoreSession()
             if (user != null) {
+                _role.value = user.role
                 Log.d("MainViewModel", "Found authentication details for ${user.role} ${user.name}")
                 // operators route to machines view
                 if (user.role == UserRole.Operator) {

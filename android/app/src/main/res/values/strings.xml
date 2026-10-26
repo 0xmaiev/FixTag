@@ -127,6 +127,7 @@
     <string name="cancel">Cancel</string>
     <string name="record_audio">Audio recording</string>
     <string name="take_photo">Photo capture</string>
+    <string name="switch_profile">Switch profile</string>
 
 
     <!-- Sample strings for editor display-->

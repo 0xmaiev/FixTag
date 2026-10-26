@@ -280,6 +280,8 @@ class NewIncidentFragment : Fragment() {
             viewModel.onCaptured(AttachmentKind.Audio, false)  // deletes the empty file
             null
         }
+
+        if (recorder != null) addAudio.setImageResource(R.drawable.ic_stop)  // tap again to stop
     }
 
     private fun stopRecording() {
@@ -287,6 +289,7 @@ class NewIncidentFragment : Fragment() {
         this.recorder = null
         val saved = runCatching { recorder.stop() }.isSuccess  // stop() throws if no audio arrived yet
         recorder.release()
+        addAudio.setImageResource(android.R.drawable.presence_audio_online)
         viewModel.onCaptured(AttachmentKind.Audio, saved)
     }
 

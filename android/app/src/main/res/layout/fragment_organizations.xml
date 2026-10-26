@@ -18,14 +18,24 @@
         android:paddingBottom="5dp">
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center|start"
             android:layout_margin="10dp"
+            android:layout_weight="1"
             android:gravity="center|start"
             android:text="@string/organizations_fragment_title"
             android:textColor="@color/white"
             android:textSize="24sp" />
+            
+        <Button
+            android:id="@+id/switchProfileButton"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/switch_profile"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 

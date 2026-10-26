@@ -16,10 +16,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
+import com.example.fixtag.data.model.UserRole
 import com.example.fixtag.ui.adapters.OrganizationAdapter
 import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.showFor
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.OrganizationsViewModel
 import kotlinx.coroutines.launch
@@ -42,6 +44,7 @@ class OrganizationsFragment : Fragment() {
         AppViewModelFactory(repository)
     }
 
+    private lateinit var switchProfileButton: Button
     private lateinit var organizationAdapter: OrganizationAdapter
     private lateinit var newOrganization: Button
     private lateinit var recyclerView: RecyclerView
@@ -66,6 +69,7 @@ class OrganizationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        switchProfileButton = view.findViewById(R.id.switchProfileButton)
         newOrganization = view.findViewById(R.id.newOrganizationButton)
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.adapter = organizationAdapter
@@ -80,7 +84,11 @@ class OrganizationsFragment : Fragment() {
         newOrganization.setOnClickListener {
             findNavController().navigate(R.id.new_organization)
         }
+        switchProfileButton.setOnClickListener {
+            mainViewModel.switchProfile()
+        }
         showPendingCount(view, mainViewModel.pendingCount)
+        showFor(newOrganization, mainViewModel.role, UserRole.Assistance)
     }
 
 }

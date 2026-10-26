@@ -17,6 +17,7 @@ import androidx.navigation.fragment.fragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
+import com.example.fixtag.data.model.UserRole
 import com.example.fixtag.ui.fragments.IncidentDetailFragment
 import com.example.fixtag.ui.fragments.IncidentsFragment
 import com.example.fixtag.ui.fragments.MachineDetailFragment
@@ -87,6 +88,9 @@ class MainActivity : AppCompatActivity() {
             setStartDestination(startDestination)  // operators start on machines, everyone else on incidents
         }
         bottomNavigationView.setupWithNavController(navController)
+        // only the manufacturer's support staff register clients (PUT /organizations is theirs alone)
+        bottomNavigationView.menu
+                .findItem(R.id.organizations).isVisible = viewModel.role.value == UserRole.Assistance
     }
 
     private fun navigateToLogin() {

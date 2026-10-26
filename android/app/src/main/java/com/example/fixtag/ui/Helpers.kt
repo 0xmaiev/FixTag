@@ -20,6 +20,7 @@ import coil3.load
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.IncidentSeverity
+import com.example.fixtag.data.model.UserRole
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
+
+// shows a view only to the roles that may use it
+fun Fragment.showFor(view: View, role: Flow<UserRole?>, vararg allowed: UserRole) {
+    viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            role.collect { view.isVisible = it in allowed }
+        }
+    }
+}
 
 fun Context.recentIncidentsText(count: Int): String =
     if (count == 0) getString(R.string.machine_no_recent_incidents)

@@ -61,18 +61,14 @@
 
                         <TextView
                             android:id="@+id/organization"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center"
                             android:layout_margin="5dp"
-                            android:gravity="center"
+                            android:layout_weight="1"
+                            android:gravity="start|center_vertical"
                             android:text="@string/sample_organization_name"
                             android:textSize="20sp" />
-
-                        <Space
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1" />
 
                         <Button
                             android:id="@+id/selectOrganizationButton"

@@ -94,6 +94,9 @@
     <string name="remove">Remover</string>
     <string name="delete">Apagar</string>
     <string name="cancel">Cancelar</string>
+    <string name="record_audio">Gravar áudio</string>
+    <string name="take_photo">Capturar foto</string>
+    <string name="switch_profile">Trocar perfil</string>
     <string name="delete_pending_title">Apagar?</string>
     <string name="delete_pending_message">«%1$s» ainda não foi enviado, por isso só existe neste dispositivo. Não é possível desfazer.</string>
     <string name="delete_machine_in_use">Apague primeiro as ocorrências desta máquina.</string>
