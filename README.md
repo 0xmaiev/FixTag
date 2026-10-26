@@ -6,6 +6,31 @@ Dentro: identificação por QR ou número de série, ocorrência com descrição
 
 Fora (trabalho futuro): pedido de peças, garantia, integração com software de gestão de pedidos, leitura de códigos de erro do controlador, etc.
 
+## Como experimentar (variante demo)
+
+A variante `demo` funciona sem servidor e sem credenciais: os dados de exemplo são criados no dispositivo na primeira utilização.
+
+1. Abrir a pasta `android/` no Android Studio.
+2. Em *Build Variants*, escolher `demoDebug`.
+3. Correr num emulador ou dispositivo com Android 10 (API 29) ou superior.
+4. Escolher um perfil: **Operador** (abre em Máquinas) ou **Assistência** (abre em Ocorrências).
+
+O protocolo experimental do tema 3 está em [`docs/protocolo-experimental.pdf`](docs/protocolo-experimental.pdf).
+
+## Entregas
+
+| Data | Branch | Conteúdo |
+|---|---|---|
+| 27/10 | [entrega-10-27](https://github.com/0xmaiev/FixTag/tree/entrega-10-27) | Tema 3: persistência local e funcionamento offline (variante demo) |
+| 04/11 | a publicar | API, sincronização com WorkManager, atribuição de técnicos |
+| 06/12 | a publicar | Cidadãos, espaços públicos e mapa de ocorrências |
+
+## Estrutura do repositório
+
+- `android/`: a app, com as variantes `demo` (sem servidor) e `full` (com a API)
+- `backend/`: a API REST (Rust, Axum e PostgreSQL) usada pela variante `full`
+- `docs/`: protocolo experimental, especificação da API e diagramas
+
 ### Stack
 
 | Camada | Escolha | Porquê |
