@@ -32,21 +32,25 @@ data class Machine(
     val id: Uuid,
     @ColumnInfo(name = "organization_id")
     val organizationId: Uuid,
+    @ColumnInfo(name = "manufacturer")
+    val manufacturerId: Uuid,
     @ColumnInfo(name = "serial_number")
     val serialNumber: String,
     @ColumnInfo(name = "model")
     val model: String,
     @ColumnInfo(name = "created_at")
     val createdAt: Instant,
-    @ColumnInfo(name = "sync_status")
+    @ColumnInfo(name = "sync_status", defaultValue = "Pending")
     val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
 ) {
     companion object {
         fun create(id: Uuid, organizationId: Uuid,
+                   manufacturerId: Uuid,
                    serialNumber: String, model: String): Machine {
             return Machine(
                 id,
                 organizationId,
+                manufacturerId,
                 serialNumber,
                 model,
                 Clock.System.now()

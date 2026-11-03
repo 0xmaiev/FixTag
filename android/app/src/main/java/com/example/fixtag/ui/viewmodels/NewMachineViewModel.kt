@@ -56,7 +56,7 @@ class NewMachineViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     // Submit function to
-    fun submit(model: String, serialNumber: String) {
+    fun submit(manufacturerId: Uuid, model: String, serialNumber: String) {
         val organizationId = organizationId.value
         _form.value = validate(organizationId, model, serialNumber)
         // early exit - State.* comes from `InputBaseViewModel`
@@ -66,6 +66,7 @@ class NewMachineViewModel(
             repository.createMachine(Machine.create(
                 Uuid.parse(machineId),
                 Uuid.parse(organizationId),
+                manufacturerId,
                 serialNumber.trim().uppercase(), // normalizing serial alphanumeric value
                 model.trim()
             ))

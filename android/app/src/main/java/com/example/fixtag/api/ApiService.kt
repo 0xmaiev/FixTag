@@ -5,7 +5,8 @@ import com.example.fixtag.api.model.TokenResponseDto
 import com.example.fixtag.api.model.IncidentDto
 import com.example.fixtag.api.model.MachineDto
 import com.example.fixtag.api.model.OrganizationDto
-import com.example.fixtag.api.model.TechnicianDto
+import com.example.fixtag.api.model.UserDto
+import com.example.fixtag.data.model.IncidentSeverity
 import com.google.gson.annotations.SerializedName
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -37,7 +38,7 @@ data class CreateIncidentRequestDto(
     @SerializedName("machine_id")
     val machineId: String,
     val description: String,
-    val severity: String,
+    val severity: IncidentSeverity,
     val latitude: Double?,
     val longitude: Double?,
     @SerializedName("accuracy_m")
@@ -89,8 +90,8 @@ interface ApiService {
         @Body request: RegisterDeviceRequestDto
     ): Response<Unit>
 
-    @GET("/technicians")
-    suspend fun getTechnicians(): Response<List<TechnicianDto>>
+    @GET("/users")
+    suspend fun getMembers(): Response<List<UserDto>>
 
     @GET("/organizations")
     suspend fun getOrganizations(): Response<List<OrganizationDto>>

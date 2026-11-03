@@ -113,8 +113,19 @@ class NewIncidentViewModel(
         state.value = State.Saving
         viewModelScope.launch {
             val id = Uuid.parse(incidentId)  // you were passing machine.id here
-            val incident = Incident.create(id, machine.organizationId, machine.id, user.name, description,
-                severity, latitude.value, longitude.value, accuracyM.value)
+            val incident = Incident.create(
+                id,
+                machine.organizationId,
+                machine.id,
+                machine.manufacturerId,
+                user.id.toString(),
+                user.name,
+                description,
+                severity,
+                latitude.value,
+                longitude.value,
+                accuracyM.value
+            )
             val attachments = AttachmentKind.entries.flatMap { kind ->
                 files(kind).value.map { path ->
                     val file = File(path)

@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.fixtag.data.Database
 import com.example.fixtag.data.model.Auth
 import com.google.gson.FieldNamingPolicy
+import com.google.gson.FieldNamingStrategy
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
@@ -15,7 +16,23 @@ import okhttp3.Response
 import okhttp3.Route
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
 import java.util.concurrent.TimeUnit
+
+
+class RawInterceptor : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request: Request = chain.request()
+        val response: Response = chain.proceed(request)
+        if (response.isSuccessful) {
+            val maxBytesToPeek = (1024 * 1024).toLong()
+            val rawJson = response.peekBody(maxBytesToPeek).string()
+
+            Log.d("ApiClient", "Raw body before parsing: $rawJson ")
+        }
+        return response
+    }
+}
 
 
 class AuthInterceptor(private val context: Context): Interceptor {
@@ -39,14 +56,8 @@ class AuthInterceptor(private val context: Context): Interceptor {
     }
 }
 
-class TokenAuthenticator(private val apiService: ApiService): Authenticator {
-    override fun authenticate(route: Route?, response: Response): Request? {
-        TODO("Not yet implemented")
-    }
-}
-
 object ApiClient {
-    private const val BASE_URL = "http://10.0.2.2:3000"
+    private const val BASE_URL = "http://10.0.2.2:8090"
 
     private var refreshApi: ApiService? = null
 
@@ -132,6 +143,7 @@ object ApiClient {
         }
 
         val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(RawInterceptor())
             .addInterceptor(AuthInterceptor(context))
             .authenticator(tokenAuthenticator)
             .connectTimeout(30, TimeUnit.SECONDS)
@@ -143,7 +155,8 @@ object ApiClient {
             .client(okHttpClient)
             .addConverterFactory(
                 GsonConverterFactory.create(
-                    GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                    GsonBuilder()
+                        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                         .create()
                 )
             )

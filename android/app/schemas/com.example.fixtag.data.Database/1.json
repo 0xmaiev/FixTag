@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "55459180d5e2120431713241dc8750b8",
+    "identityHash": "1e98edd96b3567e2db88ba8415589445",
     "entities": [
       {
         "tableName": "Auth",
@@ -42,7 +42,7 @@
       },
       {
         "tableName": "Organization",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `name` TEXT NOT NULL, `kind` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `name` TEXT NOT NULL, `kind` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', `nif` TEXT NOT NULL DEFAULT '0', PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -72,7 +72,15 @@
             "fieldPath": "syncStatus",
             "columnName": "sync_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
+          },
+          {
+            "fieldPath": "nif",
+            "columnName": "nif",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'0'"
           }
         ],
         "primaryKey": {
@@ -83,8 +91,90 @@
         }
       },
       {
+        "tableName": "client_manufacturer_link",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`client_id` BLOB NOT NULL, `manufacturer_id` BLOB NOT NULL, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`client_id`, `manufacturer_id`), FOREIGN KEY(`client_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`manufacturer_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "clientId",
+            "columnName": "client_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manufacturerId",
+            "columnName": "manufacturer_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Pending'"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "client_id",
+            "manufacturer_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_client_manufacturer_link_client_id",
+            "unique": false,
+            "columnNames": [
+              "client_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_client_manufacturer_link_client_id` ON `${TABLE_NAME}` (`client_id`)"
+          },
+          {
+            "name": "index_client_manufacturer_link_manufacturer_id",
+            "unique": false,
+            "columnNames": [
+              "manufacturer_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_client_manufacturer_link_manufacturer_id` ON `${TABLE_NAME}` (`manufacturer_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Organization",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "client_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "Organization",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "manufacturer_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "User",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `role` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `organization_kind` TEXT NOT NULL, `name` TEXT NOT NULL, `email` TEXT NOT NULL, `role` TEXT NOT NULL, `must_change_password` INTEGER NOT NULL DEFAULT false, `sync_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -96,6 +186,12 @@
             "fieldPath": "organizationId",
             "columnName": "organization_id",
             "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "organizationKind",
+            "columnName": "organization_kind",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -115,6 +211,20 @@
             "columnName": "role",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "mustChangePassword",
+            "columnName": "must_change_password",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'Pending'"
           }
         ],
         "primaryKey": {
@@ -125,68 +235,8 @@
         }
       },
       {
-        "tableName": "technician",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `name` TEXT NOT NULL, `open_incidents` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`organization_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "BLOB",
-            "notNull": true
-          },
-          {
-            "fieldPath": "organizationId",
-            "columnName": "organization_id",
-            "affinity": "BLOB",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "openIncidents",
-            "columnName": "open_incidents",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_technician_organization_id",
-            "unique": false,
-            "columnNames": [
-              "organization_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_technician_organization_id` ON `${TABLE_NAME}` (`organization_id`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "Organization",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "organization_id"
-            ],
-            "referencedColumns": [
-              "id"
-            ]
-          }
-        ]
-      },
-      {
         "tableName": "incident",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `machine_id` BLOB NOT NULL, `author_name` TEXT NOT NULL, `description` TEXT NOT NULL, `severity` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `accuracy_m` REAL, `reported_at` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `status` TEXT NOT NULL, `sync_status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`organization_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`machine_id`) REFERENCES `machine`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `machine_id` BLOB NOT NULL, `handled_by` BLOB NOT NULL, `author_id` TEXT NOT NULL, `author_name` TEXT NOT NULL, `assigned_to` BLOB, `assigned_to_name` TEXT, `description` TEXT NOT NULL, `severity` TEXT NOT NULL, `latitude` REAL, `longitude` REAL, `accuracy_m` REAL, `reported_at` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `status` TEXT NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`id`), FOREIGN KEY(`organization_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`machine_id`) REFERENCES `machine`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -207,10 +257,32 @@
             "notNull": true
           },
           {
+            "fieldPath": "handledBy",
+            "columnName": "handled_by",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "authorId",
+            "columnName": "author_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "authorName",
             "columnName": "author_name",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "assignedTo",
+            "columnName": "assigned_to",
+            "affinity": "BLOB"
+          },
+          {
+            "fieldPath": "assignedToName",
+            "columnName": "assigned_to_name",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "description",
@@ -267,7 +339,8 @@
             "fieldPath": "syncStatus",
             "columnName": "sync_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
           }
         ],
         "primaryKey": {
@@ -323,7 +396,7 @@
       },
       {
         "tableName": "incident_update",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `incident_id` BLOB NOT NULL, `author_name` TEXT NOT NULL, `message` TEXT, `new_status` TEXT, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`incident_id`) REFERENCES `incident`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `incident_id` BLOB NOT NULL, `author_name` TEXT NOT NULL, `message` TEXT, `new_status` TEXT, `assigned_to` TEXT, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`id`), FOREIGN KEY(`incident_id`) REFERENCES `incident`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -354,6 +427,11 @@
             "affinity": "TEXT"
           },
           {
+            "fieldPath": "assignedTo",
+            "columnName": "assigned_to",
+            "affinity": "TEXT"
+          },
+          {
             "fieldPath": "createdAt",
             "columnName": "created_at",
             "affinity": "INTEGER",
@@ -363,7 +441,8 @@
             "fieldPath": "syncStatus",
             "columnName": "sync_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
           }
         ],
         "primaryKey": {
@@ -399,7 +478,7 @@
       },
       {
         "tableName": "attachment",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `incident_id` BLOB NOT NULL, `kind` TEXT NOT NULL, `content_type` TEXT NOT NULL, `size_bytes` INTEGER NOT NULL, `path` TEXT, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL, `fetch_status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`incident_id`) REFERENCES `incident`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `incident_id` BLOB NOT NULL, `kind` TEXT NOT NULL, `content_type` TEXT NOT NULL, `size_bytes` INTEGER NOT NULL, `path` TEXT, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', `fetch_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`id`), FOREIGN KEY(`incident_id`) REFERENCES `incident`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -446,13 +525,15 @@
             "fieldPath": "syncStatus",
             "columnName": "sync_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
           },
           {
             "fieldPath": "fetchStatus",
             "columnName": "fetch_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
           }
         ],
         "primaryKey": {
@@ -488,7 +569,7 @@
       },
       {
         "tableName": "machine",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `serial_number` TEXT NOT NULL, `model` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`organization_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` BLOB NOT NULL, `organization_id` BLOB NOT NULL, `manufacturer` BLOB NOT NULL, `serial_number` TEXT NOT NULL, `model` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `sync_status` TEXT NOT NULL DEFAULT 'Pending', PRIMARY KEY(`id`), FOREIGN KEY(`organization_id`) REFERENCES `Organization`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "id",
@@ -499,6 +580,12 @@
           {
             "fieldPath": "organizationId",
             "columnName": "organization_id",
+            "affinity": "BLOB",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manufacturerId",
+            "columnName": "manufacturer",
             "affinity": "BLOB",
             "notNull": true
           },
@@ -524,7 +611,8 @@
             "fieldPath": "syncStatus",
             "columnName": "sync_status",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": true,
+            "defaultValue": "'Pending'"
           }
         ],
         "primaryKey": {
@@ -585,7 +673,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '55459180d5e2120431713241dc8750b8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1e98edd96b3567e2db88ba8415589445')"
     ]
   }
 }

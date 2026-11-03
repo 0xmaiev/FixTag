@@ -44,8 +44,16 @@ data class Incident(
     val organizationId: Uuid,
     @ColumnInfo(name = "machine_id")
     val machineId: Uuid,
+    @ColumnInfo(name = "handled_by")
+    val handledBy: Uuid,
+    @ColumnInfo(name = "author_id")
+    val authorId: String,
     @ColumnInfo(name = "author_name")
     val authorName: String,
+    @ColumnInfo(name = "assigned_to")
+    val assignedTo: Uuid?,
+    @ColumnInfo(name = "assigned_to_name")
+    val assignedToName: String?,
     val description: String,
     val severity: IncidentSeverity,
     val latitude: Double?,
@@ -59,18 +67,23 @@ data class Incident(
     @ColumnInfo(name = "updated_at")
     val updatedAt: Instant,
     val status: IncidentStatus = IncidentStatus.Received, // Default to Received
-    @ColumnInfo(name = "sync_status")
+    @ColumnInfo(name = "sync_status", defaultValue = "Pending")
     val syncStatus: SyncStatus = SyncStatus.Pending // Default to Pending
 ) {
     companion object {
-        fun create(id: Uuid, organizationId: Uuid, machineId: Uuid, authorName: String, description: String,
-                   severity: IncidentSeverity, latitude: Double?, longitude: Double?, accuracyM: Float?): Incident {
+        fun create(id: Uuid, organizationId: Uuid, machineId: Uuid, handledBy: Uuid,
+                   authorId: String, authorName: String, description: String, severity: IncidentSeverity,
+                   latitude: Double?, longitude: Double?, accuracyM: Float?): Incident {
             val now = Clock.System.now()
             return Incident(
                 id,
                 organizationId,
                 machineId,
+                handledBy,
+                authorId,
                 authorName,
+                null,
+                null,
                 description,
                 severity,
                 latitude,
@@ -121,6 +134,18 @@ interface IncidentDao {
     @Transaction
     @Query("SELECT * FROM incident ORDER BY reported_at DESC")
     fun observeAllWithMachine(): Flow<List<IncidentAndMachine>>
+
+    @Transaction
+    @Query("""
+        SELECT * FROM incident
+         WHERE (:client IS NULL OR organization_id = :client)
+           AND (:manufacturer IS NULL OR handled_by = :manufacturer)
+           AND (:technician IS NULL OR author_id = :technician OR EXISTS (
+                   SELECT 1 FROM incident_update iu
+                    WHERE iu.incident_id = incident.id AND iu.assigned_to = :technician))
+         ORDER BY reported_at DESC
+    """)
+    fun observeVisibleWithMachine(client: Uuid?, manufacturer: Uuid?, technician: Uuid?): Flow<List<IncidentAndMachine>>
 
     @Transaction
     @Query("SELECT * FROM incident WHERE machine_id = :machineId ORDER BY reported_at DESC")

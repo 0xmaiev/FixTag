@@ -19,7 +19,6 @@ import com.example.fixtag.data.model.Machine
 import com.example.fixtag.data.model.Organization
 import com.example.fixtag.data.model.SyncState
 import com.example.fixtag.data.model.SyncStatus
-import com.example.fixtag.data.model.Technician
 import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.Dispatchers
@@ -47,15 +46,11 @@ class Repository(
     val filesDir: File,
     private val session: DataStore<Preferences>
 ) {
-
     private val currentUserId = stringPreferencesKey("current_user_id")
 
-    // in-memory cache of the loggedInUser object
+    // in-memory cache of the user and his organization
     var user: User? = null
         private set
-
-    val isLoggedIn: Boolean
-        get() = user != null
 
     enum class DeleteResult { Deleted, NotPending, InUse }
 
@@ -78,9 +73,11 @@ class Repository(
         val now = Clock.System.now()
         db.withTransaction {  // parents before children, for the foreign keys
             db.getOrganizationDao().upsertAll(DemoSeed.organizations(now))
-            DemoSeed.users.forEach { db.getUserDao().upsert(it) }
+            db.getClientManufacturerLinkDao().upsertAll(DemoSeed.links(now))
+            db.getUserDao().upsertAll(DemoSeed.users)
             db.getMachineDao().upsertAll(DemoSeed.machines(now))
             db.getIncidentDao().upsertAll(DemoSeed.incidents(now))
+            db.getIncidentUpdateDao().upsertAll(DemoSeed.incidentUpdates(now))
         }
     }
 
@@ -123,12 +120,16 @@ class Repository(
                     accessToken = body.accessToken
                 )
                 authDao.upsert(auth)
+                Log.d("Repository", "Got $userData")
                 val user = User(
                     id = userId,
                     organizationId = orgId,
+                    organizationKind = userData.organizationKind,
                     name = userData.name,
                     email = userData.email,
-                    role = UserRole.fromCustomString(userData.role)
+                    role = userData.role,
+                    mustChangePassword = userData.mustChangePassword,
+                    syncStatus = SyncStatus.Synced
                 )
                 userDao.upsert(user)
                 this.user = user
@@ -143,18 +144,18 @@ class Repository(
         }
     }
 
-    suspend fun refreshTechnicians(): Result<List<Technician>> {
+    suspend fun refreshMembers(): Result<List<User>> {
         try {
             Log.d("Repository", "Preparing technicians request")
-            val response = apiService.getTechnicians()
+            val response = apiService.getMembers()
 
             Log.d("Repository", "Got ${response.code()} from /technicians")
             if (response.isSuccessful && response.body() != null) {
-                val technicianDao = db.getTechnicianDao()
+                val userDao = db.getUserDao()
                 val body = response.body()!!
-                val technicians = body.map { it.toEntity() }
-                technicianDao.upsertAll(technicians)
-                return Result.Success(technicians)
+                val members = body.map { it.toEntity() }
+                userDao.upsertAll(members)
+                return Result.Success(members)
             }
 
             return Result.Error(Exception("Invalid response body."))
@@ -250,10 +251,10 @@ class Repository(
         pushPendingAttachments()
     }
 
-    // technicians -> organizations  -> incidents -> attachments / updates (server FK order)
+    //  organizations -> technicians -> incidents -> attachments / updates (server FK order)
     suspend fun pullMissing() {
         refreshOrganizations()
-        refreshTechnicians()
+        refreshMembers()
         refreshMachines()
         syncIncidents()
         downloadAttachments()
@@ -459,19 +460,21 @@ class Repository(
         }
     }
 
+    // abstracted method to observe the authenticated user's profile data
     fun observeUser(): Flow<User?> {
-        return db.getUserDao().observe()
+        return db.getUserDao().observe(user?.id)
     }
 
     fun observeOrganizations(): Flow<List<Organization>> {
         return db.getOrganizationDao().observeAll()
     }
 
-    fun observeTechnicians(): Flow<List<Technician>> {
-        return db.getTechnicianDao().observeAll()
+    fun observeTechnicians(): Flow<List<User>> {
+        return db.getUserDao().observeTechnicians()
     }
 
-    fun observeIncidents(): Flow<List<IncidentAndMachine>> = db.getIncidentDao().observeAllWithMachine()
+    fun observeIncidents(): Flow<List<IncidentAndMachine>> =
+        db.getIncidentDao().observeVisibleWithMachine(user?.organizationId, user?.organizationId, user?.id)
 
     fun observeIncidentsByMachine(machineId: Uuid): Flow<List<IncidentAndMachine>> =
         db.getIncidentDao().observeByMachineWithMachine(machineId)
@@ -506,6 +509,14 @@ class Repository(
 
         syncScheduler.syncNow()
         return organization
+    }
+
+    suspend fun createUser(user: User): User {
+        val userDao = db.getUserDao()
+        userDao.upsert(user)
+
+        syncScheduler.syncNow()
+        return user
     }
 
     suspend fun createMachine(machine: Machine) {

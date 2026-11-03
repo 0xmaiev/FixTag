@@ -86,10 +86,10 @@ class LoginActivity: AppCompatActivity() {
 
             demoProfiles?.isVisible = true
             demoOperator?.setOnClickListener {
-                loginViewModel.loginAsDemoProfile(DemoSeed.OPERATOR)
+                loginViewModel.loginAsDemoProfile(DemoSeed.OPERATOR_1)
             }
             demoAssistance?.setOnClickListener {
-                loginViewModel.loginAsDemoProfile(DemoSeed.ASSISTANCE)
+                loginViewModel.loginAsDemoProfile(DemoSeed.ASSISTANCE_1)
             }
         }
 

@@ -89,7 +89,7 @@ class MachinesFragment : Fragment() {
             mainViewModel.switchProfile()
         }
         showPendingCount(view, mainViewModel.pendingCount)
-        showFor(newMachineButton, mainViewModel.role, UserRole.Assistance)
+        showFor(newMachineButton, mainViewModel.role, UserRole.Assistencia)
     }
 
 }

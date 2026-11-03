@@ -1,6 +1,7 @@
 package com.example.fixtag.data
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -17,6 +18,8 @@ import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserDao
 import com.example.fixtag.data.model.Auth
 import com.example.fixtag.data.model.AuthDao
+import com.example.fixtag.data.model.ClientManufacturerLink
+import com.example.fixtag.data.model.ClientManufacturerLinkDao
 import com.example.fixtag.data.model.Organization
 import com.example.fixtag.data.model.OrganizationDao
 import com.example.fixtag.data.model.SyncState
@@ -30,8 +33,8 @@ const val DATABASE_NAME = "database"
     entities = [
         Auth::class,
         Organization::class,
+        ClientManufacturerLink::class,
         User::class,
-        Technician::class,
         Incident::class,
         IncidentUpdate::class,
         Attachment::class,
@@ -69,8 +72,8 @@ abstract class Database : RoomDatabase() {
     // OrganizationDao is a class annotated with @Dao.
     abstract fun getOrganizationDao(): OrganizationDao
 
-    // TechnicianDao is a class annotated with @Dao.
-    abstract fun getTechnicianDao(): TechnicianDao
+    // ClientManufacturerLinkDao is a class annotated with @Dao.
+    abstract fun getClientManufacturerLinkDao(): ClientManufacturerLinkDao
 
     // MachineDao is a class annotated with @Dao.
     abstract fun getMachineDao(): MachineDao

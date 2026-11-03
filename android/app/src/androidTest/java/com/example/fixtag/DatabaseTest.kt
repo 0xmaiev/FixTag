@@ -44,6 +44,8 @@ class DatabaseTest {
         orgDao = db.getOrganizationDao()
         machineDao = db.getMachineDao()
         userDao = db.getUserDao()
+        incidentDao = db.getIncidentDao()
+        updateDao = db.getIncidentUpdateDao()
     }
 
     @After
@@ -56,6 +58,7 @@ class DatabaseTest {
         val org = Organization.create(
             Uuid.random(),
             "Test Org",
+            "123456789"
         )
         orgDao.upsert(org)
         val byName = orgDao.findOrganizationsByName("Test Org")
@@ -71,6 +74,7 @@ class DatabaseTest {
         val machine = Machine.create(
             Uuid.random(),
             org.id,
+            org.id,
             "FT-0001",
             "Prensa"
         )
@@ -84,9 +88,10 @@ class DatabaseTest {
         val user = User(
             Uuid.random(),
             Uuid.random(),
+            OrganizationKind.Cliente,
             "Jorge",
             "jorge@fixtag.test",
-            UserRole.Operator
+            UserRole.Operador
         )
         userDao.upsert(user)
         val byName = userDao.findUsersByName("Jorge")

@@ -37,20 +37,23 @@ data class IncidentUpdate(
     val message: String?,
     @ColumnInfo(name = "new_status")
     val newStatus: String?,
+    @ColumnInfo(name = "assigned_to")
+    val assignedTo: String?,
     @ColumnInfo(name = "created_at")
     val createdAt: Instant,
-    @ColumnInfo(name = "sync_status")
+    @ColumnInfo(name = "sync_status", defaultValue = "Pending")
     val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
 ){
     companion object {
         fun create(id: Uuid, incidentId: Uuid, authorName: String, message: String?,
-                   newStatus: String?): IncidentUpdate {
+                   newStatus: String?, assignedTo: String?): IncidentUpdate {
             return IncidentUpdate(
                 id,
                 incidentId,
                 authorName,
                 message,
                 newStatus,
+                assignedTo,
                 Clock.System.now(),
                 SyncStatus.Pending
             )
@@ -67,7 +70,7 @@ interface IncidentUpdateDao {
     suspend fun upsertAll(updates: List<IncidentUpdate>)
 
     @Transaction
-    @Query("SELECT * FROM incident_update WHERE incident_id = :incidentId")
+    @Query("SELECT * FROM incident_update WHERE incident_id = :incidentId ORDER BY created_at DESC")
     fun observe(incidentId: Uuid): Flow<List<IncidentUpdate>>
 
     @Query("SELECT * FROM incident_update")

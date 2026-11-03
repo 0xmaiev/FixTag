@@ -11,6 +11,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import kotlin.time.Clock
 //import com.example.fixtag.data.UserWithIncidents
 import kotlin.uuid.Uuid
 
@@ -33,7 +34,20 @@ data class Technician(
     val name: String,
     @ColumnInfo(name = "open_incidents")
     val openIncidents: Int,
-)
+    @ColumnInfo(name = "sync_status", defaultValue = "pending")
+    val syncStatus: SyncStatus = SyncStatus.Pending // Default to pending
+) {
+    companion object {
+        fun create(id: Uuid, organizationId: Uuid, name: String): Technician {
+            return Technician(
+                id,
+                organizationId,
+                name,
+                0
+            )
+        }
+    }
+}
 
 @Dao
 interface TechnicianDao {

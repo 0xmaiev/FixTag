@@ -10,26 +10,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.fragment.fragment
-import androidx.navigation.createGraph
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.fragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.data.model.UserRole
-import com.example.fixtag.ui.fragments.IncidentDetailFragment
-import com.example.fixtag.ui.fragments.IncidentsFragment
-import com.example.fixtag.ui.fragments.MachineDetailFragment
-import com.example.fixtag.ui.fragments.MachinesFragment
-import com.example.fixtag.ui.fragments.NewIncidentFragment
-import com.example.fixtag.ui.fragments.NewMachineFragment
-import com.example.fixtag.ui.fragments.NewOrganizationFragment
-import com.example.fixtag.ui.fragments.OrganizationsFragment
 import com.example.fixtag.ui.login.LoginActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
-import kotlin.uuid.Uuid
 
 class MainActivity : AppCompatActivity() {
 
@@ -90,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setupWithNavController(navController)
         // only the manufacturer's support staff register clients (PUT /organizations is theirs alone)
         bottomNavigationView.menu
-                .findItem(R.id.organizations).isVisible = viewModel.role.value == UserRole.Assistance
+                .findItem(R.id.organizations).isVisible = viewModel.role.value == UserRole.Assistencia
     }
 
     private fun navigateToLogin() {

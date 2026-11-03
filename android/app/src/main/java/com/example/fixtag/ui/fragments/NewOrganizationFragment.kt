@@ -48,6 +48,8 @@ class NewOrganizationFragment: Fragment() {
 
     private lateinit var createOrganization: Button
     private lateinit var name: EditText
+    private lateinit var nif: EditText
+    private lateinit var managerEmail: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,20 +70,37 @@ class NewOrganizationFragment: Fragment() {
             .setNavigationOnClickListener { findNavController().navigateUp() }
         createOrganization = view.findViewById(R.id.createOrganizationButton)
         name = view.findViewById(R.id.name)
+        managerEmail = view.findViewById(R.id.managerEmail)
+        nif = view.findViewById(R.id.nif)
+        managerEmail = view.findViewById(R.id.managerEmail)
 
         // react to ui interactions
 
         // create the machine
-        createOrganization.setOnClickListener { viewModel.submit(name.text.toString()) }
+        createOrganization.setOnClickListener {
+            viewModel.submit(
+                name.text.toString(),
+                nif.text.toString(),
+                managerEmail.text.toString()
+            )
+        }
         name.apply {
             // set afterTextChanged on the text edit field
             afterTextChanged {
-                viewModel.formDataChanged(name.text.toString())
+                viewModel.formDataChanged(
+                    name.text.toString(),
+                    nif.text.toString(),
+                    managerEmail.text.toString()
+                )
             }
             // react to enter key being pressed on the text input
             setOnEditorActionListener { _, actionId, _ ->
                 when (actionId) {
-                    EditorInfo.IME_ACTION_DONE -> viewModel.submit(name.text.toString())
+                    EditorInfo.IME_ACTION_DONE -> viewModel.submit(
+                        name.text.toString(),
+                        nif.text.toString(),
+                        managerEmail.text.toString()
+                    )
                 }
                 false
             }

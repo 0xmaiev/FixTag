@@ -9,6 +9,8 @@ data class IncidentDto(
     val id: String,
     @SerializedName("organization_id")
     val organizationId: String,
+    @SerializedName("handled_by")
+    val handledBy: String,
     @SerializedName("machine_id")
     val machineId: String,
     @SerializedName("author_id")
@@ -16,8 +18,8 @@ data class IncidentDto(
     @SerializedName("author_name")
     val authorName: String,
     val description: String,
-    val severity: String,
-    val status: String,
+    val severity: IncidentSeverity,
+    val status: IncidentStatus,
     @SerializedName("assigned_to")
     val assignedTo: String?,
     @SerializedName("assigned_to_name")

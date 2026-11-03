@@ -9,7 +9,7 @@ import com.example.fixtag.api.model.IncidentDto
 import com.example.fixtag.api.model.IncidentUpdateDto
 import com.example.fixtag.api.model.MachineDto
 import com.example.fixtag.api.model.OrganizationDto
-import com.example.fixtag.api.model.TechnicianDto
+import com.example.fixtag.api.model.UserDto
 import com.example.fixtag.data.model.Attachment
 import com.example.fixtag.data.model.AttachmentKind
 import com.example.fixtag.data.model.Incident
@@ -20,7 +20,8 @@ import com.example.fixtag.data.model.Machine
 import com.example.fixtag.data.model.Organization
 import com.example.fixtag.data.model.OrganizationKind
 import com.example.fixtag.data.model.SyncStatus
-import com.example.fixtag.data.model.Technician
+import com.example.fixtag.data.model.User
+import com.example.fixtag.data.model.UserRole
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
 
@@ -28,18 +29,22 @@ fun OrganizationDto.toEntity(): Organization {
     return Organization(
         id = Uuid.parse(id),
         name = name,
-        kind = OrganizationKind.fromCustomString(kind),
+        kind = kind,
         createdAt = Instant.parse(createdAt),
         syncStatus = SyncStatus.Synced,
+        nif = nif
     )
 }
 
-fun TechnicianDto.toEntity(): Technician {
-    return Technician(
+fun UserDto.toEntity(): User {
+    return User(
         id = Uuid.parse(id),
         organizationId = Uuid.parse(organizationId),
+        organizationKind = organizationKind,
         name = name,
-        openIncidents = openIncidents
+        email = email,
+        role = role,
+        mustChangePassword = mustChangePassword,
     )
 }
 
@@ -47,6 +52,7 @@ fun MachineDto.toEntity(): Machine {
     return Machine(
         id = Uuid.parse(id),
         organizationId = Uuid.parse(organizationId),
+        manufacturerId = Uuid.parse(manufacturerId),
         serialNumber = serialNumber,
         model = model,
         createdAt = Instant.parse(createdAt),
@@ -60,10 +66,10 @@ fun AttachmentDto.toEntity(
     return Attachment(
         id = Uuid.parse(id),
         incidentId = incidentId,
-        kind = AttachmentKind.fromCustomString(kind),
+        kind = kind,
         contentType = contentType,
         sizeBytes = sizeBytes,
-        path = "", // TODO ? need to fetch them
+        path = "",
         createdAt = Instant.parse(createdAt),
         syncStatus = SyncStatus.Synced,
         fetchStatus = SyncStatus.Pending
@@ -78,6 +84,7 @@ fun IncidentUpdateDto.toEntity(incidentId: Uuid): IncidentUpdate {
         authorName = authorName,
         message = message,
         newStatus = newStatus,
+        assignedTo = assignedTo,
         createdAt = Instant.parse(createdAt),
         syncStatus = SyncStatus.Synced, // this comes from the API
     )
@@ -88,10 +95,14 @@ fun IncidentDto.toEntity(id: Uuid): Incident {
         id = id,
         organizationId = Uuid.parse(organizationId),
         machineId = Uuid.parse(machineId),
+        handledBy = Uuid.parse(handledBy),
+        authorId = authorId,
         authorName = authorName,
+        assignedTo = assignedTo?.let { Uuid.parse(it) },
+        assignedToName = assignedToName,
         description = description,
-        severity = IncidentSeverity.fromCustomString(severity),
-        status = IncidentStatus.fromCustomString(status),
+        severity = severity,
+        status = status,
         latitude = latitude,
         longitude = longitude,
         accuracyM = accuracyM,
@@ -120,7 +131,7 @@ fun Incident.toRequest(): CreateIncidentRequestDto {
     return CreateIncidentRequestDto(
         machineId = machineId.toString(),
         description = description,
-        severity = IncidentSeverity.toCustomString(severity),
+        severity = severity,
         latitude = latitude,
         longitude = longitude,
         accuracyM = accuracyM,

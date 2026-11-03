@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ui.fragments.NewMemberFragment">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/material_dynamic_neutral10"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/white"
+        app:title="@string/new_member_fragment_title"
+        app:titleTextColor="@color/white" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- a card stacks its children like a FrameLayout, so it gets exactly one -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            app:cardCornerRadius="5dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+                <LinearLayout
+                    android:id="@+id/nameLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/nameLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="15dp"
+                        android:gravity="center"
+                        android:text="@string/label_name"
+                        android:textSize="18sp" />
+                    <EditText
+                        android:id="@+id/name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_margin="5dp"
+                        android:autofillHints="name"
+                        android:hint="@string/label_name"
+                        android:inputType="text"
+                        android:labelFor="@string/label_name"
+                        android:textAlignment="viewStart"
+                        android:textSize="20sp" />
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/emailLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/emailLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="15dp"
+                        android:gravity="center"
+                        android:text="@string/label_email"
+                        android:textSize="18sp" />
+                    <EditText
+                        android:id="@+id/email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_margin="5dp"
+                        android:autofillHints="name"
+                        android:hint="@string/label_email"
+                        android:inputType="textEmailAddress"
+                        android:labelFor="@string/label_email"
+                        android:textAlignment="viewStart"
+                        android:textSize="20sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </ScrollView>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/createMemberButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="20dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginEnd="50dp"
+        android:elevation="6dp"
+        android:text="@string/save"
+        android:textAlignment="center"
+        android:textColor="@color/material_dynamic_primary100"
+        app:chipBackgroundColor="@color/material_dynamic_primary10" />
+
+</LinearLayout>

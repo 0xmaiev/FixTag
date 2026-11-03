@@ -1,5 +1,6 @@
 package com.example.fixtag.ui.viewmodels
 
+import androidx.datastore.core.wrapExceptionIfDueToDirectBoot
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -21,8 +22,11 @@ import kotlin.uuid.Uuid
 
 data class NewOrganizationFormState(
     val nameError: Int? = null,
-    val isDataValid: Boolean = false
-)
+    val nifError: Int? = null,
+    val managerEmailError: Int? = null
+) {
+    val isDataValid get() = nameError == null && nifError == null && managerEmailError == null
+}
 
 class NewOrganizationViewModel(
     private val repository: Repository,
@@ -35,24 +39,48 @@ class NewOrganizationViewModel(
     private val _form = MutableStateFlow(NewOrganizationFormState())
     val form: StateFlow<NewOrganizationFormState> = _form.asStateFlow()
 
-    fun submit(name: String) {
+    fun submit(name: String, nif: String, managerEmail: String) {
         // validate
-        _form.value = validate(name)
+        _form.value = validate(name, nif, managerEmail)
         // early exit
         if (!_form.value.isDataValid || state.value != State.Editing) return
         state.value = State.Saving
         viewModelScope.launch {
-            repository.createOrganization(Organization.create(Uuid.parse(organizationId), name.trim()))
+            repository.createOrganization(Organization.create(
+                Uuid.parse(organizationId),
+                name.trim(),
+                nif
+            ))
             state.value = State.Saved
         }
     }
 
     // the server will trim and reject empty names, so "   " has to fail here too
-    private fun validate(name: String) =
-        if (name.isBlank()) NewOrganizationFormState(nameError = R.string.empty_name_error)
-        else NewOrganizationFormState(isDataValid = true)
+    private fun validate(name: String, nif: String, managerEmail: String): NewOrganizationFormState {
+        var nameError: Int? = null
+        var nifError: Int? = null
+        var managerEmailError: Int? = null
 
-    fun formDataChanged(name: String) {
-        _form.value = validate(name)
+        if (name.isBlank()) { nameError = R.string.empty_name_error }
+        if (managerEmail.isBlank()) { managerEmailError = R.string.invalid_email }
+        if (nif.isBlank()) { nifError = R.string.empty_nif_error }
+        if (!isValidNif(nif)) { nifError = R.string.invalid_nif_error }
+
+        return NewOrganizationFormState(
+            nameError,
+            nifError,
+            managerEmailError
+        )
+    }
+
+    fun isValidNif(nif: String): Boolean {
+        if (nif.length != 9 || !nif.all { it in '0'..'9' }) return false
+        val sum = (0 until 8).sumOf { (nif[it] - '0') * (9 - it) }
+        val check = (11 - sum % 11).let { if (it >= 10) 0 else it }
+        return nif[8] - '0' == check
+    }
+
+    fun formDataChanged(name: String, nif: String, managerEmail: String) {
+        _form.value = validate(name, nif, managerEmail)
     }
 }

@@ -88,7 +88,7 @@ class OrganizationsFragment : Fragment() {
             mainViewModel.switchProfile()
         }
         showPendingCount(view, mainViewModel.pendingCount)
-        showFor(newOrganization, mainViewModel.role, UserRole.Assistance)
+        showFor(newOrganization, mainViewModel.role, UserRole.Assistencia)
     }
 
 }

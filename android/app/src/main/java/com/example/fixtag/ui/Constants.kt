@@ -12,6 +12,9 @@ const val SELECT_MACHINE_REQUEST_KEY: String = "selectMachineId"
 
 // Handles for savedStateHandle usage
 
+// Machine
+const val USER_ID_HANDLE: String = "userId"
+
 // Organization
 const val ORGANIZATION_ID_HANDLE: String = "organizationId"
 const val ORGANIZATION_NAME_HANDLE: String = "name"

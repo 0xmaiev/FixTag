@@ -3,6 +3,7 @@ package com.example.fixtag.ui.fragments
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.media.MediaRecorder
 import android.net.Uri
 import android.opengl.Visibility
@@ -43,6 +44,11 @@ import com.example.fixtag.ui.dialogs.MachineSelectDialogFragment
 import com.example.fixtag.ui.showPhoto
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewIncidentViewModel
+import com.google.android.gms.location.CurrentLocationRequest
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.Task
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.Snackbar
@@ -69,6 +75,9 @@ class NewIncidentFragment : Fragment() {
             }
         }
 
+    private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        if (granted.all { kv -> kv.value }) grabLocation() else permissionDenied(R.string.location_permission_needed)
+    }
     private val cameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) capturePhoto() else permissionDenied(R.string.camera_permission_needed)
     }
@@ -90,6 +99,7 @@ class NewIncidentFragment : Fragment() {
     private lateinit var model: TextView
     private lateinit var serialNumber: TextView
     private lateinit var createIncident: Button
+    private lateinit var addLocation: ImageButton
     private lateinit var addPhoto: ImageButton
     private lateinit var addVideo: Button
     private lateinit var addAudio: ImageButton
@@ -98,13 +108,13 @@ class NewIncidentFragment : Fragment() {
     private lateinit var severityChips: ChipGroup
     private lateinit var attachmentAdapter: AttachmentAdapter
     private lateinit var recyclerView: RecyclerView
+    private lateinit var locationProvider: FusedLocationProviderClient
     private var recorder: MediaRecorder? = null
+    private var locationTask: Task<Location>? = null
     private val voicePlayer = VoicePlayer()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
     }
 
     override fun onCreateView(
@@ -120,6 +130,7 @@ class NewIncidentFragment : Fragment() {
         view.findViewById<MaterialToolbar>(R.id.toolbar)
             .setNavigationOnClickListener { findNavController().navigateUp() }
         selectMachine = view.findViewById(R.id.selectMachineButton)
+        addLocation = view.findViewById(R.id.addLocationButton)
         addPhoto = view.findViewById(R.id.addPhotoButton)
         addAudio = view.findViewById(R.id.recordAudioButton)
         createIncident = view.findViewById(R.id.createIncidentButton)
@@ -149,6 +160,13 @@ class NewIncidentFragment : Fragment() {
             )
         }
         // adding photos as attachments
+        addLocation.setOnClickListener {
+            if (isGranted(Manifest.permission.ACCESS_FINE_LOCATION) &&
+                isGranted(Manifest.permission.ACCESS_COARSE_LOCATION) ) grabLocation()
+            else locationPermission.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
         addPhoto.setOnClickListener {
             if (isGranted(Manifest.permission.CAMERA)) capturePhoto()
             else cameraPermission.launch(Manifest.permission.CAMERA)
@@ -235,6 +253,31 @@ class NewIncidentFragment : Fragment() {
     }
 
     // location
+
+    private fun grabLocation() {
+        val context = requireContext()
+        locationProvider = LocationServices.getFusedLocationProviderClient(context)
+
+        if (ContextCompat.checkSelfPermission(context,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ) {
+
+            val locationRequest = CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY) // Request precise GPS coordinates
+                .setMaxUpdateAgeMillis(10000) // Accept a cached location if it is less than 10 seconds old
+                .build()
+            locationTask = locationProvider.getCurrentLocation(locationRequest, null)
+            locationTask?.addOnFailureListener { res ->
+                Log.d("NewIncidentFragment", "Error getting location: $res")
+                Toast.makeText(context, R.string.failed_to_get_location, Toast.LENGTH_SHORT).show()
+            }
+            locationTask?.addOnSuccessListener { res ->
+                Log.d("NewIncidentFragment", "Got location lat: ${res.latitude} long: ${res.longitude}")
+                viewModel.setGeolocationInfo(res.latitude, res.longitude, res.accuracy)
+            }
+        }
+    }
 
     // camera
 
