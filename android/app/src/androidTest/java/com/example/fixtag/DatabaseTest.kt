@@ -71,18 +71,22 @@ class DatabaseTest {
     @Test
     fun writeMachine() = runTest {
         // every test starts from an empty database, and the machine's foreign key needs the organization
-        val org = Organization.create(Uuid.random(), "Test Org", "123456789")
+        val org = Organization.create(Uuid.random(), "Test Org", "123456790")
         orgDao.upsert(org)
         val machine = Machine.create(
             Uuid.random(),
             org.id,
             org.id,
-            "FT-0001",
-            "Prensa"
+            "FT-1000",
+            "Prensa 100T"
         )
         machineDao.upsert(machine)
-        val byName = machineDao.findMachinesByModel("Prensa")
-        assertEquals(machine, byName.single() )
+        val byName = machineDao.findMachinesByModel("Prensa 100T").single()
+        assertEquals(machine.id, byName.id )
+        assertEquals(machine.organizationId, byName.organizationId )
+        assertEquals(machine.manufacturerId, byName.manufacturerId )
+        assertEquals(machine.model, byName.model)
+        assertEquals(machine.serialNumber, byName.serialNumber)
     }
 
     @Test
