@@ -146,6 +146,7 @@
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="logout">Log out</string>
     <string name="grab_location">Grab location</string>
     <string name="failed_to_get_location">Failed to grab location.</string>
     <string name="record_audio">Audio recording</string>

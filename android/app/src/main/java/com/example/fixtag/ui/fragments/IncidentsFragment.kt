@@ -14,12 +14,14 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.ui.adapters.IncidentAdapter
 import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.showLogout
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.IncidentsViewModel
 import kotlinx.coroutines.launch
@@ -88,6 +90,7 @@ class IncidentsFragment : Fragment() {
             mainViewModel.switchProfile()
         }
         showPendingCount(view, mainViewModel.pendingCount)
+        showLogout(switchProfileButton)
     }
 
 }

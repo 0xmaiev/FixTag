@@ -4,7 +4,7 @@ use {
     uuid::Uuid,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
 pub struct Device {
     pub id: Uuid,
     pub user_id: Uuid,

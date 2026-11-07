@@ -110,6 +110,7 @@
     <string name="remove">Remover</string>
     <string name="delete">Apagar</string>
     <string name="cancel">Cancelar</string>
+    <string name="logout">Sair</string>
     <string name="grab_location">Apanhar localização</string>
     <string name="record_audio">Gravar áudio</string>
     <string name="take_photo">Capturar foto</string>

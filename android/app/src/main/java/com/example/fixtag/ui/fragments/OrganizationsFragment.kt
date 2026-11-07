@@ -14,6 +14,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.data.model.isSupport
@@ -22,6 +23,7 @@ import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
 import com.example.fixtag.ui.showFor
+import com.example.fixtag.ui.showLogout
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.OrganizationsViewModel
 import kotlinx.coroutines.launch
@@ -89,6 +91,7 @@ class OrganizationsFragment : Fragment() {
         }
         showPendingCount(view, mainViewModel.pendingCount)
         showFor(newOrganization, mainViewModel.user) { it.isSupport }
+        showLogout(switchProfileButton)
     }
 
 }

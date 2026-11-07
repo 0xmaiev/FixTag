@@ -12,6 +12,7 @@ import android.os.PersistableBundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,6 +27,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil3.load
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.IncidentSeverity
@@ -93,6 +95,12 @@ fun Fragment.showPendingCount(view: View, pendingCount: Flow<Int>) {
                 syncStatus.text = getString(R.string.sync_status, count)
             }
         }
+    }
+}
+
+fun Fragment.showLogout(button: Button) {
+    if (!BuildConfig.OFFLINE_DEMO) {
+        button.text = getString(R.string.logout)
     }
 }
 

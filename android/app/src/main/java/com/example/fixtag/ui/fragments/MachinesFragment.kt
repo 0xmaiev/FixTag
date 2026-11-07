@@ -22,6 +22,7 @@ import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
 import com.example.fixtag.ui.showFor
+import com.example.fixtag.ui.showLogout
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.MachinesViewModel
 import kotlinx.coroutines.launch
@@ -90,6 +91,7 @@ class MachinesFragment : Fragment() {
         }
         showPendingCount(view, mainViewModel.pendingCount)
         showFor(newMachineButton, mainViewModel.user) { it.isSupport }
+        showLogout(switchProfileButton)
     }
 
 }

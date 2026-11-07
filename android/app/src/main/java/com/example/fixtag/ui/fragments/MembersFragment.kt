@@ -21,6 +21,7 @@ import com.example.fixtag.ui.adapters.MemberAdapter
 import com.example.fixtag.ui.main.MainViewModel
 import com.example.fixtag.ui.main.MainViewModelFactory
 import com.example.fixtag.ui.showFor
+import com.example.fixtag.ui.showLogout
 import com.example.fixtag.ui.showPendingCount
 import com.example.fixtag.ui.viewmodels.MembersViewModel
 import kotlinx.coroutines.launch
@@ -38,6 +39,8 @@ class MembersFragment : Fragment() {
     }
 
     private val memberAdapter = MemberAdapter()
+    private lateinit var switchProfileButton: Button
+    private lateinit var newMember: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,7 +52,8 @@ class MembersFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val newMember = view.findViewById<Button>(R.id.newMemberButton)
+        switchProfileButton = view.findViewById(R.id.switchProfileButton)
+        newMember = view.findViewById(R.id.newMemberButton)
         view.findViewById<RecyclerView>(R.id.recyclerView).adapter = memberAdapter
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -57,11 +61,12 @@ class MembersFragment : Fragment() {
                 viewModel.uiState.collect { members -> memberAdapter.submitList(members) }
             }
         }
-        newMember.setOnClickListener { findNavController().navigate(R.id.new_member) }
-        view.findViewById<Button>(R.id.switchProfileButton).setOnClickListener {
+        switchProfileButton.setOnClickListener {
             mainViewModel.switchProfile()
         }
+        newMember.setOnClickListener { findNavController().navigate(R.id.new_member) }
         showPendingCount(view, mainViewModel.pendingCount)
         showFor(newMember, mainViewModel.user) { it.creatableRoles.isNotEmpty() }
+        showLogout(switchProfileButton)
     }
 }

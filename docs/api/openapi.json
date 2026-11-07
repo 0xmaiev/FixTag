@@ -1,0 +1,1897 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FixTag API",
+    "description": "Incident reporting for industrial machines. Clients own machines made by one or more manufacturers, and each manufacturer's staff only see the machines it made and their incidents. Errors are returned as `{\"error\": \"...\"}` with a 4xx/5xx status.",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "API and database are up",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unreachable"
+          }
+        }
+      }
+    },
+    "/attachments/{id}": {
+      "get": {
+        "tags": [
+          "attachments"
+        ],
+        "summary": "GET by id, returns the raw file with the Content-Type it was uploaded with",
+        "operationId": "fetch_attachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The file, with the Content-Type it was uploaded with",
+            "content": {
+              "image/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Raw file bytes, only used to document binary bodies."
+                }
+              },
+              "audio/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Raw file bytes, only used to document binary bodies."
+                }
+              },
+              "video/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Raw file bytes, only used to document binary bodies."
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/clients": {
+      "post": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "POST, registers a client together with its first gestor. When the NIF is already registered\n(the client buys from another manufacturer too) it only links the caller's organization to\nit, and nothing else about the client changes. Only a manufacturer's support staff.\nOnline only: the NIF decides which organization the client is, so the server has to answer.",
+        "operationId": "register_client",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already registered, now linked (`manager` is null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientRegistration"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New client, with its gestor's temporary password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientRegistration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid NIF, empty name or invalid manager",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a manufacturer's support staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The NIF belongs to a manufacturer, or the manager's email is in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/devices": {
+      "post": {
+        "tags": [
+          "devices"
+        ],
+        "summary": "Registers the device's FCM token for push notifications. Call it after every login and\nwhenever Firebase rotates the token, a token moves to whoever registered it last.",
+        "operationId": "register_token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDevice"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Registered"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/incidents": {
+      "get": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "GET with params for filtering and pagination, one endpoint serves both the lists and\nthe incremental sync. Ordered by last change, so every change to an incident (status,\nassignment, message, attachment, edit) moves it past the cursor and it's delivered again.",
+        "operationId": "fetch_incidents",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque cursor, the `next_cursor` of a previous response",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Page size, at most 200",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/IncidentStatus"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/IncidentSeverity"
+            }
+          },
+          {
+            "name": "machine_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "assigned_to",
+            "in": "query",
+            "description": "Only the incidents assigned to this technician, e.g. a technician's own queue",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncidentPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid cursor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/incidents/{id}": {
+      "get": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "GET by id",
+        "operationId": "fetch_incident_by_id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "PUT, creates the incident with the client's id, safe to retry. Sending it again later\nedits the descriptive fields, which only the author can do.",
+        "operationId": "create_incident",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Generated by the client",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already existed, edits applied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unknown machine or invalid fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not the author",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Already exists, but the caller can't see it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "machine_id differs from the stored incident",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/incidents/{id}/attachments/{attachment_id}": {
+      "put": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "PUT, uploads one file as the request body. The id is generated by the client, re-sending\nan attachment that was already stored returns it without rewriting the file.",
+        "operationId": "add_attachment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "attachment_id",
+            "in": "path",
+            "description": "Generated by the client",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Raw file bytes, sent with the file's Content-Type (e.g. image/jpeg)",
+          "content": {
+            "audio/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "Raw file bytes, only used to document binary bodies."
+              }
+            },
+            "image/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "Raw file bytes, only used to document binary bodies."
+              }
+            },
+            "video/*": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "description": "Raw file bytes, only used to document binary bodies."
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attachment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Incident not synced yet, retry after it is",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "attachment_id already used by another incident",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File larger than the server's max_upload_bytes"
+          },
+          "415": {
+            "description": "Content-Type isn't image, audio or video",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/incidents/{id}/update": {
+      "post": {
+        "tags": [
+          "incidents"
+        ],
+        "summary": "POST, appends a message, a status change and/or an assignment to the incident's history.\nReturns the whole incident so the app can store the new status and assignee straight away.",
+        "operationId": "update_incident",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentUpdateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already appended (retry with the same id)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Appended",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Incident"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nothing to append, or assigned_to isn't a technician of the manufacturer handling it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Status change by someone other than its support staff or assigned technician, or assignment by someone other than its support staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Update id already used by another incident",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "When `user.must_change_password` is set the account is still on its temporary password:\nevery endpoint except `POST /me/password` answers 403 until it's changed.",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Wrong email or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/machines": {
+      "get": {
+        "tags": [
+          "machines"
+        ],
+        "summary": "Machines visible to the caller: every machine of their client, whoever made it, or the ones\ntheir manufacturer made, at every client. Small enough to cache whole in Room, so QR lookups\nalso work offline.",
+        "operationId": "fetch_machines",
+        "parameters": [
+          {
+            "name": "serial_number",
+            "in": "query",
+            "description": "Exact serial number, e.g. the value read from the QR code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Machine"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/machines/{id}": {
+      "put": {
+        "tags": [
+          "machines"
+        ],
+        "summary": "PUT, registers a machine the caller's manufacturer made, at a client it serves, with the id\ngenerated by the app, like incidents, so it can be registered offline. Sending it again edits\nthe serial number and model. Only a manufacturer's support staff can.",
+        "operationId": "create_machine",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Generated by the client",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MachineInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already existed, edits applied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Machine"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Machine"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Empty fields, or organization_id isn't a client the caller's manufacturer serves",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a manufacturer's support staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The id belongs to another manufacturer's machine",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "serial_number belongs to another machine, or organization_id differs from the stored machine",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/me/password": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "POST, replaces the caller's password, temporary or not. Other devices are logged out (their\nrefresh tokens stop working), and this one gets a new pair of tokens.",
+        "operationId": "change_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong current password, or the new one is too short or the same",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/organizations": {
+      "get": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "The visible organizations: the caller's own, plus the manufacturers it buys from (for a\nclient) or the clients it serves (for a manufacturer). Small enough to cache whole, e.g. to\nname a machine's owner and manufacturer, or to pick the client of a new machine.",
+        "operationId": "fetch_organizations",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Organization"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/organizations/{id}": {
+      "put": {
+        "tags": [
+          "organizations"
+        ],
+        "summary": "PUT, renames an organization: its own gestor, or the support staff of a manufacturer that\nserves it (a client).",
+        "operationId": "rename_organization",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizationInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Empty name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Neither its gestor nor a manufacturer that serves it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/refresh": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Exchanges a refresh token for a new access token and a new refresh token. The old refresh\ntoken is revoked (after a short grace period), so always store the new one.",
+        "operationId": "refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unknown, expired or revoked refresh token, log in again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/technicians": {
+      "get": {
+        "tags": [
+          "technicians"
+        ],
+        "summary": "The technicians of the caller's manufacturer, who its support staff can assign incidents\nto, least busy first.",
+        "operationId": "fetch_technicians",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Technician"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not a manufacturer's support staff",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "The people in the caller's organization, e.g. for a gestor's team screen.",
+        "operationId": "fetch_users",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "POST, creates an account in the caller's own organization with a temporary password. There\nare no emails, so the response is the only place the password appears.",
+        "operationId": "create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedMember"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Empty name, invalid email, or a role the organization doesn't have",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to create that role",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already in use",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Attachment": {
+        "type": "object",
+        "description": "Metadata of an uploaded file, the content is served by `GET /attachments/{id}`.",
+        "required": [
+          "id",
+          "incident_id",
+          "kind",
+          "content_type",
+          "size_bytes",
+          "created_at"
+        ],
+        "properties": {
+          "content_type": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "incident_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AttachmentKind"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "AttachmentKind": {
+        "type": "string",
+        "enum": [
+          "foto",
+          "audio",
+          "video"
+        ]
+      },
+      "ClientInput": {
+        "type": "object",
+        "required": [
+          "nif",
+          "name",
+          "manager"
+        ],
+        "properties": {
+          "manager": {
+            "$ref": "#/components/schemas/ManagerInput",
+            "description": "The client's first gestor, who creates the rest of its accounts. Ignored when the NIF is\nalready registered, the client has one then"
+          },
+          "name": {
+            "type": "string",
+            "description": "Ignored when the NIF is already registered"
+          },
+          "nif": {
+            "type": "string",
+            "description": "The client's NIF, what tells two manufacturers they serve the same client"
+          }
+        }
+      },
+      "ClientRegistration": {
+        "type": "object",
+        "required": [
+          "organization"
+        ],
+        "properties": {
+          "manager": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CreatedMember",
+                "description": "The new client's gestor and their temporary password, `null` when the client was\nalready registered and only the link to the caller's organization was added"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "organization": {
+            "$ref": "#/components/schemas/Organization"
+          }
+        }
+      },
+      "CreatedMember": {
+        "type": "object",
+        "required": [
+          "user",
+          "temporary_password"
+        ],
+        "properties": {
+          "temporary_password": {
+            "type": "string",
+            "description": "Shown only in this response, for whoever created the account to hand over. The new\nmember has to replace it at their first login"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "description": "JSON body of every error response.",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Incident": {
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "handled_by",
+          "machine_id",
+          "author_id",
+          "author_name",
+          "description",
+          "severity",
+          "status",
+          "reported_at",
+          "created_at",
+          "updated_at",
+          "attachments",
+          "updates"
+        ],
+        "properties": {
+          "accuracy_m": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "float"
+          },
+          "assigned_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Technician handling the incident, assigned by support staff"
+          },
+          "assigned_to_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attachment"
+            }
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "author_name": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server clock at the moment the incident was first received"
+          },
+          "description": {
+            "type": "string"
+          },
+          "handled_by": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The organization whose support staff take it, the machine's manufacturer"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Generated by the client, re-sending the same id never creates a duplicate"
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          },
+          "machine_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The client that owns the machine"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Device clock at the moment the incident was created, possibly offline"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IncidentSeverity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/IncidentStatus"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Bumped by any change, including new updates and attachments"
+          },
+          "updates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IncidentUpdate"
+            },
+            "description": "Status history and messages, oldest first"
+          }
+        }
+      },
+      "IncidentInput": {
+        "type": "object",
+        "required": [
+          "machine_id",
+          "severity",
+          "reported_at"
+        ],
+        "properties": {
+          "accuracy_m": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "float"
+          },
+          "description": {
+            "type": "string",
+            "description": "May be empty when the incident was reported by voice"
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double",
+            "description": "Send latitude and longitude together, or neither"
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "format": "double"
+          },
+          "machine_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reported_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Device clock when the incident was created"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/IncidentSeverity"
+          }
+        }
+      },
+      "IncidentPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Incident"
+            },
+            "description": "Oldest change first"
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Pass as `cursor` to get the next page. After the last page, keep it and pass it on the\nnext sync to get only the incidents that changed since. `null` only if nothing exists yet."
+          }
+        }
+      },
+      "IncidentSeverity": {
+        "type": "string",
+        "enum": [
+          "baixa",
+          "media",
+          "critica"
+        ]
+      },
+      "IncidentStatus": {
+        "type": "string",
+        "enum": [
+          "recebida",
+          "em_analise",
+          "resolvida"
+        ]
+      },
+      "IncidentUpdate": {
+        "type": "object",
+        "required": [
+          "id",
+          "incident_id",
+          "author_id",
+          "author_name",
+          "created_at"
+        ],
+        "properties": {
+          "assigned_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Technician the incident was assigned to by this entry"
+          },
+          "assigned_to_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "author_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "author_name": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "incident_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "new_status": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/IncidentStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "IncidentUpdateInput": {
+        "type": "object",
+        "properties": {
+          "assigned_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Technician to hand the incident to, replacing any previous one. Only support staff can\nassign, and only to a `tecnico` of the manufacturer handling the incident"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Optional id generated by the client, makes retries safe"
+          },
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "new_status": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/IncidentStatus",
+                "description": "Only the support staff of the manufacturer handling it (`assistencia` or `gestor`), or\nthe technician it's assigned to, can change the status"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "Machine": {
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "manufacturer_id",
+          "serial_number",
+          "model",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manufacturer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Who made it and services it, their staff see it and its incidents"
+          },
+          "model": {
+            "type": "string"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The client that owns it"
+          },
+          "serial_number": {
+            "type": "string",
+            "description": "Also what the QR code on the machine encodes"
+          }
+        }
+      },
+      "MachineInput": {
+        "type": "object",
+        "required": [
+          "organization_id",
+          "serial_number",
+          "model"
+        ],
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The client that owns the machine, one the caller's manufacturer serves. Can't change\nlater. The manufacturer is always the caller's organization"
+          },
+          "serial_number": {
+            "type": "string",
+            "description": "Also what the QR code on the machine encodes, unique across every client"
+          }
+        }
+      },
+      "ManagerInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "MemberInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "email",
+          "role"
+        ],
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "description": "A gestor can create any role of their organization, support staff only `tecnico`"
+          }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "nif",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrganizationKind"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nif": {
+            "type": "string",
+            "description": "Portuguese tax number (NIF/NIPC), 9 digits, unique across the platform"
+          }
+        }
+      },
+      "OrganizationInput": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "OrganizationKind": {
+        "type": "string",
+        "enum": [
+          "cliente",
+          "fabricante"
+        ]
+      },
+      "PasswordChange": {
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "properties": {
+          "current_password": {
+            "type": "string"
+          },
+          "new_password": {
+            "type": "string",
+            "description": "At least 8 characters, different from the current one"
+          }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "properties": {
+          "refresh_token": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterDevice": {
+        "type": "object",
+        "required": [
+          "fcm_token"
+        ],
+        "properties": {
+          "fcm_token": {
+            "type": "string"
+          }
+        }
+      },
+      "Technician": {
+        "type": "object",
+        "description": "Someone support staff can assign incidents to.",
+        "required": [
+          "id",
+          "organization_id",
+          "name",
+          "open_incidents"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "open_incidents": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Incidents assigned to them that aren't resolved yet, a rough measure of how busy they are"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type",
+          "expires_in",
+          "user"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Send as `Authorization: Bearer <access_token>`"
+          },
+          "expires_in": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Seconds until the access token expires"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Exchange at `POST /refresh` when the access token expires, single use"
+          },
+          "token_type": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "organization_id",
+          "organization_kind",
+          "name",
+          "email",
+          "role",
+          "must_change_password",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "must_change_password": {
+            "type": "boolean",
+            "description": "Still on the temporary password they were created with. Until they change it at\n`POST /me/password`, every other endpoint answers 403"
+          },
+          "name": {
+            "type": "string"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_kind": {
+            "$ref": "#/components/schemas/OrganizationKind",
+            "description": "Which side the user works for, the client or the manufacturer"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        }
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "operador",
+          "tecnico",
+          "assistencia",
+          "gestor"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
