@@ -1,37 +1,29 @@
 package com.example.fixtag.ui.login
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.View
-import android.view.inputmethod.EditorInfo
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.widget.EditText
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
-import com.example.fixtag.AppViewModelFactory
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navOptions
 import com.example.fixtag.BuildConfig
 import com.example.fixtag.FixTag
 import com.example.fixtag.databinding.ActivityLoginBinding
 import com.example.fixtag.R
-import com.example.fixtag.data.DemoSeed
-import com.example.fixtag.data.Repository
-import com.example.fixtag.data.model.User
 import com.example.fixtag.ui.main.MainActivity
-import com.example.fixtag.ui.afterTextChanged
 import kotlinx.coroutines.launch
 
 class LoginActivity: AppCompatActivity() {
@@ -42,6 +34,8 @@ class LoginActivity: AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var navHostFragment: NavHostFragment
+    private lateinit var navController: NavController
 
     private val requestPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
@@ -78,95 +72,46 @@ class LoginActivity: AppCompatActivity() {
             insets
         }
 
-        if (BuildConfig.OFFLINE_DEMO) {
-            findViewById<View>(R.id.LoginFormLayout).isVisible = false
-            val demoProfiles = binding.demoProfiles
-            val demoOperator = binding.demoOperator
-            val demoAssistance = binding.demoAssistance
+        navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.login_nav_host) as NavHostFragment
+        navController = navHostFragment.navController
+        // the login form is the graph's start destination
+        navController.setGraph(R.navigation.login_nav_graph)
 
-            demoProfiles?.isVisible = true
-            demoOperator?.setOnClickListener {
-                loginViewModel.loginAsDemoProfile(DemoSeed.OPERATOR_1)
-            }
-            demoAssistance?.setOnClickListener {
-                loginViewModel.loginAsDemoProfile(DemoSeed.ASSISTANCE_1)
-            }
-        }
-
-        val username = binding.etEmail
-        val password = binding.etPassword
-        val login = binding.login
-        val loading = binding.loading
-
-        loginViewModel.loginFormState.observe(this@LoginActivity, Observer {
-            val loginState = it ?: return@Observer
-
-            // disable login button unless both username / password is valid
-            login.isEnabled = loginState.isDataValid
-
-            if (loginState.emailError != null) {
-                username.error = getString(loginState.emailError)
-            }
-            if (loginState.passwordError != null) {
-                password.error = getString(loginState.passwordError)
-            }
-        })
-
-        loginViewModel.loginResult.observe(this@LoginActivity, Observer {
-            val loginResult = it ?: return@Observer
-
-            loading.visibility = View.GONE
-            if (loginResult.error != null) {
-                showLoginFailed(loginResult.error)
-            } else if (loginResult.success != null) {
-                handleLoginSuccess(loginResult.success)
-            }
-        })
-
-        username.afterTextChanged {
-            loginViewModel.loginDataChanged(
-                username.text.toString(),
-                password.text.toString()
-            )
-        }
-
-        password.apply {
-            afterTextChanged {
-                loginViewModel.loginDataChanged(
-                    username.text.toString(),
-                    password.text.toString()
-                )
-            }
-
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE ->
-                        loginViewModel.login(
-                            username.text.toString(),
-                            password.text.toString()
-                        )
+        // only while started: a login that finishes in the background would otherwise navigate
+        // after onSaveInstanceState, and that fragment transaction throws
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                loginViewModel.navigationState.collect { state ->
+                    when (state) {
+                        is LoginViewModel.NavigationState.Loading -> { }
+                        is LoginViewModel.NavigationState.GoToLogin -> { }  // already there
+                        is LoginViewModel.NavigationState.GoToPasswordChange -> {
+                            Log.d("LoginActivity", "Changing view to password change")
+                            goToPasswordChange()
+                        }
+                        is LoginViewModel.NavigationState.GoToMain -> {
+                            Log.d("LoginActivity", "Changing view to main activity")
+                            goToMain()
+                        }
+                    }
                 }
-                false
             }
-        }
-
-        login.setOnClickListener {
-            loading.visibility = View.VISIBLE
-            loginViewModel.login(username.text.toString(), password.text.toString())
         }
     }
 
-    private fun handleLoginSuccess(user: User?) {
-        val user = user!!
+    // the state is still GoToPasswordChange after a rotation, and the nav controller restores
+    // its back stack by itself, so navigating again would stack a second form
+    private fun goToPasswordChange() {
+        if (navController.currentDestination?.id == R.id.password_change) return
+        // the form replaces the login one, so Back leaves the app. The account stays signed in,
+        // and the next launch comes back to this form (MainViewModel sends it here)
+        navController.navigate(R.id.password_change, null, navOptions {
+            popUpTo(R.id.login) { inclusive = true }
+        })
+    }
 
-        val welcome = getString(R.string.welcome, user.name)
-
-        Toast.makeText(
-            applicationContext,
-            welcome,
-            Toast.LENGTH_LONG
-        ).show()
-
+    private fun goToMain() {
         val intent = Intent(this, MainActivity::class.java).apply {
             // Clear the stack so this new MainActivity becomes the root screen
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -175,9 +120,5 @@ class LoginActivity: AppCompatActivity() {
         setResult(RESULT_OK)
 
         finish()
-    }
-
-    private fun showLoginFailed(@StringRes errorString: Int) {
-        Toast.makeText(applicationContext, errorString, Toast.LENGTH_SHORT).show()
     }
 }

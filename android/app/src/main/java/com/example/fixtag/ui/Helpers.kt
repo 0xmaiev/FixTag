@@ -20,6 +20,8 @@ import coil3.load
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.IncidentSeverity
+import com.example.fixtag.data.model.IncidentStatus
+import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -29,13 +31,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
-// shows a view only to the roles that may use it
-fun Fragment.showFor(view: View, role: Flow<UserRole?>, vararg allowed: UserRole) {
+// shows a view only to the users that may use it, e.g. showFor(button, user) { it.isSupport }.
+// A role alone can't say it: a gestor works for a client or for a manufacturer
+fun Fragment.showFor(view: View, user: Flow<User?>, allowed: (User) -> Boolean) {
     viewLifecycleOwner.lifecycleScope.launch {
         viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            role.collect { view.isVisible = it in allowed }
+            user.collect { view.isVisible = it != null && allowed(it) }
         }
     }
+}
+
+// one place for how a status and a role read, shared by the lists, the detail screen and the forms
+@StringRes
+fun IncidentStatus.label(): Int = when (this) {
+    IncidentStatus.Received -> R.string.incident_received
+    IncidentStatus.Analysis -> R.string.incident_analysis
+    IncidentStatus.Resolved -> R.string.incident_resolved
+}
+
+@StringRes
+fun UserRole.label(): Int = when (this) {
+    UserRole.Admin -> R.string.role_admin
+    UserRole.Operador -> R.string.role_operator
+    UserRole.Tecnico -> R.string.role_technician
+    UserRole.Assistencia -> R.string.role_assistance
+    UserRole.Gestor -> R.string.role_manager
 }
 
 fun Context.recentIncidentsText(count: Int): String =

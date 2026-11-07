@@ -8,7 +8,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,24 +15,19 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.data.model.UserRole
 import com.example.fixtag.ui.ItemViewModelFactory
-import com.example.fixtag.ui.main.MainViewModel
-import com.example.fixtag.ui.main.MainViewModelFactory
+import com.example.fixtag.ui.label
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewMemberViewModel
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.launch
 
 class NewMemberFragment: Fragment() {
 
     companion object {
         fun newInstance() = NewMemberFragment()
-    }
-
-    private val mainViewModel: MainViewModel by activityViewModels {
-        val app = requireContext().applicationContext as FixTag
-        MainViewModelFactory(app.repository, app.syncScheduler)
     }
 
     private val viewModel: NewMemberViewModel by viewModels {
@@ -46,11 +40,7 @@ class NewMemberFragment: Fragment() {
     private lateinit var createMember: Button
     private lateinit var name: TextView
     private lateinit var email: TextView
-    private lateinit var organization: TextView
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private lateinit var roles: ChipGroup
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,25 +58,29 @@ class NewMemberFragment: Fragment() {
         createMember = view.findViewById(R.id.createMemberButton)
         name = view.findViewById(R.id.name)
         email = view.findViewById(R.id.email)
-        organization = view.findViewById(R.id.organization)
+        roles = view.findViewById(R.id.roles)
 
-        // create the machine
+        // one chip per role this user may create; which one is checked lives in the view model
+        for (role in viewModel.roles) {
+            val chip = layoutInflater.inflate(R.layout.chip_choice, roles, false) as Chip
+            chip.id = View.generateViewId()
+            chip.setText(role.label())
+            chip.isChecked = role == viewModel.role.value
+            chip.setOnCheckedChangeListener { _, checked -> if (checked) viewModel.selectRole(role) }
+            roles.addView(chip)
+        }
+
+        // create the member
         createMember.setOnClickListener {
-            viewModel.submit(name.text.toString(), email.text.toString(), UserRole.Operador) // TODO:
+            viewModel.submit(name.text.toString(), email.text.toString())
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    // the button stays enabled: submit() checks again, and typing clears an error
                     viewModel.form.collect { form ->
-                        createMember.isEnabled = form.isDataValid
-                        organization.error = form.organizationError?.let { getString(it) }
                         name.error = form.nameError?.let { getString(it) }
                         email.error = form.emailError?.let { getString(it) }
-                    }
-                }
-                launch {
-                    viewModel.organization.collect {
-                            value -> organization.text = value?.name ?: getString(R.string.no_organization_selected)
                     }
                 }
                 launch {
@@ -101,16 +95,7 @@ class NewMemberFragment: Fragment() {
                         }
                     }
                 }
-                launch {
-                    mainViewModel.organizationId.collect {
-                        value -> viewModel.selectOrganization(value.toString())
-                    }
-                }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
     }
 }

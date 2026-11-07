@@ -36,9 +36,11 @@ data class IncidentUpdate(
     @ColumnInfo(name = "message")
     val message: String?,
     @ColumnInfo(name = "new_status")
-    val newStatus: String?,
+    val newStatus: IncidentStatus?,
     @ColumnInfo(name = "assigned_to")
     val assignedTo: String?,
+    @ColumnInfo(name = "assigned_to_name")
+    val assignedToName: String?,
     @ColumnInfo(name = "created_at")
     val createdAt: Instant,
     @ColumnInfo(name = "sync_status", defaultValue = "Pending")
@@ -46,14 +48,15 @@ data class IncidentUpdate(
 ){
     companion object {
         fun create(id: Uuid, incidentId: Uuid, authorName: String, message: String?,
-                   newStatus: String?, assignedTo: String?): IncidentUpdate {
+                   newStatus: IncidentStatus?, assignedTo: Uuid?, assignedToName: String?): IncidentUpdate {
             return IncidentUpdate(
                 id,
                 incidentId,
                 authorName,
                 message,
                 newStatus,
-                assignedTo,
+                assignedTo?.toString(),
+                assignedToName,
                 Clock.System.now(),
                 SyncStatus.Pending
             )

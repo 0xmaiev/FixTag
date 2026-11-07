@@ -1,7 +1,5 @@
 package com.example.fixtag.ui.fragments
 
-import android.app.Activity.RESULT_OK
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,26 +7,18 @@ import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.data.model.Organization
-import com.example.fixtag.data.model.User
+import com.example.fixtag.data.Repository
 import com.example.fixtag.ui.ItemViewModelFactory
-import com.example.fixtag.ui.afterTextChanged
-import com.example.fixtag.ui.main.MainActivity
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
-import com.example.fixtag.ui.viewmodels.NewIncidentViewModel
 import com.example.fixtag.ui.viewmodels.NewOrganizationViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.launch
@@ -49,11 +39,8 @@ class NewOrganizationFragment: Fragment() {
     private lateinit var createOrganization: Button
     private lateinit var name: EditText
     private lateinit var nif: EditText
+    private lateinit var managerName: EditText
     private lateinit var managerEmail: EditText
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,53 +57,36 @@ class NewOrganizationFragment: Fragment() {
             .setNavigationOnClickListener { findNavController().navigateUp() }
         createOrganization = view.findViewById(R.id.createOrganizationButton)
         name = view.findViewById(R.id.name)
-        managerEmail = view.findViewById(R.id.managerEmail)
         nif = view.findViewById(R.id.nif)
+        managerName = view.findViewById(R.id.managerName)
         managerEmail = view.findViewById(R.id.managerEmail)
 
-        // react to ui interactions
-
-        // create the machine
-        createOrganization.setOnClickListener {
-            viewModel.submit(
-                name.text.toString(),
-                nif.text.toString(),
-                managerEmail.text.toString()
-            )
-        }
-        name.apply {
-            // set afterTextChanged on the text edit field
-            afterTextChanged {
-                viewModel.formDataChanged(
-                    name.text.toString(),
-                    nif.text.toString(),
-                    managerEmail.text.toString()
-                )
-            }
-            // react to enter key being pressed on the text input
-            setOnEditorActionListener { _, actionId, _ ->
-                when (actionId) {
-                    EditorInfo.IME_ACTION_DONE -> viewModel.submit(
-                        name.text.toString(),
-                        nif.text.toString(),
-                        managerEmail.text.toString()
-                    )
-                }
-                false
-            }
+        // register the client
+        createOrganization.setOnClickListener { submit() }
+        managerEmail.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) submit()
+            false
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    // the button stays enabled: submit() checks again, and typing clears an error
                     viewModel.form.collect { form ->
-                        createOrganization.isEnabled = form.isDataValid
                         name.error = form.nameError?.let { getString(it) }
+                        nif.error = form.nifError?.let { getString(it) }
+                        managerName.error = form.managerNameError?.let { getString(it) }
+                        managerEmail.error = form.managerEmailError?.let { getString(it) }
                     }
                 }
                 launch {
                     viewModel.uiState.collect { state ->
                         if (state == InputBaseViewModel.State.Saved) {
-                            Toast.makeText(requireContext(), R.string.organization_saved, Toast.LENGTH_SHORT).show()
+                            val message = when (val registration = viewModel.registration) {
+                                is Repository.Registration.Linked ->
+                                    getString(R.string.client_linked, registration.client.name)
+                                else -> getString(R.string.organization_saved)
+                            }
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                             findNavController().popBackStack()
                         }
                     }
@@ -125,7 +95,10 @@ class NewOrganizationFragment: Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-    }
+    private fun submit() = viewModel.submit(
+        name.text.toString(),
+        nif.text.toString(),
+        managerName.text.toString(),
+        managerEmail.text.toString(),
+    )
 }

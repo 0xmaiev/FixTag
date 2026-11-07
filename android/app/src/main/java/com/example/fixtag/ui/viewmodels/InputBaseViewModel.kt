@@ -19,6 +19,13 @@ abstract class CreateResult<T>(
     val error: Int? = null
 )
 
+// A form's errors, equal only to itself. StateFlow skips a value equal to the one it holds, and
+// typing clears an error from its field, so a second submit with the same mistake would show nothing
+abstract class FormState {
+    final override fun equals(other: Any?) = this === other
+    final override fun hashCode() = System.identityHashCode(this)
+}
+
 abstract class InputBaseViewModel(): ViewModel() {
     sealed interface State { data object Editing : State; data object Saving : State; data object Saved : State }
 

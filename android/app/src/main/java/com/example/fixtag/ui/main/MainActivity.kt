@@ -14,7 +14,8 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.data.model.UserRole
+import com.example.fixtag.data.model.creatableRoles
+import com.example.fixtag.data.model.isSupport
 import com.example.fixtag.ui.login.LoginActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.launch
@@ -76,9 +77,12 @@ class MainActivity : AppCompatActivity() {
             setStartDestination(startDestination)  // operators start on machines, everyone else on incidents
         }
         bottomNavigationView.setupWithNavController(navController)
-        // only the manufacturer's support staff register clients (PUT /organizations is theirs alone)
-        bottomNavigationView.menu
-                .findItem(R.id.organizations).isVisible = viewModel.role.value == UserRole.Assistencia
+        val user = viewModel.user.value
+        // only a manufacturer's support staff register clients (POST /clients is theirs alone)
+        bottomNavigationView.menu.findItem(R.id.organizations).isVisible = user?.isSupport == true
+        // gestores create their organization's accounts, assistência its technicians
+        bottomNavigationView.menu.findItem(R.id.members).isVisible =
+            user?.creatableRoles?.isNotEmpty() == true
     }
 
     private fun navigateToLogin() {

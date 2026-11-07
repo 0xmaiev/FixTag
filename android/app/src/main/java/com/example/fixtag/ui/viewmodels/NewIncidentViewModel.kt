@@ -11,6 +11,7 @@ import com.example.fixtag.data.model.Incident
 import com.example.fixtag.data.model.IncidentSeverity
 import com.example.fixtag.data.model.Machine
 import com.example.fixtag.data.model.SyncStatus
+import com.example.fixtag.data.model.isLocalOnly
 import com.example.fixtag.ui.AUDIOS_HANDLE
 import com.example.fixtag.ui.GEO_ACCURACY_HANDLE
 import com.example.fixtag.ui.GEO_LATITUDE_HANDLE
@@ -21,6 +22,7 @@ import com.example.fixtag.ui.PENDING_AUDIO_HANDLE
 import com.example.fixtag.ui.PENDING_PHOTO_HANDLE
 import com.example.fixtag.ui.PENDING_VIDEO_HANDLE
 import com.example.fixtag.ui.PHOTOS_HANDLE
+import com.example.fixtag.ui.PREFILLED_HANDLE
 import com.example.fixtag.ui.VIDEOS_HANDLE
 import com.example.fixtag.ui.adapters.AttachmentItem
 import com.google.android.material.chip.ChipGroup
@@ -35,13 +37,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 
 data class NewIncidentFormState(
     val machineError: Int? = null,
     val descriptionError: Int? = null
-) {
+) : FormState() {
     val isDataValid get() = machineError == null && descriptionError == null
 }
 
@@ -56,6 +59,31 @@ class NewIncidentViewModel(
 
     private val _form = MutableStateFlow(NewIncidentFormState())
     val form: StateFlow<NewIncidentFormState> = _form.asStateFlow()
+
+    // set when the form opened on an incident that already exists: the author's edit. Its id came
+    // in the navigation arguments (INCIDENT_ID_KEY is the same key as INCIDENT_ID_HANDLE)
+    private val _editing = MutableStateFlow<Incident?>(null)
+    val editing: StateFlow<Incident?> = _editing.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val existing = repository.getIncident(Uuid.parse(incidentId)) ?: return@launch
+            // the first time only, after that the saved state holds what the user changed
+            if (savedStateHandle.get<Boolean>(PREFILLED_HANDLE) != true) {
+                savedStateHandle[MACHINE_ID_HANDLE] = existing.machineId.toString()
+                setGeolocationInfo(existing.latitude, existing.longitude, existing.accuracyM)
+            }
+            _editing.value = existing
+        }
+    }
+
+    // true once per form, for the fragment to copy the incident's text and severity into its views;
+    // after that the views keep their own state across rotations
+    fun takePrefill(): Boolean {
+        if (savedStateHandle.get<Boolean>(PREFILLED_HANDLE) == true) return false
+        savedStateHandle[PREFILLED_HANDLE] = true
+        return true
+    }
 
     // machines to pass to the selection dialog and for the flow below
     val machines: Flow<List<Machine>> = repository.observeMachines()
@@ -113,7 +141,18 @@ class NewIncidentViewModel(
         state.value = State.Saving
         viewModelScope.launch {
             val id = Uuid.parse(incidentId)  // you were passing machine.id here
-            val incident = Incident.create(
+            val existing = editing.value
+            val incident = existing?.copy(
+                // what PUT /incidents lets the author change; it stays on the same machine
+                description = description,
+                severity = severity,
+                latitude = latitude.value,
+                longitude = longitude.value,
+                accuracyM = accuracyM.value,
+                // a report the server never saw keeps updated == created, so it can still be deleted
+                updatedAt = if (existing.isLocalOnly) existing.updatedAt else Clock.System.now(),
+                syncStatus = SyncStatus.Pending,
+            ) ?: Incident.create(
                 id,
                 machine.organizationId,
                 machine.id,

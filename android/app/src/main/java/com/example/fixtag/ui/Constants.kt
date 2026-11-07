@@ -12,8 +12,9 @@ const val SELECT_MACHINE_REQUEST_KEY: String = "selectMachineId"
 
 // Handles for savedStateHandle usage
 
-// Machine
+// Member
 const val USER_ID_HANDLE: String = "userId"
+const val ROLE_HANDLE: String = "role"
 
 // Organization
 const val ORGANIZATION_ID_HANDLE: String = "organizationId"
@@ -26,6 +27,7 @@ const val MACHINE_SERIAL_NUMBER_HANDLE: String = "serialNumber"
 
 // Incident
 const val INCIDENT_ID_HANDLE: String = "incidentId"
+const val PREFILLED_HANDLE: String = "prefilled"
 const val PENDING_PHOTO_HANDLE: String = "pendingPhotoPath"
 const val PHOTOS_HANDLE: String = "takenPhotoPaths"
 const val PENDING_AUDIO_HANDLE: String = "pendingPhotoPath"

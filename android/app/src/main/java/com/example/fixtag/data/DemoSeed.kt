@@ -805,7 +805,8 @@ object DemoSeed {
         ),
     )
 
-    // assigned_to holds the technician's id, as Mappers.kt stores it from the API
+    // assigned_to holds the technician's id, as Mappers.kt stores it from the API, and
+    // assigned_to_name their name, which the API sends along
     fun incidentUpdates(now: Instant) = listOf(
         // incident 1
         IncidentUpdate(
@@ -813,8 +814,9 @@ object DemoSeed {
             INCIDENT_1,
             ASSISTANCE_1_NAME, // carla
             UPDATE_1_MESSAGE,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_1.toString(),
+            TECHNICIAN_1_NAME,
             now - (1.days + 22.hours),
             SyncStatus.Synced
         ),
@@ -823,6 +825,7 @@ object DemoSeed {
             INCIDENT_1,
             TECHNICIAN_1_NAME,  // bruno
             UPDATE_2_MESSAGE,
+            null,
             null,
             null,
             now - (1.days + 2.hours),
@@ -834,8 +837,9 @@ object DemoSeed {
             INCIDENT_3,
             ASSISTANCE_1_NAME,
             UPDATE_3_MESSAGE,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_2.toString(),
+            TECHNICIAN_2_NAME,
             now - (5.days + 20.hours),
             SyncStatus.Synced
         ),
@@ -846,6 +850,7 @@ object DemoSeed {
             UPDATE_4_MESSAGE,
             null,
             null,
+            null,
             now - (4.days + 3.hours),
             SyncStatus.Synced
         ),
@@ -854,7 +859,8 @@ object DemoSeed {
             INCIDENT_3,
             ASSISTANCE_1_NAME,
             UPDATE_5_MESSAGE,
-            IncidentStatus.Resolved.name,
+            IncidentStatus.Resolved,
+            null,
             null,
             now - (4.days + 1.hours),
             SyncStatus.Synced
@@ -867,6 +873,7 @@ object DemoSeed {
             UPDATE_6_MESSAGE,
             null,
             TECHNICIAN_3.toString(),
+            TECHNICIAN_3_NAME,
             now - 2.hours,
             SyncStatus.Synced
         ),
@@ -875,6 +882,7 @@ object DemoSeed {
             INCIDENT_4,
             TECHNICIAN_3_NAME,
             UPDATE_22_MESSAGE,
+            null,
             null,
             null,
             now - (1.hours + 30.minutes),
@@ -888,6 +896,7 @@ object DemoSeed {
             UPDATE_7_MESSAGE,
             null,
             null,
+            null,
             now - (3.days + 23.hours),
             SyncStatus.Synced
         ),
@@ -896,8 +905,9 @@ object DemoSeed {
             INCIDENT_5,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_1.toString(),
+            TECHNICIAN_1_NAME,
             now - (3.days + 2.hours),
             SyncStatus.Synced
         ),
@@ -906,6 +916,7 @@ object DemoSeed {
             INCIDENT_5,
             TECHNICIAN_1_NAME,
             UPDATE_9_MESSAGE,
+            null,
             null,
             null,
             now - (2.days + 5.hours),
@@ -917,8 +928,9 @@ object DemoSeed {
             INCIDENT_6,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_1.toString(),
+            TECHNICIAN_1_NAME,
             now - (9.days + 22.hours),
             SyncStatus.Synced
         ),
@@ -929,6 +941,7 @@ object DemoSeed {
             UPDATE_11_MESSAGE,
             null,
             null,
+            null,
             now - (9.days + 3.hours),
             SyncStatus.Synced
         ),
@@ -937,7 +950,8 @@ object DemoSeed {
             INCIDENT_6,
             ASSISTANCE_1_NAME,
             UPDATE_12_MESSAGE,
-            IncidentStatus.Resolved.name,
+            IncidentStatus.Resolved,
+            null,
             null,
             now - (9.days + 1.hours),
             SyncStatus.Synced
@@ -948,8 +962,9 @@ object DemoSeed {
             INCIDENT_8,
             ASSISTANCE_1_NAME,
             UPDATE_13_MESSAGE,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_1.toString(),
+            TECHNICIAN_1_NAME,
             now - (1.days + 20.hours),
             SyncStatus.Synced
         ),
@@ -959,8 +974,9 @@ object DemoSeed {
             INCIDENT_10,
             ASSISTANCE_1_NAME,
             UPDATE_14_MESSAGE,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_3.toString(),
+            TECHNICIAN_3_NAME,
             now - (2.days + 20.hours),
             SyncStatus.Synced
         ),
@@ -969,6 +985,7 @@ object DemoSeed {
             INCIDENT_10,
             TECHNICIAN_3_NAME,
             UPDATE_15_MESSAGE,
+            null,
             null,
             null,
             now - (1.days + 4.hours),
@@ -980,8 +997,9 @@ object DemoSeed {
             INCIDENT_11,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_2.toString(),
+            TECHNICIAN_2_NAME,
             now - (7.days + 18.hours),
             SyncStatus.Synced
         ),
@@ -992,6 +1010,7 @@ object DemoSeed {
             UPDATE_17_MESSAGE,
             null,
             null,
+            null,
             now - (7.days + 2.hours),
             SyncStatus.Synced
         ),
@@ -1000,7 +1019,8 @@ object DemoSeed {
             INCIDENT_11,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Resolved.name,
+            IncidentStatus.Resolved,
+            null,
             null,
             now - (7.days + 1.hours),
             SyncStatus.Synced
@@ -1011,8 +1031,9 @@ object DemoSeed {
             INCIDENT_12,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_1.toString(),
+            TECHNICIAN_1_NAME,
             now - (11.days + 20.hours),
             SyncStatus.Synced
         ),
@@ -1023,6 +1044,7 @@ object DemoSeed {
             UPDATE_20_MESSAGE,
             null,
             null,
+            null,
             now - (11.days + 3.hours),
             SyncStatus.Synced
         ),
@@ -1031,7 +1053,8 @@ object DemoSeed {
             INCIDENT_12,
             ASSISTANCE_1_NAME,
             null,
-            IncidentStatus.Resolved.name,
+            IncidentStatus.Resolved,
+            null,
             null,
             now - (11.days + 2.hours),
             SyncStatus.Synced
@@ -1042,8 +1065,9 @@ object DemoSeed {
             INCIDENT_13,
             ASSISTANCE_2_NAME, // luísa
             UPDATE_23_MESSAGE,
-            IncidentStatus.Analysis.name,
+            IncidentStatus.Analysis,
             TECHNICIAN_4.toString(),
+            TECHNICIAN_4_NAME,
             now - 1.days,
             SyncStatus.Synced
         ),
@@ -1052,6 +1076,7 @@ object DemoSeed {
             INCIDENT_13,
             TECHNICIAN_4_NAME,
             UPDATE_24_MESSAGE,
+            null,
             null,
             null,
             now - 3.hours,

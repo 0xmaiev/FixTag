@@ -96,9 +96,20 @@ interface MachineDao {
             (SELECT COUNT(*) FROM incident WHERE incident.machine_id = machine.id
                 AND incident.reported_at >= :since) AS recent_incidents
         FROM machine
+        WHERE (:client IS NULL OR machine.organization_id = :client)
+          AND (:manufacturer IS NULL OR machine.manufacturer = :manufacturer)
         ORDER BY machine.serial_number
     """)
-    fun observeAllWithStats(since: Instant): Flow<List<MachineWithStats>>
+    fun observeVisibleWithStats(client: Uuid?, manufacturer: Uuid?, since: Instant): Flow<List<MachineWithStats>>
+
+    // the same machines without the counts, for the incident form
+    @Query("""
+        SELECT * FROM machine
+         WHERE (:client IS NULL OR organization_id = :client)
+           AND (:manufacturer IS NULL OR manufacturer = :manufacturer)
+         ORDER BY serial_number
+    """)
+    fun observeVisible(client: Uuid?, manufacturer: Uuid?): Flow<List<Machine>>
 
     @Query("SELECT * FROM machine WHERE id = :id")
     suspend fun get(id: Uuid): Machine?
@@ -112,6 +123,10 @@ interface MachineDao {
     @Transaction
     @Query("SELECT * FROM machine WHERE model = :model")
     suspend fun findMachinesByModel(model: String): List<Machine>
+
+    // unique on the server too (409), checked here so the form can say so offline
+    @Query("SELECT EXISTS (SELECT 1 FROM machine WHERE serial_number = :serialNumber AND id != :exceptId)")
+    suspend fun isSerialNumberTaken(serialNumber: String, exceptId: Uuid): Boolean
 
     @Query("SELECT COUNT(*) FROM machine WHERE organization_id = :organizationId")
     suspend fun countByOrganization(organizationId: Uuid): Int

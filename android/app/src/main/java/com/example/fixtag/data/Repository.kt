@@ -10,20 +10,33 @@ import com.example.fixtag.ATTACHMENTS_DIR
 import com.example.fixtag.BuildConfig
 import com.example.fixtag.api.ApiService
 import com.example.fixtag.api.LoginRequestDto
+import com.example.fixtag.api.PasswordChangeRequestDto
+import com.example.fixtag.api.model.TokenResponseDto
 import com.example.fixtag.data.model.Attachment
 import com.example.fixtag.data.model.Auth
+import com.example.fixtag.data.model.ClientManufacturerLink
 import com.example.fixtag.data.model.Incident
 import com.example.fixtag.data.model.IncidentAndMachine
 import com.example.fixtag.data.model.IncidentUpdate
 import com.example.fixtag.data.model.Machine
+import com.example.fixtag.data.model.MachineWithStats
 import com.example.fixtag.data.model.Organization
+import com.example.fixtag.data.model.OrganizationKind
 import com.example.fixtag.data.model.SyncState
 import com.example.fixtag.data.model.SyncStatus
+import com.example.fixtag.data.model.TechnicianWithLoad
 import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
+import com.example.fixtag.data.model.isLocalOnly
+import com.example.fixtag.data.model.scope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -48,11 +61,36 @@ class Repository(
 ) {
     private val currentUserId = stringPreferencesKey("current_user_id")
 
+    // the signed-in user as a flow too: when Android restores the app after killing it, the screens
+    // come back before restoreSession() finishes, and their lists fill in once it does
+    private val currentUser = MutableStateFlow<User?>(null)
+    val signedIn: StateFlow<User?> = currentUser.asStateFlow()
+
     // in-memory cache of the user and his organization
-    var user: User? = null
-        private set
+    var user: User?
+        get() = currentUser.value
+        private set(value) { currentUser.value = value }
+
+    // a list for the signed-in user, empty while there's none
+    private fun <T> whenSignedIn(query: (User) -> Flow<List<T>>): Flow<List<T>> =
+        currentUser.flatMapLatest { user -> if (user == null) flowOf(emptyList()) else query(user) }
 
     enum class DeleteResult { Deleted, NotPending, InUse }
+
+    // what registering a client did, as POST /clients answers it
+    sealed interface Registration {
+        data class Registered(val client: Organization) : Registration  // 201, with its first gestor
+        data class Linked(val client: Organization) : Registration      // 200, the NIF was known
+        data object NifIsAManufacturer : Registration                   // 409
+        data object EmailTaken : Registration                           // 409
+    }
+
+    // what changing the password did, as POST /me/password answers it
+    sealed interface PasswordChange {
+        data class Changed(val user: User) : PasswordChange  // 200, with new tokens
+        data object WrongPassword : PasswordChange           // 400, the current password didn't match
+        data object Failed : PasswordChange                  // offline, or any other answer
+    }
 
     init {
         // If user credentials will be cached in local storage, it is recommended it be encrypted
@@ -108,32 +146,7 @@ class Repository(
 
             Log.d("Repository", "Got ${response.code()} from /login")
             if (response.isSuccessful && response.body() != null) {
-                val authDao = db.getAuthDao()
-                val userDao = db.getUserDao()
-                val body = response.body()!!
-                val userData = body.userDto
-                val userId = Uuid.parse(userData.id)
-                val orgId = Uuid.parse(userData.organizationId)
-                val auth = Auth(
-                    userId = userId,
-                    refreshToken = body.refreshToken,
-                    accessToken = body.accessToken
-                )
-                authDao.upsert(auth)
-                Log.d("Repository", "Got $userData")
-                val user = User(
-                    id = userId,
-                    organizationId = orgId,
-                    organizationKind = userData.organizationKind,
-                    name = userData.name,
-                    email = userData.email,
-                    role = userData.role,
-                    mustChangePassword = userData.mustChangePassword,
-                    syncStatus = SyncStatus.Synced
-                )
-                userDao.upsert(user)
-                this.user = user
-                return Result.Success(user)
+                return Result.Success(saveSession(response.body()!!))
             }
 
             return Result.Error(Exception("Invalid response body."))
@@ -141,6 +154,50 @@ class Repository(
         } catch (e: Exception) {
             Log.d("Repository", e.toString())
             return Result.Error(e)
+        }
+    }
+
+    // /login and /me/password answer alike: both tokens, and the user they belong to
+    private suspend fun saveSession(body: TokenResponseDto): User {
+        val userData = body.userDto
+        Log.d("Repository", "Got $userData")
+        val user = User(
+            id = Uuid.parse(userData.id),
+            organizationId = Uuid.parse(userData.organizationId),
+            organizationKind = userData.organizationKind,
+            name = userData.name,
+            email = userData.email,
+            role = userData.role,
+            mustChangePassword = userData.mustChangePassword,
+            syncStatus = SyncStatus.Synced
+        )
+        db.getAuthDao().upsert(Auth(
+            userId = user.id,
+            refreshToken = body.refreshToken,
+            accessToken = body.accessToken
+        ))
+        db.getUserDao().upsert(user)
+        this.user = user
+        return user
+    }
+
+    // the server swaps the temporary password and answers like /login. The old access token still
+    // says must_change_password and the server deleted the old refresh tokens, so the new pair
+    // replaces them, and there's no need to sign in again
+    suspend fun changePassword(currentPassword: String, newPassword: String): PasswordChange {
+        try {
+            val response = apiService.changePassword(PasswordChangeRequestDto(currentPassword, newPassword))
+            Log.d("Repository", "Got ${response.code()} from /me/password")
+            val body = response.body()
+            return when {
+                response.isSuccessful && body != null -> PasswordChange.Changed(saveSession(body))
+                // the form already checks the length and that it changed, which leaves the current password
+                response.code() == 400 -> PasswordChange.WrongPassword
+                else -> PasswordChange.Failed
+            }
+        } catch (e: Exception) {
+            Log.d("Repository", e.toString())
+            return PasswordChange.Failed
         }
     }
 
@@ -177,7 +234,19 @@ class Repository(
                 val organizationDao = db.getOrganizationDao()
                 val body = response.body()!!
                 val organizations = body.map { it.toEntity() }
-                organizationDao.upsertAll(organizations)
+                // the server answers the caller's own organization plus every one linked to it, so
+                // each organization of the other kind is a link (the clients screen reads them)
+                val me = checkNotNull(user)
+                val links = organizations.filter { it.kind != me.organizationKind }.map { other ->
+                    val (client, manufacturer) =
+                        if (me.organizationKind == OrganizationKind.Cliente) me.organizationId to other.id
+                        else other.id to me.organizationId
+                    ClientManufacturerLink(client, manufacturer, Clock.System.now(), SyncStatus.Synced)
+                }
+                db.withTransaction {  // the links point at the organizations
+                    organizationDao.upsertAll(organizations)
+                    db.getClientManufacturerLinkDao().upsertAll(links)
+                }
                 return Result.Success(organizations)
             }
 
@@ -460,24 +529,30 @@ class Repository(
         }
     }
 
-    // abstracted method to observe the authenticated user's profile data
-    fun observeUser(): Flow<User?> {
-        return db.getUserDao().observe(user?.id)
-    }
+    // the clients the signed-in manufacturer serves; only its support staff open these screens
+    fun observeOrganizations(): Flow<List<Organization>> =
+        whenSignedIn { db.getOrganizationDao().observeClients(it.organizationId) }
 
-    fun observeOrganizations(): Flow<List<Organization>> {
-        return db.getOrganizationDao().observeAll()
-    }
+    // support staff hand incidents to their own organization's technicians, as the server checks
+    fun observeTechnicians(): Flow<List<TechnicianWithLoad>> =
+        whenSignedIn { db.getUserDao().observeTechnicians(it.organizationId) }
 
-    fun observeTechnicians(): Flow<List<User>> {
-        return db.getUserDao().observeTechnicians()
-    }
+    fun observeMembers(): Flow<List<User>> =
+        whenSignedIn { db.getUserDao().observeMembers(it.organizationId) }
 
-    fun observeIncidents(): Flow<List<IncidentAndMachine>> =
-        db.getIncidentDao().observeVisibleWithMachine(user?.organizationId, user?.organizationId, user?.id)
+    // the demo phone holds every organization, so each list only shows what the server would send
+    // the signed-in profile (User.scope)
+    fun observeIncidents(): Flow<List<IncidentAndMachine>> = observeVisibleIncidents(machine = null)
 
     fun observeIncidentsByMachine(machineId: Uuid): Flow<List<IncidentAndMachine>> =
-        db.getIncidentDao().observeByMachineWithMachine(machineId)
+        observeVisibleIncidents(machineId)
+
+    private fun observeVisibleIncidents(machine: Uuid?): Flow<List<IncidentAndMachine>> =
+        whenSignedIn { user ->
+            val scope = user.scope
+            db.getIncidentDao().observeVisibleWithMachine(
+                machine, scope.client, scope.manufacturer, scope.technician?.toString())
+        }
 
     fun observeIncidentAndMachine(id: Uuid): Flow<IncidentAndMachine> {
         return db.getIncidentDao().observeWithMachine(id)
@@ -495,20 +570,50 @@ class Repository(
         return db.getMachineDao().observe(id)
     }
 
-    fun observeMachines(): Flow<List<Machine>> {
-        return db.getMachineDao().observeAll()
-    }
+    fun observeMachines(): Flow<List<Machine>> =
+        whenSignedIn { db.getMachineDao().observeVisible(it.scope.client, it.scope.manufacturer) }
 
     fun observePendingCount() = db.getSyncStateDao().observePendingCount()
 
-    fun observeMachinesWithStats() = db.getMachineDao().observeAllWithStats(since = Clock.System.now() - 30.days)
+    fun observeMachinesWithStats(): Flow<List<MachineWithStats>> =
+        whenSignedIn {
+            db.getMachineDao().observeVisibleWithStats(
+                it.scope.client, it.scope.manufacturer, since = Clock.System.now() - 30.days)
+        }
 
-    suspend fun createOrganization(organization: Organization): Organization {
-        val organizationDao = db.getOrganizationDao()
-        organizationDao.upsert(organization)
+    suspend fun getIncident(id: Uuid): Incident? = db.getIncidentDao().get(id)
 
+    suspend fun isSerialNumberTaken(serialNumber: String, exceptId: Uuid) =
+        db.getMachineDao().isSerialNumberTaken(serialNumber, exceptId)
+
+    suspend fun isEmailTaken(email: String) = db.getUserDao().isEmailTaken(email)
+
+    // what POST /clients does: a NIF already on this phone only gets linked to the signed-in
+    // manufacturer, otherwise the client is new and so is its first gestor, who then creates the
+    // rest of its accounts
+    suspend fun registerClient(client: Organization, managerName: String, managerEmail: String): Registration {
+        val manufacturerId = checkNotNull(user).organizationId
+        val result = db.withTransaction {
+            val existing = db.getOrganizationDao().findByNif(client.nif)
+            if (existing != null && existing.kind != OrganizationKind.Cliente) {
+                return@withTransaction Registration.NifIsAManufacturer
+            }
+            if (existing == null) {
+                // the gestor is only created with a new client, so only then can the email clash
+                if (db.getUserDao().isEmailTaken(managerEmail)) {
+                    return@withTransaction Registration.EmailTaken
+                }
+                db.getOrganizationDao().upsert(client)
+                db.getUserDao().upsert(User.create(
+                    Uuid.random(), client.id, client.kind, managerName, managerEmail, UserRole.Gestor))
+            }
+            val registered = existing ?: client
+            db.getClientManufacturerLinkDao().upsert(
+                ClientManufacturerLink(registered.id, manufacturerId, Clock.System.now()))
+            if (existing == null) Registration.Registered(registered) else Registration.Linked(registered)
+        }
         syncScheduler.syncNow()
-        return organization
+        return result
     }
 
     suspend fun createUser(user: User): User {
@@ -526,6 +631,7 @@ class Repository(
         syncScheduler.syncNow()
     }
 
+    // an upsert, so the author's edit of an incident is saved the same way
     suspend fun createIncident(incident: Incident, attachments: List<Attachment>) {
         val incidentDao = db.getIncidentDao()
         val attachmentDao = db.getAttachmentDao()
@@ -539,17 +645,19 @@ class Repository(
         syncScheduler.syncNow()
     }
 
-    suspend fun createAttachments(attachments: List<Attachment>) {
-        val attachmentDao = db.getAttachmentDao()
-        attachmentDao.insertAll(attachments)
-
-        syncScheduler.syncNow()
-    }
-
+    // Room has no trigger like the server's incident_updates_after_insert, so the incident takes the
+    // new status and technician here, in the same transaction. Its sync status stays as it was:
+    // the update is what gets sent, and the server applies it there the same way
     suspend fun createIncidentUpdate(incidentUpdate: IncidentUpdate) {
-        val incidentUpdateDao = db.getIncidentUpdateDao()
-        incidentUpdateDao.upsert(incidentUpdate)
-
+        db.withTransaction {
+            db.getIncidentUpdateDao().upsert(incidentUpdate)
+            val incident = checkNotNull(db.getIncidentDao().get(incidentUpdate.incidentId))
+            db.getIncidentDao().upsert(incident.copy(
+                status = incidentUpdate.newStatus ?: incident.status,
+                assignedTo = incidentUpdate.assignedTo?.let(Uuid::parse) ?: incident.assignedTo,
+                assignedToName = incidentUpdate.assignedToName ?: incident.assignedToName,
+            ))
+        }
         syncScheduler.syncNow()
     }
 
@@ -558,7 +666,7 @@ class Repository(
         var files = emptyList<String>()
         val result = db.withTransaction {
             val incident = db.getIncidentDao().get(id)
-            if (incident == null || incident.syncStatus != SyncStatus.Pending) {
+            if (incident == null || !incident.isLocalOnly) {
                 return@withTransaction DeleteResult.NotPending
             }
             val attachments = db.getAttachmentDao().getByIncident(id)

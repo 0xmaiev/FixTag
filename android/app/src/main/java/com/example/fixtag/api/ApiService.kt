@@ -7,6 +7,8 @@ import com.example.fixtag.api.model.MachineDto
 import com.example.fixtag.api.model.OrganizationDto
 import com.example.fixtag.api.model.UserDto
 import com.example.fixtag.data.model.IncidentSeverity
+import com.example.fixtag.data.model.IncidentStatus
+import com.example.fixtag.data.model.UserRole
 import com.google.gson.annotations.SerializedName
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -55,15 +57,25 @@ data class IncidentPageDto(
     val hasMore: Boolean
 )
 
+// Gson writes the enum's @SerializedName ("em_analise") and leaves out the fields that are null
 data class UpdateIncidentRequestDto(
     val id: String,
     val message: String?,
     @SerializedName("new_status")
-    val newStatus: String?
+    val newStatus: IncidentStatus?,
+    @SerializedName("assigned_to")
+    val assignedTo: String?,
 )
 
-data class CreateOrganizationRequestDto(
+data class RenameOrganizationRequestDto(
     val name: String,
+)
+
+data class PasswordChangeRequestDto(
+    @SerializedName("current_password")
+    val currentPassword: String,
+    @SerializedName("new_password")
+    val newPassword: String,
 )
 
 data class CreateMachineRequestDto(
@@ -74,10 +86,38 @@ data class CreateMachineRequestDto(
     val model: String,
 )
 
+data class CreatedMemberDto(
+    val user: UserDto,
+    @SerializedName("temporary_password")
+    val temporaryPassword: String,
+)
+
+data class CreateMemberRequestDto(
+    val name: String,
+    val email: String,
+    val role: UserRole
+)
+
+data class ManagerInfoDto(
+    val name: String,
+    val email: String,
+)
+
+data class RegisterClientRequestDto(
+    val nif: String,
+    val name: String,
+    val manager: ManagerInfoDto
+)
+
 interface ApiService {
     @POST("/login")
     suspend fun login(
         @Body request: LoginRequestDto
+    ): Response<TokenResponseDto>
+
+    @POST("/me/password")
+    suspend fun changePassword(
+        @Body request: PasswordChangeRequestDto
     ): Response<TokenResponseDto>
 
     @POST("/refresh")
@@ -90,6 +130,16 @@ interface ApiService {
         @Body request: RegisterDeviceRequestDto
     ): Response<Unit>
 
+    @POST("/users")
+    suspend fun createMember(
+        @Body request: CreateMemberRequestDto
+    ): Response<CreatedMemberDto>
+
+    @POST("/clients")
+    suspend fun registerClient(
+        @Body request: RegisterClientRequestDto
+    ): Response<UserDto>
+
     @GET("/users")
     suspend fun getMembers(): Response<List<UserDto>>
 
@@ -99,7 +149,7 @@ interface ApiService {
     @PUT("/organizations/{id}")
     suspend fun createOrganization(
         @Path("id") id: String,
-        @Body incident: CreateOrganizationRequestDto
+        @Body request: RenameOrganizationRequestDto
     ): Response<OrganizationDto>
 
     @GET("/machines")
@@ -110,7 +160,7 @@ interface ApiService {
     @PUT("/machines/{id}")
     suspend fun createMachine(
         @Path("id") id: String,
-        @Body incident: CreateMachineRequestDto
+        @Body request: CreateMachineRequestDto
     ): Response<MachineDto>
 
     @GET("/incidents/{id}")
@@ -130,7 +180,7 @@ interface ApiService {
     @PUT("/incidents/{id}")
     suspend fun createIncident(
         @Path("id") id: String,
-        @Body incident: CreateIncidentRequestDto
+        @Body request: CreateIncidentRequestDto
     ): Response<IncidentDto>
 
     @PUT("/incidents/{id}/attachments/{attachment_id}")

@@ -52,8 +52,8 @@ import com.google.android.gms.tasks.Task
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 
 class NewIncidentFragment : Fragment() {
 
@@ -127,8 +127,8 @@ class NewIncidentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<MaterialToolbar>(R.id.toolbar)
-            .setNavigationOnClickListener { findNavController().navigateUp() }
+        val toolbar = view.findViewById<MaterialToolbar>(R.id.toolbar)
+        toolbar.setNavigationOnClickListener { findNavController().navigateUp() }
         selectMachine = view.findViewById(R.id.selectMachineButton)
         addLocation = view.findViewById(R.id.addLocationButton)
         addPhoto = view.findViewById(R.id.addPhotoButton)
@@ -199,8 +199,8 @@ class NewIncidentFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    // the button stays enabled: submit() checks again, and typing clears an error
                     viewModel.form.collect { form ->
-                        createIncident.isEnabled = form.isDataValid
                         description.error = form.descriptionError?.let { getString(it) }
                         model.error = form.machineError?.let { getString(it) }
                     }
@@ -226,6 +226,21 @@ class NewIncidentFragment : Fragment() {
                                 Toast.LENGTH_SHORT
                             ).show()
                             findNavController().popBackStack()
+                        }
+                    }
+                }
+                launch {
+                    // opened on an existing incident: its author editing it
+                    viewModel.editing.filterNotNull().collect { incident ->
+                        toolbar.setTitle(R.string.edit_incident_fragment_title)
+                        selectMachine.isVisible = false  // the server keeps it on its machine (409)
+                        if (viewModel.takePrefill()) {
+                            description.setText(incident.description)
+                            severityChips.check(when (incident.severity) {
+                                IncidentSeverity.Low -> R.id.severityLowChip
+                                IncidentSeverity.Medium -> R.id.severityMediumChip
+                                IncidentSeverity.Critical -> R.id.severityCriticalChip
+                            })
                         }
                     }
                 }

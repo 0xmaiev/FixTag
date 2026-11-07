@@ -70,7 +70,9 @@ class DatabaseTest {
 
     @Test
     fun writeMachine() = runTest {
-        val org = orgDao.findOrganizationsByName("Test Org").single()
+        // every test starts from an empty database, and the machine's foreign key needs the organization
+        val org = Organization.create(Uuid.random(), "Test Org", "123456789")
+        orgDao.upsert(org)
         val machine = Machine.create(
             Uuid.random(),
             org.id,

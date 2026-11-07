@@ -8,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.time.Clock
+import kotlin.uuid.Uuid
 
 // What the server's constraints and trigger guarantee for dev.sql, none of which Room checks.
 // A plain JVM test, no emulator needed: ./gradlew :app:testDemoDebugUnitTest
@@ -60,12 +61,16 @@ class DemoSeedRulesTest {
             // what the server's incident_updates_after_insert trigger leaves behind
             val history = updates.filter { it.incidentId == incident.id }.sortedBy { it.createdAt }
             assertEquals(
-                history.mapNotNull { it.newStatus }.lastOrNull() ?: "recebida",
-                IncidentStatus.toCustomString(incident.status),
+                history.mapNotNull { it.newStatus }.lastOrNull() ?: IncidentStatus.Received,
+                incident.status,
             )
             assertEquals(
                 history.mapNotNull { it.assignedTo }.lastOrNull(),
                 incident.assignedTo?.toString(),
+            )
+            assertEquals(
+                history.mapNotNull { it.assignedToName }.lastOrNull(),
+                incident.assignedToName,
             )
 
             incident.assignedTo?.let {
@@ -74,6 +79,14 @@ class DemoSeedRulesTest {
                 assertEquals(incident.handledBy, technician.organizationId)
                 assertEquals(technician.name, incident.assignedToName)
             }
+        }
+    }
+
+    @Test
+    fun updatesNameTheTechnicianTheyAssign() {
+        for (update in updates) {
+            val technician = update.assignedTo?.let { users.getValue(Uuid.parse(it)) }
+            assertEquals(update.id.toString(), technician?.name, update.assignedToName)
         }
     }
 }

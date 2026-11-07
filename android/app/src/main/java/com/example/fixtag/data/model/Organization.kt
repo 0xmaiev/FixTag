@@ -87,12 +87,22 @@ interface OrganizationDao {
     @Query("SELECT * FROM organization WHERE id = :id")
     suspend fun get(id: Uuid): Organization?
 
-    @Query("SELECT * FROM organization")
-    fun observeAll(): Flow<List<Organization>>
-
     @Transaction
     @Query("SELECT * FROM organization")
     suspend fun getAll(): List<Organization>
+
+    // the clients a manufacturer serves, through the link table
+    @Query("""
+        SELECT organization.* FROM organization
+          JOIN client_manufacturer_link link ON link.client_id = organization.id
+         WHERE link.manufacturer_id = :manufacturerId
+         ORDER BY organization.name
+    """)
+    fun observeClients(manufacturerId: Uuid): Flow<List<Organization>>
+
+    // the NIF is what tells two manufacturers they serve the same client
+    @Query("SELECT * FROM organization WHERE nif = :nif LIMIT 1")
+    suspend fun findByNif(nif: String): Organization?
 
     @Query("SELECT * FROM organization WHERE sync_status = 'Pending'")
     suspend fun getPending(): List<Organization>

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fixtag.AppViewModelFactory
 import com.example.fixtag.FixTag
 import com.example.fixtag.R
-import com.example.fixtag.data.model.UserRole
+import com.example.fixtag.data.model.isSupport
 import com.example.fixtag.ui.adapters.MachineAdapter
 import com.example.fixtag.ui.confirmDeletePending
 import com.example.fixtag.ui.main.MainViewModel
@@ -89,7 +89,7 @@ class MachinesFragment : Fragment() {
             mainViewModel.switchProfile()
         }
         showPendingCount(view, mainViewModel.pendingCount)
-        showFor(newMachineButton, mainViewModel.role, UserRole.Assistencia)
+        showFor(newMachineButton, mainViewModel.user) { it.isSupport }
     }
 
 }

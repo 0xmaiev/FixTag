@@ -97,6 +97,10 @@ data class Incident(
     }
 }
 
+// created on this phone and never sent, the only incidents it's safe to delete here. An edit to
+// one the server already has is Pending too, but it moves updated_at past created_at
+val Incident.isLocalOnly get() = syncStatus == SyncStatus.Pending && updatedAt == createdAt
+
 data class IncidentAndMachine(
     @Embedded
     val incident: Incident,
@@ -122,34 +126,30 @@ interface IncidentDao {
     @Query("SELECT * FROM incident WHERE id = :id LIMIT 1")
     fun observeWithMachine(id: Uuid): Flow<IncidentAndMachine>
 
-    @Query("SELECT * FROM incident")
-    fun observeAll(): Flow<List<Incident>>
-
     @Query("SELECT * FROM incident WHERE organization_id = :organizationId")
     fun observeByOrganization(organizationId: Uuid): Flow<List<Incident>>
 
     @Query("SELECT * FROM incident WHERE machine_id = :machineId")
     fun observeByMachine(machineId: Uuid): Flow<List<Incident>>
 
-    @Transaction
-    @Query("SELECT * FROM incident ORDER BY reported_at DESC")
-    fun observeAllWithMachine(): Flow<List<IncidentAndMachine>>
-
+    // what one profile may see, the server's incident_scope! rules: each argument that isn't null
+    // narrows the list (User.scope picks them). technician is text because author_id and
+    // incident_update.assigned_to are TEXT columns, and a Uuid argument is bound as a BLOB, which
+    // never equals a TEXT value
     @Transaction
     @Query("""
         SELECT * FROM incident
-         WHERE (:client IS NULL OR organization_id = :client)
+         WHERE (:machine IS NULL OR machine_id = :machine)
+           AND (:client IS NULL OR organization_id = :client)
            AND (:manufacturer IS NULL OR handled_by = :manufacturer)
            AND (:technician IS NULL OR author_id = :technician OR EXISTS (
                    SELECT 1 FROM incident_update iu
                     WHERE iu.incident_id = incident.id AND iu.assigned_to = :technician))
          ORDER BY reported_at DESC
     """)
-    fun observeVisibleWithMachine(client: Uuid?, manufacturer: Uuid?, technician: Uuid?): Flow<List<IncidentAndMachine>>
-
-    @Transaction
-    @Query("SELECT * FROM incident WHERE machine_id = :machineId ORDER BY reported_at DESC")
-    fun observeByMachineWithMachine(machineId: Uuid): Flow<List<IncidentAndMachine>>
+    fun observeVisibleWithMachine(
+        machine: Uuid?, client: Uuid?, manufacturer: Uuid?, technician: String?,
+    ): Flow<List<IncidentAndMachine>>
 
     @Query("SELECT * FROM incident WHERE id = :id")
     suspend fun get(id: Uuid): Incident?

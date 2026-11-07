@@ -3,6 +3,7 @@ package com.example.fixtag.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Query
@@ -63,6 +64,9 @@ fun User.canCreate(role: UserRole) = when (this.role) {
     else -> false
 }
 
+// the roles of the accounts this user can create, empty for everyone else
+val User.creatableRoles get() = rolesOf(organizationKind).filter { canCreate(it) }
+
 // what this user can see, each non-null field narrows it
 data class Scope(val client: Uuid?, val manufacturer: Uuid?, val technician: Uuid?)
 
@@ -71,6 +75,14 @@ val User.scope get() = when {
     role == UserRole.Tecnico -> Scope(null, organizationId, id)
     else -> Scope(null, organizationId, null)
 }
+
+// a technician and how many unresolved incidents they hold, for picking who gets the next one
+data class TechnicianWithLoad(
+    @Embedded
+    val user: User,
+    @ColumnInfo(name = "open_incidents")
+    val openIncidents: Int,
+)
 
 @Dao
 interface UserDao {
@@ -84,9 +96,23 @@ interface UserDao {
     @Query("SELECT * FROM user WHERE id = :id LIMIT 1")
     fun observe(id: Uuid?): Flow<User?>
 
-    @Transaction
-    @Query("SELECT * FROM user WHERE role = 'Technician'")
-    fun observeTechnicians(): Flow<List<User>>
+    // Room stores the enum's name, 'Tecnico'. incident.assigned_to and user.id are both BLOBs
+    @Query("""
+        SELECT user.*,
+            (SELECT COUNT(*) FROM incident
+              WHERE incident.assigned_to = user.id AND incident.status != 'Resolved') AS open_incidents
+          FROM user
+         WHERE user.role = 'Tecnico' AND user.organization_id = :organizationId
+         ORDER BY user.name
+    """)
+    fun observeTechnicians(organizationId: Uuid): Flow<List<TechnicianWithLoad>>
+
+    @Query("SELECT * FROM user WHERE organization_id = :organizationId ORDER BY name")
+    fun observeMembers(organizationId: Uuid): Flow<List<User>>
+
+    // emails are unique on the server too (409), checked here so the form can say so offline
+    @Query("SELECT EXISTS (SELECT 1 FROM user WHERE email = :email COLLATE NOCASE)")
+    suspend fun isEmailTaken(email: String): Boolean
 
     @Query("SELECT * FROM user WHERE id = :id")
     suspend fun get(id: Uuid): User?

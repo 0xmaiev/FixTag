@@ -91,6 +91,30 @@
                         android:textAlignment="viewStart"
                         android:textSize="20sp" />
                 </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/roleLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/roleLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="15dp"
+                        android:gravity="center"
+                        android:text="@string/label_role"
+                        android:textSize="18sp" />
+                    <!-- NewMemberFragment adds the roles the signed-in user may create -->
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/roles"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
+                        app:selectionRequired="true"
+                        app:singleSelection="true" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </ScrollView>

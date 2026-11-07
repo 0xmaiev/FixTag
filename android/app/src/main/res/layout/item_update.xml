@@ -34,11 +34,12 @@
                 android:textSize="15sp" />
 
             <TextView
-                android:id="@+id/authorRole"
+                android:id="@+id/newStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="5dp"
+                android:visibility="gone"
                 android:background="?attr/colorOnSurface"
                 android:gravity="center"
                 android:paddingStart="5dp"

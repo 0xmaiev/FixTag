@@ -156,6 +156,28 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/managerNameLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="10dp"
+                        android:gravity="start"
+                        android:text="@string/label_name"
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp" />
+
+                    <EditText
+                        android:id="@+id/managerName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="fill|fill_horizontal"
+                        android:autofillHints="name"
+                        android:hint="@string/manager_name_hint"
+                        android:inputType="textPersonName|textCapWords"
+                        android:minHeight="48dp"
+                        android:textSize="18sp" />
+
+                    <TextView
                         android:id="@+id/managerEmailLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -178,7 +200,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="fill|fill_horizontal"
                             android:height="25dp"
-                            android:autofillHints="name"
+                            android:autofillHints="emailAddress"
                             android:elegantTextHeight="false"
                             android:gravity="fill|fill_horizontal"
                             android:hint="@string/manager_email_hint"

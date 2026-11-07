@@ -106,8 +106,8 @@ class NewMachineFragment: Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    // the button stays enabled: submit() checks again, and typing clears an error
                     viewModel.form.collect { form ->
-                        createMachine.isEnabled = form.isDataValid
                         organization.error = form.organizationError?.let { getString(it) }
                         model.error = form.modelError?.let { getString(it) }
                         serialNumber.error = form.serialNumberError?.let { getString(it) }

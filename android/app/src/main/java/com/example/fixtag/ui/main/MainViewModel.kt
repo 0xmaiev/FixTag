@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.SyncScheduler
+import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,9 @@ class MainViewModel(
     private val _navigationState = MutableStateFlow<NavigationState>(NavigationState.Loading)
     val navigationState: StateFlow<NavigationState> = _navigationState.asStateFlow()
 
+    private val _user = MutableStateFlow<User?>(null)
+    val user: StateFlow<User?> = _user.asStateFlow()
+
     private val _role = MutableStateFlow<UserRole?>(null)
     val role: StateFlow<UserRole?> = _role.asStateFlow()
 
@@ -53,7 +57,13 @@ class MainViewModel(
     private fun checkUserStatus() {
         viewModelScope.launch {
             val user = repository.restoreSession()
-            if (user != null) {
+            if (user != null && user.mustChangePassword) {
+                // still on a temporary password: the server answers 403 to everything but the change,
+                // and LoginActivity opens the change form for a signed-in user who needs it
+                Log.d("MainViewModel", "${user.name} has to change the temporary password first")
+                _navigationState.value = NavigationState.GoToLogin
+            } else if (user != null) {
+                _user.value = user
                 _role.value = user.role
                 _organizationId.value = user.organizationId
                 Log.d("MainViewModel", "Found authentication details for ${user.role} ${user.name}")

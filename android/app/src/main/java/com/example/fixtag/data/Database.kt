@@ -24,12 +24,10 @@ import com.example.fixtag.data.model.Organization
 import com.example.fixtag.data.model.OrganizationDao
 import com.example.fixtag.data.model.SyncState
 import com.example.fixtag.data.model.SyncStateDao
-import com.example.fixtag.data.model.Technician
-import com.example.fixtag.data.model.TechnicianDao
 
 const val DATABASE_NAME = "database"
 
-@Database(version = 1,
+@Database(version = 2,
     entities = [
         Auth::class,
         Organization::class,
@@ -56,7 +54,11 @@ abstract class Database : RoomDatabase() {
                 val instance = Room.databaseBuilder<com.example.fixtag.data.Database>(
                     context.applicationContext,
                     DATABASE_NAME,
-                ).fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true).build()
+                )
+                    // no migrations: a phone with an older schema starts over, the demo seeds
+                    // itself again and the full app syncs everything back
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build()
                 INSTANCE = instance
                 instance
             }

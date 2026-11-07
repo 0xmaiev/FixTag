@@ -4,8 +4,8 @@
     <string name="app_ver" translatable="false">v0.1</string>
     <string name="app_logo" translatable="false">FixTag Logo</string>
     <string name="app_desc">Technical assistance for industrial equipment</string>
-    <string name="demo_login_operator">Operator</string>
-    <string name="demo_login_assistance">Assistance</string>
+    <string name="demo_login_operator">Client</string>
+    <string name="demo_login_assistance">Manufacturer</string>
 
     <string name="location_permission_needed">Location permission is required.</string>
     <string name="camera_permission_needed">Camera permission is required.</string>
@@ -39,6 +39,8 @@
 
     <!-- Authentication -->
     <string name="activity_login_title">Login</string>
+    <string name="login_fragment_title">Login</string>
+    <string name="password_change_fragment_title">Password Change</string>
     <string name="action_sign_in">Login</string>
     <string name="action_register">Register</string>
     <string name="forgot_password">Forgot my password</string>
@@ -68,7 +70,7 @@
     <string name="pending_member_push_failed">Failed to push pending members.</string>
 
     <!-- Various user types -->
-    <string name="technician_select_dialog_title">Select a member</string>
+    <string name="technician_select_dialog_title">Select a technician</string>
     <string name="organization_select_dialog_title">Select an organization</string>
     <string name="machine_select_dialog_title">Select a machine</string>
 
@@ -143,6 +145,7 @@
     <string name="remove">Remove</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
     <string name="grab_location">Grab location</string>
     <string name="failed_to_get_location">Failed to grab location.</string>
     <string name="record_audio">Audio recording</string>
@@ -180,4 +183,44 @@
     <string name="delete_pending_message">«%1$s» has not been sent, so it only exists in this device. This action is irreversible.</string>
     <string name="delete_machine_in_use">Delete the incidents of this machine first.</string>
     <string name="delete_organization_in_use">Delete the machines of this organization first.</string>
+    <!-- roles, as each form and list shows them -->
+    <string name="role_admin">Administrator</string>
+    <string name="role_operator">Operator</string>
+    <string name="role_technician">Technician</string>
+    <string name="role_assistance">Assistance</string>
+    <string name="role_manager">Manager</string>
+
+    <!-- incident detail: edit, updates and the technician -->
+    <string name="edit">Edit</string>
+    <string name="edit_incident_fragment_title">Edit incident</string>
+    <string name="no_technician_assigned">No technician assigned yet</string>
+    <string name="update_message_hint">Message (optional with a new status)</string>
+    <string name="update_status_unchanged">Keep status</string>
+    <string name="update_empty_error">Write a message or pick a new status.</string>
+    <string name="update_assigned_to">Assigned to %s</string>
+    <string name="update_saved">Update saved.</string>
+
+    <!-- members and client registration -->
+    <string name="label_role">Role</string>
+    <string name="empty_role_error">Pick a role</string>
+    <string name="email_taken_error">That e-mail already has an account</string>
+    <string name="serial_number_taken_error">Another machine has that serial number</string>
+    <string name="manager_name_hint">Manager\'s name</string>
+    <string name="nif_manufacturer_error">That NIF belongs to a manufacturer</string>
+    <string name="client_linked">%s was already registered and now also has your organization as a supplier.</string>
+
+    <!-- demo login -->
+    <string name="demo_pick_profile">Pick a profile</string>
+
+    <!-- password change -->
+    <string name="password_change_intro">Your account still has the temporary password it was created with. Choose a new one to continue.</string>
+    <string name="label_current_password">Current password</string>
+    <string name="label_new_password">New password</string>
+    <string name="new_password_hint">At least 8 characters</string>
+    <string name="current_password_empty_error">Enter your current password</string>
+    <string name="current_password_wrong_error">The current password is wrong</string>
+    <string name="new_password_too_short_error">Use at least 8 characters</string>
+    <string name="new_password_unchanged_error">Choose a password different from the current one</string>
+    <string name="password_change_failed">Couldn\'t change the password. Check the connection and try again.</string>
+    <string name="password_changed">Password changed</string>
 </resources>
