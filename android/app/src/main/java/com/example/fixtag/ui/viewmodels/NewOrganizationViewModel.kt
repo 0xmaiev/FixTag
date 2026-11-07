@@ -52,6 +52,7 @@ class NewOrganizationViewModel(
                     _form.value = NewOrganizationFormState(nifError = R.string.nif_manufacturer_error)
                 Repository.Registration.EmailTaken ->
                     _form.value = NewOrganizationFormState(managerEmailError = R.string.email_taken_error)
+                Repository.Registration.Failed -> failures.send(R.string.registration_failed)
                 else -> registration = result
             }
             state.value = if (registration == null) State.Editing else State.Saved

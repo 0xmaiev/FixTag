@@ -162,4 +162,14 @@
     <string name="new_password_unchanged_error">Escolha uma palavra-passe diferente da atual</string>
     <string name="password_change_failed">Não foi possível alterar a palavra-passe. Verifique a ligação e tente novamente.</string>
     <string name="password_changed">Palavra-passe alterada</string>
+
+    <!-- palavra-passe temporária de uma conta nova -->
+    <string name="account_created_title">Conta criada</string>
+    <string name="temporary_password_intro">Entregue estes dados a %1$s. A palavra-passe só é mostrada agora, e será trocada por uma nova no primeiro início de sessão.</string>
+    <string name="label_temporary_password">Palavra-passe temporária</string>
+    <string name="copy_password">Copiar palavra-passe</string>
+    <string name="password_copied">Palavra-passe copiada</string>
+    <string name="done">Concluído</string>
+    <string name="registration_failed">Não foi possível registar o cliente. O registo precisa de ligação ao servidor.</string>
+    <string name="member_creation_failed">Não foi possível criar a conta. Criar contas precisa de ligação ao servidor.</string>
 </resources>

@@ -40,6 +40,7 @@ fun UserDto.toEntity(): User {
         email = email,
         role = role,
         mustChangePassword = mustChangePassword,
+        syncStatus = SyncStatus.Synced,  // it came from the server
     )
 }
 

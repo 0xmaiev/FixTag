@@ -9,7 +9,10 @@ import androidx.room.withTransaction
 import com.example.fixtag.ATTACHMENTS_DIR
 import com.example.fixtag.BuildConfig
 import com.example.fixtag.api.ApiService
+import com.example.fixtag.api.CreateMemberRequestDto
 import com.example.fixtag.api.LoginRequestDto
+import com.example.fixtag.api.ManagerInfoDto
+import com.example.fixtag.api.RegisterClientRequestDto
 import com.example.fixtag.api.PasswordChangeRequestDto
 import com.example.fixtag.api.model.TokenResponseDto
 import com.example.fixtag.data.model.Attachment
@@ -79,10 +82,21 @@ class Repository(
 
     // what registering a client did, as POST /clients answers it
     sealed interface Registration {
-        data class Registered(val client: Organization) : Registration  // 201, with its first gestor
+        // 201, with its first gestor. The server shows the temporary password only in this answer,
+        // and the demo has no passwords, so it's null there
+        data class Registered(val client: Organization, val manager: User, val temporaryPassword: String?) : Registration
         data class Linked(val client: Organization) : Registration      // 200, the NIF was known
         data object NifIsAManufacturer : Registration                   // 409
         data object EmailTaken : Registration                           // 409
+        data object Failed : Registration                               // offline, or any other answer
+    }
+
+    // what creating an account did, as POST /users answers it
+    sealed interface MemberCreation {
+        // 201. temporaryPassword as in Registration.Registered
+        data class Created(val user: User, val temporaryPassword: String?) : MemberCreation
+        data object EmailTaken : MemberCreation  // 409
+        data object Failed : MemberCreation      // offline, or any other answer
     }
 
     // what changing the password did, as POST /me/password answers it
@@ -588,40 +602,95 @@ class Repository(
 
     suspend fun isEmailTaken(email: String) = db.getUserDao().isEmailTaken(email)
 
-    // what POST /clients does: a NIF already on this phone only gets linked to the signed-in
-    // manufacturer, otherwise the client is new and so is its first gestor, who then creates the
-    // rest of its accounts
-    suspend fun registerClient(client: Organization, managerName: String, managerEmail: String): Registration {
+    // what POST /clients does: a NIF already registered only gets linked to the signed-in
+    // manufacturer, otherwise the client is new and so is its first manager, who then creates the
+    // rest of its accounts. The full app has to ask the server: only it knows every NIF, and only
+    // it hands out the manager's password. The demo phone holds every organization, so it answers itself
+    suspend fun registerClient(client: Organization, managerName: String, managerEmail: String): Registration =
+        if (BuildConfig.OFFLINE_DEMO) registerClientLocally(client, managerName, managerEmail)
+        else registerClientOnline(client, managerName, managerEmail)
+
+    private suspend fun registerClientOnline(client: Organization, managerName: String, managerEmail: String): Registration {
         val manufacturerId = checkNotNull(user).organizationId
-        val result = db.withTransaction {
+        try {
+            val response = apiService.registerClient(
+                RegisterClientRequestDto(client.nif, client.name, ManagerInfoDto(managerName, managerEmail)))
+            Log.d("Repository", "Got ${response.code()} from /clients")
+            val body = response.body()
+            if (!response.isSuccessful || body == null) {
+                return when {
+                    // both clashes are 409s, and the server's message names the NIF when it's the NIF's
+                    response.code() == 409 && response.errorBody()?.string().orEmpty().contains("NIF") ->
+                        Registration.NifIsAManufacturer
+                    response.code() == 409 -> Registration.EmailTaken
+                    else -> Registration.Failed
+                }
+            }
+            val registered = body.organization.toEntity()
+            val created = body.manager  // null when the NIF was known and the client only got linked
+            val manager = created?.user?.toEntity()
+            // what the next sync would pull anyway, saved now so the lists show it at once
+            db.withTransaction {
+                db.getOrganizationDao().upsert(registered)
+                if (manager != null) db.getUserDao().upsert(manager)
+                db.getClientManufacturerLinkDao().upsert(
+                    ClientManufacturerLink(registered.id, manufacturerId, Clock.System.now()))
+            }
+            return if (created == null || manager == null) Registration.Linked(registered)
+            else Registration.Registered(registered, manager, created.temporaryPassword)
+        } catch (e: Exception) {
+            Log.d("Repository", e.toString())
+            return Registration.Failed
+        }
+    }
+
+    private suspend fun registerClientLocally(client: Organization, managerName: String, managerEmail: String): Registration {
+        val manufacturerId = checkNotNull(user).organizationId
+        return db.withTransaction {
             val existing = db.getOrganizationDao().findByNif(client.nif)
             if (existing != null && existing.kind != OrganizationKind.Cliente) {
                 return@withTransaction Registration.NifIsAManufacturer
             }
+            var manager: User? = null
             if (existing == null) {
                 // the gestor is only created with a new client, so only then can the email clash
                 if (db.getUserDao().isEmailTaken(managerEmail)) {
                     return@withTransaction Registration.EmailTaken
                 }
                 db.getOrganizationDao().upsert(client)
-                db.getUserDao().upsert(User.create(
-                    Uuid.random(), client.id, client.kind, managerName, managerEmail, UserRole.Gestor))
+                manager = User.create(Uuid.random(), client.id, client.kind, managerName, managerEmail, UserRole.Gestor)
+                db.getUserDao().upsert(manager)
             }
             val registered = existing ?: client
             db.getClientManufacturerLinkDao().upsert(
                 ClientManufacturerLink(registered.id, manufacturerId, Clock.System.now()))
-            if (existing == null) Registration.Registered(registered) else Registration.Linked(registered)
+            if (manager == null) Registration.Linked(registered)
+            else Registration.Registered(registered, manager, temporaryPassword = null)
         }
-        syncScheduler.syncNow()
-        return result
     }
 
-    suspend fun createUser(user: User): User {
-        val userDao = db.getUserDao()
-        userDao.upsert(user)
-
-        syncScheduler.syncNow()
-        return user
+    // what POST /users does: an account in the creator's own organization. Online in the full app,
+    // for the same reasons as registerClient: every email, and the temporary password
+    suspend fun createMember(member: User): MemberCreation {
+        if (BuildConfig.OFFLINE_DEMO) {
+            db.getUserDao().upsert(member)
+            return MemberCreation.Created(member, temporaryPassword = null)
+        }
+        try {
+            val response = apiService.createMember(CreateMemberRequestDto(member.name, member.email, member.role))
+            Log.d("Repository", "Got ${response.code()} from /users")
+            val body = response.body()
+            if (!response.isSuccessful || body == null) {
+                return if (response.code() == 409) MemberCreation.EmailTaken else MemberCreation.Failed
+            }
+            // the server picks the id, so the account is saved as it answered
+            val created = body.user.toEntity()
+            db.getUserDao().upsert(created)
+            return MemberCreation.Created(created, body.temporaryPassword)
+        } catch (e: Exception) {
+            Log.d("Repository", e.toString())
+            return MemberCreation.Failed
+        }
     }
 
     suspend fun createMachine(machine: Machine) {

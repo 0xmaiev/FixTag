@@ -8,6 +8,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -18,6 +19,7 @@ import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.ui.ItemViewModelFactory
+import com.example.fixtag.ui.showTemporaryPassword
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewOrganizationViewModel
 import com.google.android.material.appbar.MaterialToolbar
@@ -41,6 +43,8 @@ class NewOrganizationFragment: Fragment() {
     private lateinit var nif: EditText
     private lateinit var managerName: EditText
     private lateinit var managerEmail: EditText
+    // the state stays Saved, and each return to the screen collects it again
+    private var passwordDialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,20 +83,37 @@ class NewOrganizationFragment: Fragment() {
                     }
                 }
                 launch {
+                    viewModel.errors.collect { error ->
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    }
+                }
+                launch {
                     viewModel.uiState.collect { state ->
-                        if (state == InputBaseViewModel.State.Saved) {
-                            val message = when (val registration = viewModel.registration) {
-                                is Repository.Registration.Linked ->
-                                    getString(R.string.client_linked, registration.client.name)
-                                else -> getString(R.string.organization_saved)
-                            }
-                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
-                            findNavController().popBackStack()
-                        }
+                        if (state == InputBaseViewModel.State.Saved) onSaved()
                     }
                 }
             }
         }
+    }
+
+    private fun onSaved() {
+        val registration = viewModel.registration
+        val password = (registration as? Repository.Registration.Registered)?.temporaryPassword
+        if (registration is Repository.Registration.Registered && password != null) {
+            // the server shows the new gestor's password only now: the form stays until it's been read
+            if (passwordDialog?.isShowing != true) {
+                passwordDialog = showTemporaryPassword(registration.manager, password) {
+                    findNavController().popBackStack()
+                }
+            }
+            return
+        }
+        val message = when (registration) {
+            is Repository.Registration.Linked -> getString(R.string.client_linked, registration.client.name)
+            else -> getString(R.string.organization_saved)
+        }
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+        findNavController().popBackStack()
     }
 
     private fun submit() = viewModel.submit(

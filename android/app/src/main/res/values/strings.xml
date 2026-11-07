@@ -223,4 +223,14 @@
     <string name="new_password_unchanged_error">Choose a password different from the current one</string>
     <string name="password_change_failed">Couldn\'t change the password. Check the connection and try again.</string>
     <string name="password_changed">Password changed</string>
+
+    <!-- a new account's temporary password -->
+    <string name="account_created_title">Account created</string>
+    <string name="temporary_password_intro">Give these to %1$s. The password is only shown now, and they\'ll choose their own the first time they log in.</string>
+    <string name="label_temporary_password">Temporary password</string>
+    <string name="copy_password">Copy password</string>
+    <string name="password_copied">Password copied</string>
+    <string name="done">Done</string>
+    <string name="registration_failed">Couldn\'t register the client. Registering needs a connection to the server.</string>
+    <string name="member_creation_failed">Couldn\'t create the account. Creating accounts needs a connection to the server.</string>
 </resources>

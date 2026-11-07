@@ -44,6 +44,10 @@ class NewMemberViewModel(
     // the first role until the user picks another, kept across rotation
     val role: StateFlow<UserRole?> = savedStateHandle.getStateFlow(ROLE_HANDLE, roles.firstOrNull())
 
+    // set once saved, with the temporary password the server handed out (null in the demo)
+    var created: Repository.MemberCreation.Created? = null
+        private set
+
     fun selectRole(role: UserRole) {
         savedStateHandle[ROLE_HANDLE] = role
     }
@@ -62,15 +66,21 @@ class NewMemberViewModel(
                 state.value = State.Editing
                 return@launch
             }
-            repository.createUser(User.create(
+            val member = User.create(
                 Uuid.parse(userId),
                 creator.organizationId,
                 creator.organizationKind,
                 name.trim(),
                 email.trim(),
                 role,
-            ))
-            state.value = State.Saved
+            )
+            when (val result = repository.createMember(member)) {
+                is Repository.MemberCreation.Created -> created = result
+                Repository.MemberCreation.EmailTaken ->
+                    _form.value = NewMemberFormState(emailError = R.string.email_taken_error)
+                Repository.MemberCreation.Failed -> failures.send(R.string.member_creation_failed)
+            }
+            state.value = if (created == null) State.Editing else State.Saved
         }
     }
 

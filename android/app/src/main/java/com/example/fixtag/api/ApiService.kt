@@ -109,6 +109,12 @@ data class RegisterClientRequestDto(
     val manager: ManagerInfoDto
 )
 
+// manager is null when the NIF was already registered and the client only got linked
+data class ClientRegistrationDto(
+    val organization: OrganizationDto,
+    val manager: CreatedMemberDto?,
+)
+
 interface ApiService {
     @POST("/login")
     suspend fun login(
@@ -138,7 +144,7 @@ interface ApiService {
     @POST("/clients")
     suspend fun registerClient(
         @Body request: RegisterClientRequestDto
-    ): Response<UserDto>
+    ): Response<ClientRegistrationDto>
 
     @GET("/users")
     suspend fun getMembers(): Response<List<UserDto>>

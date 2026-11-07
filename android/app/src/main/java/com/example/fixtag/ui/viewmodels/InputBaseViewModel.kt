@@ -7,9 +7,12 @@ import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.User
 import com.example.fixtag.ui.MACHINE_ID_KEY
 import com.example.fixtag.ui.ORGANIZATION_ID_KEY
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlin.uuid.Uuid
 
@@ -31,4 +34,9 @@ abstract class InputBaseViewModel(): ViewModel() {
 
     val state = MutableStateFlow<State>(State.Editing)
     val uiState: StateFlow<State> = state.asStateFlow()
+
+    // errors that belong to no field, for a toast. A Channel hands each one over once, where a
+    // StateFlow would show it again after every rotation
+    protected val failures = Channel<Int>(Channel.BUFFERED)
+    val errors: Flow<Int> = failures.receiveAsFlow()
 }

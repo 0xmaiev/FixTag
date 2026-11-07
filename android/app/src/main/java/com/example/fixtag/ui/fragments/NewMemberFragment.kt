@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -17,6 +18,7 @@ import com.example.fixtag.FixTag
 import com.example.fixtag.R
 import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.label
+import com.example.fixtag.ui.showTemporaryPassword
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewMemberViewModel
 import com.google.android.material.appbar.MaterialToolbar
@@ -41,6 +43,8 @@ class NewMemberFragment: Fragment() {
     private lateinit var name: TextView
     private lateinit var email: TextView
     private lateinit var roles: ChipGroup
+    // the state stays Saved, and each return to the screen collects it again
+    private var passwordDialog: AlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,18 +88,32 @@ class NewMemberFragment: Fragment() {
                     }
                 }
                 launch {
+                    viewModel.errors.collect { error ->
+                        Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                    }
+                }
+                launch {
                     viewModel.uiState.collect { state ->
-                        if (state == InputBaseViewModel.State.Saved) {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.member_saved,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            findNavController().popBackStack()
-                        }
+                        if (state == InputBaseViewModel.State.Saved) onSaved()
                     }
                 }
             }
         }
+    }
+
+    private fun onSaved() {
+        val created = viewModel.created
+        val password = created?.temporaryPassword
+        if (created != null && password != null) {
+            // the server shows the new account's password only now: the form stays until it's been read
+            if (passwordDialog?.isShowing != true) {
+                passwordDialog = showTemporaryPassword(created.user, password) {
+                    findNavController().popBackStack()
+                }
+            }
+            return
+        }
+        Toast.makeText(requireContext(), R.string.member_saved, Toast.LENGTH_SHORT).show()
+        findNavController().popBackStack()
     }
 }
