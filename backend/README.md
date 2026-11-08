@@ -10,7 +10,7 @@ docker compose up -d --wait db              # from the repo root, Postgres on lo
 mkdir -p ~/.fixtag && cp backend/config.example.json ~/.fixtag/config.json   # set jwt_secret
 cd backend
 cargo run -- seed                           # migrations + demo data, safe to re-run
-cargo run                                   # listens on 0.0.0.0:3000
+cargo run                                   # listens on 0.0.0.0:8090
 ```
 
 Migrations run on every start. Use `-p <path>` to point at another config file. Every request
@@ -58,7 +58,7 @@ use a hash from `cargo run -- hash-password <password>`.
 
 ### From the Android emulator
 
-Use `http://10.0.2.2:3000`. WSL forwards Windows' localhost to the server, so this works with the
+Use `http://10.0.2.2:8090`. WSL forwards Windows' localhost to the server, so this works with the
 server running inside WSL. Android blocks plain HTTP by default, so allow cleartext for `10.0.2.2`
 with a network security config. A physical phone on Wi-Fi needs the Windows machine's LAN IP plus
 a `netsh interface portproxy` rule into WSL, or WSL's mirrored networking mode.
