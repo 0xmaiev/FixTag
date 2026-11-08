@@ -30,7 +30,7 @@ data class NewMachineFormState(
     val organizationError: Int? = null,
     val modelError: Int? = null,
     val serialNumberError: Int? = null
-) {
+) : FormState() {
     val isDataValid get() = organizationError == null && modelError == null && serialNumberError == null
 }
 
@@ -56,17 +56,25 @@ class NewMachineViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     // Submit function to
-    fun submit(model: String, serialNumber: String) {
+    fun submit(manufacturerId: Uuid, model: String, serialNumber: String) {
         val organizationId = organizationId.value
         _form.value = validate(organizationId, model, serialNumber)
         // early exit - State.* comes from `InputBaseViewModel`
         if (!_form.value.isDataValid || organizationId == null || state.value != State.Editing) return  // ignores double taps
         state.value = State.Saving
         viewModelScope.launch {
+            val serial = serialNumber.trim().uppercase() // normalizing serial alphanumeric value
+            // unique on the server too, which would answer 409
+            if (repository.isSerialNumberTaken(serial, Uuid.parse(machineId))) {
+                _form.value = NewMachineFormState(serialNumberError = R.string.serial_number_taken_error)
+                state.value = State.Editing
+                return@launch
+            }
             repository.createMachine(Machine.create(
                 Uuid.parse(machineId),
                 Uuid.parse(organizationId),
-                serialNumber.trim().uppercase(), // normalizing serial alphanumeric value
+                manufacturerId,
+                serial,
                 model.trim()
             ))
             state.value = State.Saved

@@ -1,12 +1,13 @@
 package com.example.fixtag.api.model
 
+import com.example.fixtag.data.model.AttachmentKind
 import com.google.gson.annotations.SerializedName
 
 data class AttachmentDto(
     val id: String,
     @SerializedName("incident_id")
     val incidentId: String,
-    val kind: String,
+    val kind: AttachmentKind,
     @SerializedName("content_type")
     val contentType: String,
     @SerializedName("size_bytes")

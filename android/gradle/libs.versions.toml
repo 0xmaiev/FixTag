@@ -27,6 +27,7 @@ fragment = "1.9.1"
 cardview = "1.0.0"
 coil = "3.4.0" # 3.4.0 is the latest that works with this compiler version
 datastore = "1.2.1"
+playServicesLocation = "21.4.0"
 
 [libraries]
 # Testing
@@ -79,6 +80,7 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 
 coil = { group = "io.coil-kt.coil3", name = "coil", version.ref = "coil" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

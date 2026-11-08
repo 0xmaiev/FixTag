@@ -1,0 +1,684 @@
+<!doctype html><html lang="pt-PT"><head><meta charset="utf-8"><title>FixTag: relatório do trabalho prático</title><style>
+@page {
+  size: A4;
+  margin: 16mm 16mm 18mm 16mm;
+  @bottom-right { content: counter(page) " / " counter(pages); font: 8pt 'Segoe UI', Arial, sans-serif; color: #5F6B7D; }
+  @bottom-left { content: "FixTag · Relatório do trabalho prático"; font: 8pt 'Segoe UI', Arial, sans-serif; color: #5F6B7D; }
+}
+@page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: 'Segoe UI', Calibri, Arial, sans-serif; font-size: 9.5pt; line-height: 1.42; color: #1F2733; }
+h1 { font-size: 19pt; line-height: 1.15; color: #14213D; margin: 0 0 6pt; }
+h2 { font-size: 13.5pt; color: #14213D; border-bottom: 1.5pt solid #E8762B; padding-bottom: 2pt; margin: 16pt 0 6pt; break-after: avoid; }
+h3 { font-size: 10.8pt; color: #14213D; margin: 11pt 0 3pt; break-after: avoid; }
+p { margin: 0 0 6pt; }
+ul, ol { margin: 0 0 6pt; padding-left: 16pt; }
+li { margin-bottom: 2pt; }
+a { color: #1F5BC6; text-decoration: none; }
+code { font-family: Consolas, 'Courier New', monospace; font-size: 8.8pt; background: #F1EEE6; padding: 0 2pt; border-radius: 2pt; }
+pre { background: #14213D; color: #E9EDF5; padding: 7pt 9pt; border-radius: 4pt; font-size: 8.4pt; line-height: 1.4; white-space: pre-wrap; break-inside: avoid; margin: 4pt 0 8pt; }
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+blockquote { margin: 6pt 0 10pt; padding: 5pt 10pt; border-left: 3pt solid #E8762B; background: #FBF3EC; }
+blockquote p { margin: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 8.8pt; margin: 4pt 0 10pt; }
+th { background: #14213D; color: #F4F1EA; text-align: left; font-weight: 600; padding: 3.5pt 5pt; }
+td { border-bottom: 0.5pt solid #D9D2C3; padding: 3.5pt 5pt; vertical-align: top; }
+tr { break-inside: avoid; }
+td code, th code { font-size: 8.2pt; }
+th code { background: none; color: inherit; }
+.page-break { break-before: page; }
+
+/* capa */
+.cover { height: 258mm; display: flex; flex-direction: column; break-after: page; }
+.cover .uni { font-size: 9.5pt; color: #5F6B7D; }
+.cover .uni strong { display: block; color: #14213D; font-size: 10.5pt; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2pt; }
+.cover .middle { margin-top: 62mm; }
+.cover .kicker { color: #E8762B; font-weight: 600; font-size: 9pt; letter-spacing: .14em; text-transform: uppercase; }
+.cover h1 { font-size: 44pt; letter-spacing: -.01em; margin: 4pt 0 2pt; }
+.cover .tagline { font-size: 14pt; color: #3A4556; }
+.cover .rule { width: 42mm; height: 3pt; background: #E8762B; margin: 16pt 0 12pt; }
+.cover .brief { font-size: 10.5pt; color: #3A4556; }
+.cover dl { margin: auto 0 0; display: grid; grid-template-columns: 26mm 1fr; row-gap: 5pt; font-size: 10pt; border-top: 0.5pt solid #D9D2C3; padding-top: 10pt; }
+.cover dt { color: #5F6B7D; }
+.cover dd { margin: 0; color: #14213D; }
+
+/* índice */
+.toc { margin: 0 0 14pt; padding: 8pt 12pt; background: #F7F5F0; border-radius: 4pt; columns: 2; column-gap: 18pt; }
+.toc .toctitle { display: block; column-span: all; font-weight: 600; color: #14213D; font-size: 10.5pt; margin-bottom: 4pt; }
+.toc ul { list-style: none; padding-left: 0; margin: 0; }
+.toc li { margin: 0 0 2pt; break-inside: avoid; }
+.toc a { color: #1F2733; }
+
+/* figuras: capturas de ecrã lado a lado, diagramas à largura da página */
+/* 4 por linha e a última linha centrada; a altura sai sempre da largura, para não esticar */
+.shots { display: flex; flex-wrap: wrap; justify-content: center; gap: 10pt 5mm; margin: 6pt 0 10pt; }
+figure { margin: 6pt 0 10pt; break-inside: avoid; }
+.shots figure { margin: 0; width: 39mm; }
+h3 + p { break-after: avoid; }  /* o parágrafo de uma subsecção fica com as figuras que apresenta */
+figure img { display: block; width: 100%; height: auto; border: 0.5pt solid #D9D2C3; border-radius: 4pt; }
+figure.diagram img { border: none; }
+figcaption { font-size: 8.4pt; color: #5F6B7D; margin-top: 4pt; text-align: center; }
+
+/* o que falta escrever ou capturar */
+.todo { background: #FFF3BF; color: #6B5000; border: 0.6pt dashed #D9A800; border-radius: 2pt; padding: 0 2pt; }
+.missing { display: flex; align-items: center; justify-content: center; text-align: center; aspect-ratio: 5 / 11; word-break: break-all;
+  border: 1pt dashed #D9A800; background: #FFFBEA; color: #6B5000; font: 8pt Consolas, monospace; border-radius: 4pt; padding: 4pt; }
+figure.diagram .missing { aspect-ratio: 2 / 1; }
+</style></head><body><section class="cover">
+<div class="uni"><strong>Universidade da Beira Interior</strong>Faculdade de Engenharia · Departamento de Informática</div>
+<div class="middle">
+<div class="kicker">Relatório do trabalho prático</div>
+<h1>FixTag</h1>
+<div class="tagline">Registo e acompanhamento de avarias em máquinas industriais</div>
+<div class="rule"></div>
+<div class="brief">Aplicação Android com armazenamento local · Programação de Dispositivos Móveis</div>
+</div>
+<dl>
+<dt>Autor</dt><dd>Hugo Carvalho, a36295</dd>
+<dt>Docente</dt><dd>Professor Paulo Fazendeiro</dd>
+<dt>Data</dt><dd>8 de novembro de 2026</dd>
+<dt>Código</dt><dd>github.com/0xmaiev/FixTag, branch <code>entrega-11-08</code></dd>
+</dl>
+</section>
+
+<div class="toc"><span class="toctitle">Índice</span><ul>
+<li><a href="#1-introducao">1. Introdução</a></li>
+<li><a href="#2-funcionalidades">2. Funcionalidades</a></li>
+<li><a href="#3-requisitos-obrigatorios">3. Requisitos obrigatórios</a></li>
+<li><a href="#4-armazenamento-local">4. Armazenamento local</a></li>
+<li><a href="#5-estrutura-dos-dados">5. Estrutura dos dados</a></li>
+<li><a href="#6-organizacao-do-codigo">6. Organização do código</a></li>
+<li><a href="#7-validacao-e-tratamento-de-erros">7. Validação e tratamento de erros</a></li>
+<li><a href="#8-interface">8. Interface</a></li>
+<li><a href="#9-decisoes-de-implementacao">9. Decisões de implementação</a></li>
+<li><a href="#10-funcionalidades-adicionais">10. Funcionalidades adicionais</a></li>
+<li><a href="#11-testes">11. Testes</a></li>
+<li><a href="#12-dificuldades">12. Dificuldades</a></li>
+<li><a href="#13-utilizacao-de-ia-e-de-codigo-externo">13. Utilização de IA e de código externo</a></li>
+<li><a href="#14-conclusao">14. Conclusão</a></li>
+<li><a href="#referencias">Referências</a></li>
+</ul>
+</div>
+<h2 id="1-introducao">1. Introdução</h2>
+<p>Quando uma máquina pesada pára numa pedreira, muitas vezes o operador liga ou envia mensagens soltas à assistência (WhatsApp, e-mail) sem número de série, sem fotos organizadas e sem contexto. O fabricante perde tempo a perceber qual a máquina, a versão e o problema, e não existe histórico estruturado por equipamento. Além disso, as pedreiras têm frequentemente pouca ou nenhuma cobertura.</p>
+<p>O FixTag dá a cada máquina um histórico de ocorrências. O operador reporta a avaria no local, com descrição, gravidade, fotos, áudio e localização, mesmo sem rede, e o fabricante acompanha-a até estar resolvida.</p>
+<p>Esta entrega continua a de 27/10, que apresentou a variante demo, só com dados locais, e o protocolo experimental sobre persistência local e funcionamento offline. Nessa altura, a aplicação tinha um só cliente e um só fabricante. Agora há vários de cada, e um cliente pode ter máquinas de fabricantes diferentes. A assistência atribui as ocorrências a técnicos, o autor de uma ocorrência pode editá-la, os gestores criam as contas da sua organização e a variante full liga-se à API do servidor para sincronização e operações que precisam do mesmo para funcionar.</p>
+<h3 id="11-como-experimentar">1.1 Como experimentar</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Variante <code>demo</code></th>
+<th>Variante <code>full</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build variant</td>
+<td><code>demoDebug</code></td>
+<td><code>fullDebug</code></td>
+</tr>
+<tr>
+<td>Servidor</td>
+<td>não precisa</td>
+<td>a API da pasta <code>backend/</code></td>
+</tr>
+<tr>
+<td>Dados</td>
+<td>criados no dispositivo na primeira utilização</td>
+<td>sincronizados com o servidor</td>
+</tr>
+<tr>
+<td>Entrar</td>
+<td>escolher um dos 13 perfis de exemplo</td>
+<td>e-mail e palavra-passe</td>
+</tr>
+</tbody>
+</table>
+<p>As instruções para abrir, compilar e testar o projeto estão no <code>README.md</code>.</p>
+<h2 id="2-funcionalidades">2. Funcionalidades</h2>
+<h3 id="21-perfis">2.1 Perfis</h3>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Organização</th>
+<th>O que pode fazer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Operador</td>
+<td>cliente</td>
+<td>reportar ocorrências nas máquinas da sua organização e editar as que reportou</td>
+</tr>
+<tr>
+<td>Gestor</td>
+<td>cliente</td>
+<td>o mesmo que o operador, e criar as contas da sua organização</td>
+</tr>
+<tr>
+<td>Assistência</td>
+<td>fabricante</td>
+<td>ver as ocorrências que o fabricante trata, atribuir técnicos, mudar o estado, registar clientes e máquinas, criar contas de técnicos</td>
+</tr>
+<tr>
+<td>Técnico</td>
+<td>fabricante</td>
+<td>ver as ocorrências que reportou ou que lhe foram atribuídas, e mudar o estado das que lhe estão atribuídas</td>
+</tr>
+<tr>
+<td>Gestor</td>
+<td>fabricante</td>
+<td>o mesmo que a assistência, e criar contas de qualquer perfil do fabricante</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-ciclo-de-vida-de-uma-ocorrencia">2.2 Ciclo de vida de uma ocorrência</h3>
+<p>A ocorrência é o registo principal. Tem um identificador único (UUID gerado no dispositivo), a descrição, a gravidade (baixa, média ou crítica), o estado (recebida, em análise ou resolvida), a localização, os anexos e as datas <code>reported_at</code>, <code>created_at</code> e <code>updated_at</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Operação</th>
+<th>Ecrã</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Criar</td>
+<td><code>NewIncidentFragment</code></td>
+<td>máquina, descrição, gravidade, fotos, áudio e localização</td>
+</tr>
+<tr>
+<td>Listar</td>
+<td><code>IncidentsFragment</code></td>
+<td>só as que o perfil pode ver (secção 5.2)</td>
+</tr>
+<tr>
+<td>Ver detalhes</td>
+<td><code>IncidentDetailFragment</code></td>
+<td>estado, técnico atribuído, anexos e histórico de atualizações</td>
+</tr>
+<tr>
+<td>Editar</td>
+<td><code>NewIncidentFragment</code>, em modo de edição</td>
+<td>só o autor: descrição, gravidade e localização</td>
+</tr>
+<tr>
+<td>Atualizar</td>
+<td><code>IncidentDetailFragment</code></td>
+<td>mensagem, novo estado e técnico atribuído</td>
+</tr>
+<tr>
+<td>Eliminar</td>
+<td>lista de ocorrências</td>
+<td>só enquanto não foi enviada ao servidor, e com confirmação</td>
+</tr>
+</tbody>
+</table>
+<p>Um caso de uso de ponta a ponta: numa pedreira sem rede, o operador escolhe a máquina avariada, descreve o problema, indica a gravidade e junta uma foto e uma gravação de áudio. A ocorrência fica guardada no telemóvel com o estado «recebida» e, na variante full, segue para o servidor assim que houver ligação. No fabricante, a assistência vê-a na lista, abre o detalhe e atribui-a a um técnico; a atribuição fica no histórico. O técnico passa-a a «em análise» enquanto trabalha nela e a «resolvida» no fim, com uma mensagem sobre o que foi feito. O operador acompanha cada passo no detalhe da ocorrência. Na variante demo, o mesmo percurso faz-se num só telemóvel, mudando de perfil.</p>
+<h2 id="3-requisitos-obrigatorios">3. Requisitos obrigatórios</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Requisito</th>
+<th>Como o FixTag o cumpre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Android Studio, API 29, Java ou Kotlin</td>
+<td>Kotlin, <code>minSdk = 29</code> em <code>app/build.gradle.kts</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Pelo menos duas Activities ou Fragments</td>
+<td><code>LoginActivity</code> e <code>MainActivity</code>, com 12 fragmentos</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Interface coerente</td>
+<td>Material 3, navegação por separadores, modo claro e escuro (secção 8)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Introduzir e visualizar dados</td>
+<td>formulários de ocorrência, máquina, cliente e conta; listas e ecrãs de detalhe</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Adicionar, editar e eliminar</td>
+<td>secção 2.2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Armazenamento local</td>
+<td>Room (SQLite) para os registos, ficheiros internos para os anexos (secção 4)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Dados mantidos depois de fechar</td>
+<td>tudo fica no Room; a sessão fica no DataStore</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Validação com mensagens claras</td>
+<td>erro no próprio campo, ou mensagem quando não é de nenhum campo (secção 7)</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Confirmação antes de eliminar</td>
+<td>diálogo de <code>confirmDeletePending</code>, em <code>ui/Helpers.kt</code></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Textos em <code>strings.xml</code></td>
+<td><code>values/</code> (inglês) e <code>values-pt/</code> (português)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Diferentes dimensões de ecrã</td>
+<td>listas em <code>RecyclerView</code>, formulários com scroll, pesos em vez de tamanhos fixos</td>
+</tr>
+<tr>
+<td>12</td>
+<td>Sem Internet nas funções principais</td>
+<td>a variante demo não usa rede; na full, reportar e editar funcionam offline e sincronizam depois</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-armazenamento-local">4. Armazenamento local</h2>
+<table>
+<thead>
+<tr>
+<th>Mecanismo</th>
+<th>O que guarda</th>
+<th>Onde</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Room (SQLite)</td>
+<td>organizações, utilizadores, máquinas, ocorrências, atualizações e anexos</td>
+<td><code>data/Database.kt</code>, <code>data/model/</code></td>
+</tr>
+<tr>
+<td>DataStore (Preferences)</td>
+<td>o perfil escolhido, na variante demo</td>
+<td><code>data/Session.kt</code></td>
+</tr>
+<tr>
+<td>Ficheiros internos</td>
+<td>fotos e áudio</td>
+<td><code>files/attachments/</code></td>
+</tr>
+<tr>
+<td>Room, tabela <code>Auth</code></td>
+<td>os tokens de sessão, na variante full</td>
+<td><code>data/model/Auth.kt</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="41-porque-o-room">4.1 Porquê o Room</h3>
+<p>Os registos do FixTag estão ligados entre si: uma ocorrência pertence a uma máquina, a máquina pertence a um cliente e foi fabricada por um fabricante, e cada ocorrência tem atualizações e anexos. O Room guarda-os em SQLite com chaves estrangeiras, por isso não pode ficar uma atualização ou um anexo sem a sua ocorrência.</p>
+<p>As listas precisam de consultas filtradas e com junções, como as ocorrências que um perfil pode ver, cada uma com a sua máquina, ou as máquinas com o número de ocorrências dos últimos 30 dias. Com ficheiros ou SharedPreferences, isto obrigaria a ler tudo para memória e a filtrar à mão. As escritas que tocam em várias tabelas, como uma ocorrência com os seus anexos, são feitas numa transação: fica tudo guardado ou nada. Por fim, os DAO devolvem <code>Flow</code>, e a interface atualiza-se sozinha sempre que os dados mudam, seja por uma ação do utilizador, seja pela sincronização.</p>
+<p>O DataStore guarda apenas o perfil escolhido na variante demo, o uso que o enunciado prevê para preferências e configurações.</p>
+<h3 id="42-persistencia-e-migracoes">4.2 Persistência e migrações</h3>
+<p>A base de dados está na versão 2, com <code>fallbackToDestructiveMigration</code>. Os dados de exemplo da variante demo são criados só quando a base de dados está vazia, por isso o que se altera durante a demonstração mantém-se entre utilizações.</p>
+<p>A migração destrutiva é aceitável nesta fase porque nenhum telemóvel tem dados que não se possam recriar: na variante demo, os dados de exemplo voltam a ser criados, e na variante full a sincronização volta a descarregar tudo do servidor. A exceção é o que ainda estiver por enviar, que se perde, como mostra a experiência E5 do protocolo de 27/10. Quando houver utilizadores reais, cada versão nova do esquema terá uma <code>Migration</code> explícita, ou uma <code>AutoMigration</code> quando o Room a conseguir gerar, testada a partir dos esquemas exportados em <code>app/schemas/</code>.</p>
+<h3 id="43-sincronizacao-variante-full">4.3 Sincronização (variante full)</h3>
+<p>Cada registo que o telemóvel envia ao servidor tem um <code>sync_status</code>: <code>Pending</code>, <code>Synced</code> ou <code>Failed</code>. Criar ou editar escreve só no Room, com o estado <code>Pending</code>, e pede ao <code>SyncScheduler</code> uma sincronização. O WorkManager só a corre quando há rede; além disso, há uma sincronização periódica a cada 15 minutos. As listas mostram quantos registos faltam enviar.</p>
+<p>O <code>SyncWorker</code> envia primeiro o que está pendente e só depois descarrega o que falta, pela ordem das chaves estrangeiras do servidor: organizações, máquinas, ocorrências e, por fim, atualizações e anexos. Organizações, máquinas, ocorrências e anexos seguem num <code>PUT</code> com o UUID gerado no telemóvel, por isso enviar o mesmo registo duas vezes não cria um duplicado. As ocorrências chegam por páginas, e o cursor da última fica na tabela <code>sync_state</code>, para a sincronização seguinte continuar a partir daí. Os pedidos levam um token de acesso; quando expira, o <code>Authenticator</code> do OkHttp renova-o com o refresh token guardado na tabela <code>Auth</code> e repete o pedido.</p>
+<p>Se a sincronização falhar por falta de rede ou por um erro do servidor, o WorkManager volta a tentar mais tarde, com intervalos cada vez maiores, e os registos continuam <code>Pending</code>: não se perde nada. Um anexo que o servidor recusa, por ser grande demais ou de um tipo que não aceita, fica <code>Failed</code> e deixa de ser enviado. Se não for possível renovar a sessão (resposta 401), a sincronização termina sem repetir, porque só voltar a entrar resolve.</p>
+<h2 id="5-estrutura-dos-dados">5. Estrutura dos dados</h2>
+<h3 id="51-entidades">5.1 Entidades</h3>
+<table>
+<thead>
+<tr>
+<th>Entidade</th>
+<th>Para quê</th>
+<th>Campos principais</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Organization</code></td>
+<td>clientes e fabricantes</td>
+<td><code>id</code>, <code>name</code>, <code>kind</code>, <code>nif</code></td>
+</tr>
+<tr>
+<td><code>client_manufacturer_link</code></td>
+<td>que fabricantes servem cada cliente</td>
+<td><code>client_id</code>, <code>manufacturer_id</code></td>
+</tr>
+<tr>
+<td><code>User</code></td>
+<td>contas, com o perfil de cada uma</td>
+<td><code>id</code>, <code>organization_id</code>, <code>name</code>, <code>email</code>, <code>role</code></td>
+</tr>
+<tr>
+<td><code>machine</code></td>
+<td>máquinas de um cliente</td>
+<td><code>id</code>, <code>organization_id</code>, <code>manufacturer</code>, <code>serial_number</code>, <code>model</code></td>
+</tr>
+<tr>
+<td><code>incident</code></td>
+<td>ocorrências</td>
+<td><code>id</code>, <code>machine_id</code>, <code>description</code>, <code>severity</code>, <code>status</code>, <code>assigned_to</code>, <code>reported_at</code></td>
+</tr>
+<tr>
+<td><code>incident_update</code></td>
+<td>histórico de cada ocorrência</td>
+<td><code>id</code>, <code>incident_id</code>, <code>message</code>, <code>new_status</code>, <code>assigned_to</code></td>
+</tr>
+<tr>
+<td><code>attachment</code></td>
+<td>fotos e áudio</td>
+<td><code>id</code>, <code>incident_id</code>, <code>kind</code>, <code>path</code></td>
+</tr>
+</tbody>
+</table>
+<figure class="diagram"><img src="img/modelo-dados.svg" alt="Modelo de dados"><figcaption>Figura 1. Tabelas do Room (esquema na versão 2). As tabelas técnicas Auth e sync_state não estão representadas.</figcaption></figure>
+
+<h3 id="52-o-que-cada-perfil-ve">5.2 O que cada perfil vê</h3>
+<p>Na variante demo, o telemóvel guarda os dados de todas as organizações, por isso as consultas ao Room aplicam as mesmas regras de visibilidade que o servidor:</p>
+<table>
+<thead>
+<tr>
+<th>Perfil</th>
+<th>Ocorrências</th>
+<th>Máquinas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cliente</td>
+<td>as da sua organização</td>
+<td>as da sua organização</td>
+</tr>
+<tr>
+<td>Assistência e gestor do fabricante</td>
+<td>as que o fabricante trata</td>
+<td>as que fabricou</td>
+</tr>
+<tr>
+<td>Técnico</td>
+<td>as que reportou ou que lhe foram atribuídas</td>
+<td>as que o fabricante fabricou</td>
+</tr>
+</tbody>
+</table>
+<p>O <code>Repository</code> guarda o utilizador com sessão iniciada num <code>StateFlow</code> (<code>signedIn</code>). Cada lista parte desse utilizador através de <code>whenSignedIn</code>, que usa <code>flatMapLatest</code>: quando o utilizador muda, a consulta anterior é cancelada e começa outra, e sem sessão a lista fica vazia. Do perfil sai um <code>Scope</code> com três valores, o cliente, o fabricante e o técnico (<code>User.scope</code>, em <code>data/model/User.kt</code>), e o Repository passa-os às consultas dos DAO: <code>observeVisibleWithMachine</code> para as ocorrências e <code>observeVisible</code> para as máquinas. Na cláusula <code>WHERE</code>, cada valor que não é <code>null</code> restringe a lista, por isso a mesma consulta serve todos os perfis.</p>
+<p>Ligar as listas ao <code>StateFlow</code>, em vez de ler o utilizador uma única vez, também resolve o regresso da aplicação depois de o Android terminar o processo: os ecrãs são recriados antes de a sessão ser restaurada, e as listas preenchem-se assim que ela fica disponível.</p>
+<h2 id="6-organizacao-do-codigo">6. Organização do código</h2>
+<pre><code>app/src/main/java/com/example/fixtag/
+├── api/              Retrofit: pedidos, respostas (DTO) e tokens
+├── data/             Room, Repository, sincronização e dados de exemplo
+│   └── model/        entidades e DAO
+└── ui/
+    ├── login/        LoginActivity e o seu ViewModel
+    ├── main/         MainActivity e a navegação por separadores
+    ├── fragments/    um fragmento por ecrã
+    ├── viewmodels/   um ViewModel por ecrã
+    ├── adapters/     adaptadores das listas
+    └── dialogs/      seleção de máquina e de organização
+</code></pre>
+<p>A aplicação segue a arquitetura MVVM recomendada no guia de arquitetura do Android. O fragmento só trata da interface: observa o estado que o ViewModel expõe, num <code>StateFlow</code>, e passa-lhe as ações do utilizador, como tocar em guardar. Não valida dados nem acede à base de dados.</p>
+<p>O ViewModel guarda o estado do ecrã, que sobrevive a rotações, e contém a lógica: valida os formulários, decide que erro mostrar e pede ao Repository para guardar. Os ViewModels dos formulários partilham uma classe base, <code>InputBaseViewModel</code>, com o estado do formulário (a editar, a guardar, guardado) e o canal das mensagens de erro. Recebem o Repository pelo construtor, através de fábricas como a <code>AppViewModelFactory</code>.</p>
+<p>O <code>Repository</code> é o único que fala com o Room e com a API, e é ele que decide se uma operação fica no telemóvel ou passa pelo servidor, conforme a variante. É criado uma só vez, na classe <code>FixTag</code> (a <code>Application</code>), junto com a base de dados e o WorkManager. Assim, a interface, a lógica e o acesso aos dados ficam separados, como pede o enunciado: mudar a forma de guardar os dados não obriga a mexer nos ecrãs, e mudar um ecrã não obriga a mexer nos dados.</p>
+<h2 id="7-validacao-e-tratamento-de-erros">7. Validação e tratamento de erros</h2>
+<table>
+<thead>
+<tr>
+<th>Formulário</th>
+<th>O que é validado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ocorrência</td>
+<td>máquina escolhida; descrição não vazia</td>
+</tr>
+<tr>
+<td>Máquina</td>
+<td>cliente escolhido; modelo não vazio; número de série não vazio e ainda não registado</td>
+</tr>
+<tr>
+<td>Cliente</td>
+<td>nome não vazio; NIF com 9 dígitos e dígito de controlo válido; NIF que não seja de um fabricante; nome e e-mail válidos do gestor; e-mail ainda sem conta</td>
+</tr>
+<tr>
+<td>Conta</td>
+<td>nome não vazio; e-mail válido e ainda sem conta; perfil escolhido</td>
+</tr>
+<tr>
+<td>Alteração da palavra-passe</td>
+<td>palavra-passe atual correta; a nova com pelo menos 8 caracteres e diferente da atual</td>
+</tr>
+</tbody>
+</table>
+<p>Os erros aparecem no próprio campo e o botão de guardar fica sempre ativo, por isso cada tentativa volta a validar. Os erros que não pertencem a nenhum campo, como a falta de ligação ao servidor, aparecem numa mensagem.</p>
+<p>Os erros previsíveis não chegam à interface como exceções. Os pedidos à API correm em corrotinas, dentro de <code>try</code>/<code>catch</code>, e o Repository devolve um resultado tipado. Por exemplo, <code>registerClient</code> devolve um <code>Registration</code> (<code>Registered</code>, <code>Linked</code>, <code>NifIsAManufacturer</code>, <code>EmailTaken</code> ou <code>Failed</code>) e <code>changePassword</code> devolve um <code>PasswordChange</code>; o ViewModel converte cada caso no erro do campo certo ou numa mensagem. As mensagens que não pertencem a nenhum campo passam por um <code>Channel</code>, para aparecerem uma só vez e não se repetirem depois de rodar o ecrã.</p>
+<p>Na sincronização, o <code>SyncWorker</code> trata as falhas de rede e do servidor pedindo ao WorkManager para tentar outra vez (secção 4.3), e um anexo cujo ficheiro já não existe é apagado, em vez de impedir o envio dos outros. As escritas que tocam em várias tabelas são transações, por isso uma falha a meio não deixa dados incompletos.</p>
+<h2 id="8-interface">8. Interface</h2>
+<p>A interface conta com componentes Material 3, um tema de fácil visibilidade e com contornos de modo a que os elementos de principal interação sobressaiam.</p>
+<h3 id="81-entrada">8.1 Entrada</h3>
+<p>Na variante demo, escolhe-se o tipo de organização e depois um dos perfis de exemplo. Na variante full, entra-se com e-mail e palavra-passe, e quem ainda tem a palavra-passe temporária tem de a mudar antes de continuar.</p>
+<div class="shots">
+<figure><img src="img/1-entrada-01-tipo-de-organizacao.png" alt=""><figcaption>Figura 2. Tipo de organização (demo)</figcaption></figure>
+<figure><img src="img/1-entrada-02-perfis-cliente.png" alt=""><figcaption>Figura 3. Perfis de um cliente (demo)</figcaption></figure>
+<figure><img src="img/1-entrada-03-perfis-fabricante.png" alt=""><figcaption>Figura 4. Perfis de um fabricante (demo)</figcaption></figure>
+<figure><img src="img/1-entrada-04-login.png" alt=""><figcaption>Figura 5. Login (full)</figcaption></figure>
+<figure><img src="img/1-entrada-05-alterar-palavra-passe.png" alt=""><figcaption>Figura 6. Mudar a palavra-passe temporária (full)</figcaption></figure>
+</div>
+
+<h3 id="82-ocorrencias">8.2 Ocorrências</h3>
+<p>Cada perfil vê apenas as ocorrências a que tem acesso (secção 5.2). Sem rede, a faixa no topo indica quantos registos faltam enviar. O mesmo formulário serve para criar e para editar uma ocorrência; a figura 10 mostra-o a editar, em modo escuro, que a aplicação segue a partir da definição do sistema.</p>
+<div class="shots">
+<figure><img src="img/2-ocorrencias-01-lista-gestor.png" alt=""><figcaption>Figura 7. Lista do gestor do fabricante</figcaption></figure>
+<figure><img src="img/2-ocorrencias-02-lista-operador.png" alt=""><figcaption>Figura 8. Lista do operador do cliente</figcaption></figure>
+<figure><img src="img/2-ocorrencias-03-lista-tecnico.png" alt=""><figcaption>Figura 9. Lista de um técnico: as que reportou ou que lhe foram atribuídas</figcaption></figure>
+<figure><img src="img/2-ocorrencias-04-editar-modo-escuro.png" alt=""><figcaption>Figura 10. Formulário da ocorrência, a editar (modo escuro)</figcaption></figure>
+<figure><img src="img/2-ocorrencias-05-detalhe-sem-tecnico.png" alt=""><figcaption>Figura 11. Detalhe, ainda sem técnico</figcaption></figure>
+<figure><img src="img/2-ocorrencias-06-escolher-tecnico.png" alt=""><figcaption>Figura 12. Escolha do técnico, com as ocorrências abertas de cada um</figcaption></figure>
+<figure><img src="img/2-ocorrencias-07-nova-atualizacao.png" alt=""><figcaption>Figura 13. Nova atualização, com mudança de estado</figcaption></figure>
+<figure><img src="img/2-ocorrencias-08-detalhe-com-historico.png" alt=""><figcaption>Figura 14. Detalhe com o histórico</figcaption></figure>
+</div>
+
+<h3 id="83-maquinas-contas-e-clientes">8.3 Máquinas, contas e clientes</h3>
+<p>O gestor do fabricante regista máquinas, clientes e contas. O que ainda não foi enviado ao servidor pode ser eliminado, depois de uma confirmação.</p>
+<div class="shots">
+<figure><img src="img/3-gestao-01-maquinas-gestor.png" alt=""><figcaption>Figura 15. Máquinas, vistas pelo gestor do fabricante</figcaption></figure>
+<figure><img src="img/3-gestao-02-maquinas-operador.png" alt=""><figcaption>Figura 16. Máquinas, vistas pelo operador do cliente</figcaption></figure>
+<figure><img src="img/3-gestao-03-contas.png" alt=""><figcaption>Figura 17. Contas do fabricante</figcaption></figure>
+<figure><img src="img/3-gestao-04-clientes.png" alt=""><figcaption>Figura 18. Clientes do fabricante</figcaption></figure>
+<figure><img src="img/3-gestao-05-confirmar-eliminacao.png" alt=""><figcaption>Figura 19. Confirmação antes de eliminar</figcaption></figure>
+<figure><img src="img/3-gestao-06-novo-cliente-erros.png" alt=""><figcaption>Figura 20. Registo de cliente com erros de validação</figcaption></figure>
+<figure><img src="img/3-gestao-07-palavra-passe-temporaria.png" alt=""><figcaption>Figura 21. Palavra-passe temporária da conta criada (full)</figcaption></figure>
+</div>
+
+<h2 id="9-decisoes-de-implementacao">9. Decisões de implementação</h2>
+<ul>
+<li><strong>Offline-first, com o Room como fonte de verdade.</strong> As pedreiras têm muitas vezes pouca ou nenhuma rede, e o operador tem de conseguir reportar a avaria nesse momento. A interface lê sempre do Room e nunca diretamente da API, por isso o que se escreve fica guardado logo e os mesmos ecrãs funcionam com e sem ligação (requisitos 7 e 12).</li>
+<li><strong>Duas variantes, <code>demo</code> e <code>full</code>, com <code>BuildConfig.OFFLINE_DEMO</code>.</strong> A variante demo cumpre o enunciado tal como está, com tudo local e sem servidor nem contas; a full é a base das entregas seguintes. Partilham todo o código, e a constante só muda o que tem de mudar: o ecrã de entrada, o registo de clientes e de contas, e se há sincronização.</li>
+<li><strong>Identificadores UUID gerados no dispositivo.</strong> Um registo criado offline já tem o identificador que terá no servidor. Com identificadores gerados pelo servidor, seria preciso um identificador provisório, e cada anexo ou atualização que apontasse para ele teria de ser corrigido depois do envio. Com UUID, enviar o mesmo registo duas vezes também não cria um duplicado.</li>
+<li><strong>Regras de visibilidade nas consultas do Room.</strong> Na variante demo não há servidor a filtrar o que cada perfil vê, e o telemóvel guarda os dados de todas as organizações. Filtrar nas consultas, e não em cada ecrã, garante que nenhum ecrã mostra o que o perfil não devia ver, e a demonstração mostra o mesmo que o servidor enviaria.</li>
+<li><strong>Sincronização em segundo plano com o WorkManager.</strong> O envio tem de acontecer mesmo que o utilizador feche a aplicação logo depois de reportar, e só quando há rede. O WorkManager guarda o pedido, espera pela rede, resiste ao reinício do dispositivo e volta a tentar quando falha.</li>
+<li><strong>Contas e clientes criados só com ligação ao servidor.</strong> Só o servidor conhece todos os NIF e e-mails já registados, por isso só ele pode garantir que não há duplicados. É também ele que gera a palavra-passe temporária, que aparece uma única vez, no diálogo que se segue ao registo. Criar contas offline obrigaria a guardar palavras-passe no telemóvel até haver rede.</li>
+<li><strong>Migração destrutiva na versão 2.</strong> Nenhum telemóvel tem ainda dados que não se possam recriar (secção 4.2), e escrever migrações enquanto o esquema ainda está a mudar seria trabalho deitado fora.</li>
+</ul>
+<h2 id="10-funcionalidades-adicionais">10. Funcionalidades adicionais</h2>
+<table>
+<thead>
+<tr>
+<th>Funcionalidade</th>
+<th>Onde</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sincronização com a API (variante full)</td>
+<td><code>data/SyncWorker.kt</code>, <code>data/Repository.kt</code></td>
+</tr>
+<tr>
+<td>Fotos e gravações de áudio nas ocorrências</td>
+<td><code>NewIncidentFragment</code>, <code>files/attachments/</code></td>
+</tr>
+<tr>
+<td>Localização GPS</td>
+<td>Google Play Services Location, em <code>NewIncidentFragment</code></td>
+</tr>
+<tr>
+<td>Vários fabricantes e clientes, com perfis diferentes</td>
+<td>secção 5.2</td>
+</tr>
+<tr>
+<td>Duas línguas, português e inglês</td>
+<td><code>values-pt/</code>, <code>values/</code></td>
+</tr>
+<tr>
+<td>Modo claro e escuro, conforme o sistema</td>
+<td><code>values-night/</code>, figura 10</td>
+</tr>
+<tr>
+<td>Testes automatizados</td>
+<td>secção 11</td>
+</tr>
+</tbody>
+</table>
+<p>A sincronização é a funcionalidade adicional com mais peso: permite que várias pessoas, em telemóveis diferentes, trabalhem nas mesmas ocorrências, sem que a aplicação deixe de funcionar sem rede. As fotos, o áudio e a localização dão ao fabricante o contexto que hoje se perde em mensagens soltas. Os testes automatizados verificam os dados de exemplo e o que cada perfil pode ver.</p>
+<h2 id="11-testes">11. Testes</h2>
+<table>
+<thead>
+<tr>
+<th>Teste</th>
+<th>Tipo</th>
+<th>O que verifica</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DemoSeedRulesTest</code></td>
+<td>unitário (JVM)</td>
+<td>que os dados de exemplo cumprem as regras do domínio</td>
+</tr>
+<tr>
+<td><code>DatabaseTest</code></td>
+<td>instrumentado</td>
+<td>escrever e ler organizações, máquinas e utilizadores nos DAO</td>
+</tr>
+<tr>
+<td><code>DemoSeedTest</code></td>
+<td>instrumentado</td>
+<td>que cada perfil vê o que o servidor lhe enviaria</td>
+</tr>
+</tbody>
+</table>
+<p>Os 6 testes unitários passam: os 5 de <code>DemoSeedRulesTest</code> e o exemplo criado pelo Android Studio (<code>gradlew testDemoDebugUnitTest</code>, a 7/11/2026). Os testes instrumentados (<code>DatabaseTest</code> e <code>DemoSeedTest</code>) passam, com a sua execução confirmada em Medium Phone API 37.0.</p>
+<h2 id="12-dificuldades">12. Dificuldades</h2>
+<ul>
+<li><strong>Passar para vários fabricantes e clientes.</strong> Até 27/10 havia um só de cada. Com vários, cada consulta passou a depender do perfil (secção 5.2), e os dados de exemplo tiveram de cobrir cada caso, como um cliente com máquinas de dois fabricantes ou um técnico que só vê o que lhe foi atribuído. Os testes <code>DemoSeedRulesTest</code> e <code>DemoSeedTest</code> verificam isso.</li>
+<li><strong>Identificadores em texto e em binário.</strong> Algumas colunas, como o autor de uma ocorrência e o técnico atribuído, guardam o UUID como texto, tal como chega da API, mas um parâmetro <code>Uuid</code> de uma consulta é passado como BLOB. O SQLite nunca considera iguais um texto e um BLOB, por isso a consulta não devolvia nada, sem dar erro. A solução foi passar o técnico à consulta como texto (<code>scope.technician?.toString()</code>).</li>
+<li><strong>O ecrã de login em branco.</strong> Ao juntar o login e a alteração da palavra-passe num <code>NavHostFragment</code>, o fragmento de login ficou sem layout, e o <code>onViewCreated</code> nunca corria. Além disso, entrar não levava ao ecrã seguinte. A solução foi dar o layout ao fragmento (<code>Fragment(R.layout.fragment_login)</code>) e decidir a navegação num único sítio, o <code>LoginViewModel</code>.</li>
+<li><strong>Erros de validação que não voltavam a aparecer.</strong> Um <code>StateFlow</code> não emite um valor igual ao que já tem, por isso tocar outra vez em guardar com o mesmo erro não mostrava nada. O estado dos formulários passou a ser comparado por identidade (<code>FormState</code>, em <code>InputBaseViewModel.kt</code>).</li>
+<li><strong>O Android terminar o processo.</strong> Quando a aplicação volta depois de o sistema a terminar, os ecrãs são recriados antes de a sessão ser restaurada, e as listas ficavam vazias. Passaram a depender do <code>StateFlow</code> com o utilizador (secção 5.2).</li>
+</ul>
+<p>Algumas destas dificuldades foram resolvidas com a ajuda das revisões feitas com IA, indicadas na secção 13.</p>
+<h2 id="13-utilizacao-de-ia-e-de-codigo-externo">13. Utilização de IA e de código externo</h2>
+<h3 id="131-codigo-gerado-com-ia">13.1 Código gerado com IA</h3>
+<p>Ferramenta: Claude (Anthropic), através do Claude Code.</p>
+<table>
+<thead>
+<tr>
+<th>Parte</th>
+<th>O que foi gerado</th>
+<th>Ficheiros principais</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Servidor (<code>backend/</code>)</td>
+<td>todo o código, os testes e a documentação da API, como declarado ao docente</td>
+<td><code>backend/</code></td>
+</tr>
+<tr>
+<td>Mudança para <code>multi-tenant</code></td>
+<td>snippets sobre a mudança para arquitetura <code>multi-tenant</code> a nível de dados, filtragem de dados por perfil, de modo a espelhar o que acontece no <code>backend</code></td>
+<td><code>Helpers.kt</code>, <code>NewMembersFragment</code>, <code>NewOrganizationsFragment</code>, <code>Repository</code>, <code>ApiClient</code></td>
+</tr>
+<tr>
+<td>Este relatório</td>
+<td>o modelo (estrutura, formatação, script de exportação e o diagrama da figura 1)</td>
+<td><code>docs/report/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ao longo do último ano e meio, quer a nível pessoal que a nível profissional tenho vindo a olhar para este tipo de ferramentas (IA), como muito mais do que um mero chatbot. Por vezes aplico uma dinâmica de colega de equipa como se fosse alguém com quem estivesse a programar em par, por vezes recorro de modo a descobrir onde está o bug, outras vezes dá jeito simplesmente poder trocar ideias de forma objetiva.</p>
+<p>Neste caso aplicam-se todas as opções, mas de maneira diferente daquilo que tem sido o meu uso normal deste tipo de ferramentas. O objetivo traçado desde início tinha sido: o Claude ficava responsável pelo desenvolvimento da API porque esta tecnicamente fica fora do âmbito da disciplina, a tecnologia escolhida para a mesma foi de acordo com a minha experiência dado que, entre projetos pessoais e profissionais, já tenho vários anos de experiência com Rust e algumas das bibliotecas escolhidas nesse lado.</p>
+<p>Do lado da aplicação, escolhi propositadamente o Kotlin porque a minha experiência passada com Android tinha sido exclusivamente Java e React/Native, como nem sempre consegui encontrar explicações sobre o que procurava em motores de busca, acabei por recorrer ao Claude para me ajudar a perceber onde estava o problema em questão, ou para conseguir chegar ao objetivo em mente mais rapidamente.</p>
+<p>Todo o código gerado que tenha sido usado foi testado e estudado de acordo com o objetivo do trabalho de modo a ser compreendido.</p>
+<h3 id="132-bibliotecas-externas">13.2 Bibliotecas externas</h3>
+<table>
+<thead>
+<tr>
+<th>Biblioteca</th>
+<th>Para quê</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Room</td>
+<td>base de dados local</td>
+</tr>
+<tr>
+<td>DataStore (Preferences)</td>
+<td>sessão da variante demo</td>
+</tr>
+<tr>
+<td>WorkManager</td>
+<td>sincronização em segundo plano</td>
+</tr>
+<tr>
+<td>Navigation</td>
+<td>navegação entre fragmentos</td>
+</tr>
+<tr>
+<td>Material Components</td>
+<td>interface (Material 3)</td>
+</tr>
+<tr>
+<td>Retrofit, OkHttp e Gson</td>
+<td>pedidos à API e conversão de JSON</td>
+</tr>
+<tr>
+<td>Coil</td>
+<td>carregar as fotos dos anexos</td>
+</tr>
+<tr>
+<td>Play Services Location</td>
+<td>localização das ocorrências</td>
+</tr>
+<tr>
+<td>Kotlin Coroutines</td>
+<td>operações assíncronas e <code>Flow</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="14-conclusao">14. Conclusão</h2>
+<p>Esta entrega cumpre os requisitos obrigatórios e o ciclo completo de gestão das ocorrências, com o Room como armazenamento principal e sem depender de rede. Em relação à apresentação do trabalho de 27/10 e ao que foi demonstrado, junta vários fabricantes e clientes com perfis diferentes, a atribuição de técnicos, a edição de ocorrências, a criação de contas com palavra-passe temporária e a variante full, que sincroniza com o servidor.</p>
+<p>Ficaram de fora as migrações explícitas do esquema (secção 4.2), a eliminação de registos que já estão no servidor, que precisa de uma regra no servidor sobre quem o pode fazer, e a opção de sincronizar só por Wi-Fi.</p>
+<p>A entrega do mini-projeto coletivo (de forma individual) alarga novamento o âmbito, desta vez aos cidadãos, que poderão reportar problemas em espaços públicos, com novos perfis e alterações ao modelo de dados, e acrescenta um mapa das ocorrências em curso, filtrado por perfil, a partir da localização que cada ocorrência já guarda.</p>
+<h2 id="referencias">Referências</h2>
+<ul>
+<li>Android Developers. <em>Save data in a local database using Room</em>. <a href="https://developer.android.com/training/data-storage/room">https://developer.android.com/training/data-storage/room</a></li>
+<li>Android Developers. <em>DataStore</em>. <a href="https://developer.android.com/topic/libraries/architecture/datastore">https://developer.android.com/topic/libraries/architecture/datastore</a></li>
+<li>Android Developers. <em>Task scheduling with WorkManager</em>. <a href="https://developer.android.com/develop/background-work/background-tasks/persistent">https://developer.android.com/develop/background-work/background-tasks/persistent</a></li>
+<li>FixTag. <em>Protocolo experimental: persistência local e funcionamento offline</em>, 27/10/2026 (<code>docs/protocolo-experimental.pdf</code>).</li>
+<li>Android Developers. <em>Guide to app architecture</em>. <a href="https://developer.android.com/topic/architecture">https://developer.android.com/topic/architecture</a></li>
+<li>Android Developers. <em>Kotlin flows on Android</em>. <a href="https://developer.android.com/kotlin/flow">https://developer.android.com/kotlin/flow</a></li>
+<li>Android Developers. <em>Navigation</em>. <a href="https://developer.android.com/guide/navigation">https://developer.android.com/guide/navigation</a></li>
+<li>Square. <em>Retrofit</em>. <a href="https://square.github.io/retrofit/">https://square.github.io/retrofit/</a></li>
+</ul></body></html>

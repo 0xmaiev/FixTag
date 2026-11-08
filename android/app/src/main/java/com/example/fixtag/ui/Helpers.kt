@@ -1,25 +1,38 @@
 package com.example.fixtag.ui
 
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.DialogInterface
 import android.media.MediaPlayer
+import android.os.Build
+import android.os.PersistableBundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil3.load
+import com.example.fixtag.BuildConfig
 import com.example.fixtag.R
 import com.example.fixtag.data.Repository
 import com.example.fixtag.data.model.IncidentSeverity
+import com.example.fixtag.data.model.IncidentStatus
+import com.example.fixtag.data.model.User
 import com.example.fixtag.data.model.UserRole
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -29,13 +42,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
-// shows a view only to the roles that may use it
-fun Fragment.showFor(view: View, role: Flow<UserRole?>, vararg allowed: UserRole) {
+// shows a view only to the users that may use it, e.g. showFor(button, user) { it.isSupport }.
+// A role alone can't say it: a gestor works for a client or for a manufacturer
+fun Fragment.showFor(view: View, user: Flow<User?>, allowed: (User) -> Boolean) {
     viewLifecycleOwner.lifecycleScope.launch {
         viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            role.collect { view.isVisible = it in allowed }
+            user.collect { view.isVisible = it != null && allowed(it) }
         }
     }
+}
+
+// one place for how a status and a role read, shared by the lists, the detail screen and the forms
+@StringRes
+fun IncidentStatus.label(): Int = when (this) {
+    IncidentStatus.Received -> R.string.incident_received
+    IncidentStatus.Analysis -> R.string.incident_analysis
+    IncidentStatus.Resolved -> R.string.incident_resolved
+}
+
+@StringRes
+fun UserRole.label(): Int = when (this) {
+    UserRole.Admin -> R.string.role_admin
+    UserRole.Operador -> R.string.role_operator
+    UserRole.Tecnico -> R.string.role_technician
+    UserRole.Assistencia -> R.string.role_assistance
+    UserRole.Gestor -> R.string.role_manager
 }
 
 fun Context.recentIncidentsText(count: Int): String =
@@ -64,6 +95,12 @@ fun Fragment.showPendingCount(view: View, pendingCount: Flow<Int>) {
                 syncStatus.text = getString(R.string.sync_status, count)
             }
         }
+    }
+}
+
+fun Fragment.showLogout(button: Button) {
+    if (!BuildConfig.OFFLINE_DEMO) {
+        button.text = getString(R.string.logout)
     }
 }
 
@@ -143,4 +180,43 @@ fun Fragment.showPhoto(path: String) {
         setOnClickListener { dialog.dismiss() }
     })
     dialog.show()
+}
+
+// A new account's email and temporary password, which the server shows only once, in the answer
+// that created the account. Only Done closes it, then onDone runs; Copy keeps it open
+fun Fragment.showTemporaryPassword(account: User, password: String, onDone: () -> Unit): AlertDialog {
+    val content = layoutInflater.inflate(R.layout.dialog_temporary_password, null)
+    content.findViewById<TextView>(R.id.intro).text = getString(R.string.temporary_password_intro, account.name)
+    content.findViewById<TextView>(R.id.email).text = account.email
+    content.findViewById<TextView>(R.id.password).text = password
+
+    val dialog = MaterialAlertDialogBuilder(requireContext())
+        .setTitle(R.string.account_created_title)
+        .setView(content)
+        .setCancelable(false)
+        .setPositiveButton(R.string.done) { _, _ -> onDone() }
+        .setNeutralButton(R.string.copy_password, null)
+        .show()
+    // set after show(): a listener given to the builder would close the dialog too
+    dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener {
+        val clip = ClipData.newPlainText(getString(R.string.label_temporary_password), password)
+        // keeps the password out of the clipboard's on-screen preview
+        clip.description.extras = PersistableBundle().apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
+            } else {
+                putBoolean("android.content.extra.IS_SENSITIVE", true)
+            }
+        }
+        requireContext().getSystemService(ClipboardManager::class.java).setPrimaryClip(clip)
+        // Android 13 and later confirm a copy themselves
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(requireContext(), R.string.password_copied, Toast.LENGTH_SHORT).show()
+        }
+    }
+    // a rotation recreates the fragment, which shows the dialog again: this one goes with the old view
+    viewLifecycleOwner.lifecycle.addObserver(LifecycleEventObserver { _, event ->
+        if (event == Lifecycle.Event.ON_DESTROY) dialog.dismiss()
+    })
+    return dialog
 }

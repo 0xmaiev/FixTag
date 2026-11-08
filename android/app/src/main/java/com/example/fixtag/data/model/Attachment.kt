@@ -45,10 +45,10 @@ data class Attachment(
     @ColumnInfo(name = "created_at")
     val createdAt: Instant,
     // syncStatus means whether this was synced TO API or not
-    @ColumnInfo(name = "sync_status")
+    @ColumnInfo(name = "sync_status", defaultValue = "Pending")
     var syncStatus: SyncStatus = SyncStatus.Pending, // Default to pending
     // fetchStatus means whether we fetched the actual data blob FROM API or not
-    @ColumnInfo(name = "fetch_status")
+    @ColumnInfo(name = "fetch_status", defaultValue = "Pending")
     var fetchStatus: SyncStatus = SyncStatus.Pending // Default to pending
 ) {
     companion object {

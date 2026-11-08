@@ -73,6 +73,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.play.services.location)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.androidx.annotation)

@@ -9,8 +9,8 @@ import com.example.fixtag.ui.viewmodels.IncidentDetailViewModel
 import com.example.fixtag.ui.viewmodels.MachineDetailViewModel
 import com.example.fixtag.ui.viewmodels.NewIncidentViewModel
 import com.example.fixtag.ui.viewmodels.NewMachineViewModel
+import com.example.fixtag.ui.viewmodels.NewMemberViewModel
 import com.example.fixtag.ui.viewmodels.NewOrganizationViewModel
-import com.example.fixtag.ui.viewmodels.OrganizationsViewModel
 
 class ItemViewModelFactory(
     private val repository: Repository,
@@ -30,6 +30,9 @@ class ItemViewModelFactory(
             }
             modelClass.isAssignableFrom(NewMachineViewModel::class.java) -> {
                 NewMachineViewModel(repository, extras.createSavedStateHandle()) as T
+            }
+            modelClass.isAssignableFrom(NewMemberViewModel::class.java) -> {
+                NewMemberViewModel(repository, extras.createSavedStateHandle()) as T
             }
             modelClass.isAssignableFrom(NewOrganizationViewModel::class.java) -> {
                 NewOrganizationViewModel(repository, extras.createSavedStateHandle()) as T

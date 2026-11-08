@@ -32,5 +32,6 @@ class FixTag : Application() {
     override fun onCreate() {
         super.onCreate()
         // Your initialization code here
+        syncScheduler.schedulePeriodic()
     }
 }

@@ -1,5 +1,7 @@
 # FixTag
 
+Devido a limites de tamanho na submissão do trabalho no Moodle, os APKs das variantes Demo e Full (que requer o [backend](backend/README.md)), encontram-se no repositório em [apk-demo-debug](apk/app-demo-debug.apk) e [apk-full-debug](apk/app-full-debug.apk).
+
 ## Âmbito final do MVP
 
 Dentro: identificação por QR ou número de série, ocorrência com descrição, gravidade, fotos e localização, funcionamento offline com sincronização, estado do pedido com notificações, perfis (cliente e assistência).
@@ -13,21 +15,45 @@ A variante `demo` funciona sem servidor e sem credenciais: os dados de exemplo s
 1. Abrir a pasta `android/` no Android Studio.
 2. Em *Build Variants*, escolher `demoDebug`.
 3. Correr num emulador ou dispositivo com Android 10 (API 29) ou superior.
-4. Escolher um perfil: **Operador** (abre em Máquinas) ou **Assistência** (abre em Ocorrências).
+4. Escolher uma organização: **Cliente** ou **Fabricante**.
+5. Escolher um dos diversos perfis para cada tipo de organização.
+6. Ver secção abaixo
 
-O protocolo experimental do tema 3 está em [`docs/protocolo-experimental.pdf`](docs/protocolo-experimental.pdf).
+## Como experimentar (variante full)
+
+A variante `full` funciona com servidor e com credenciais: os dados de exemplo são inseridos na instância postgresql e o servidor realiza queries contra o.
+
+1. Abrir a pasta `android/` no Android Studio.
+2. Em *Build Variants*, escolher `fullDebug`.
+3. Correr num emulador ou dispositivo com Android 10 (API 29) ou superior.
+4. Ver instruções para preparar o servidor em [README.md](backend/README.md)
+5. Escolher um tipo de perfil de acordo com os dados no [README.md](backend/README.md)
+6. Fazer o login e experimentar a aplicação
+
+## Protocolo Experimental
+
+O protocolo experimental do tema 3 está em [`docs/protocolo-experimental.pdf`](docs/protocolo-experimental.pdf), em ambos os casos acima, grande parte do que está descrito no protocolo mantém-se.
+
+Adicionam-se as seguintes funcionalidades:
+- Adição de dados de localização GPS a uma Ocorrência.
+- Atribuição de Ocorrências aos Técnicos de uma Organização por parte dos membros da mesma cuja função seja de Assistência ou Gestor.
+
+As seguintes requerem o servidor:
+- Como Gestor de uma organização Cliente ou Fabricante, a adição de Membros à mesma.
+- Como Gestor de uma organização Fabricante, a criação de organizações Cliente, sendo que os seus Gestores têm a sua conta criada com uma palavra-passe temporária, e ao fazer o login com o mesmo, é pedido que a palavra-passe seja alterada.
 
 ## Entregas
 
 | Data | Branch | Conteúdo |
 |---|---|---|
 | 27/10 | [entrega-10-27](https://github.com/0xmaiev/FixTag/tree/entrega-10-27) | Tema 3: persistência local e funcionamento offline (variante demo) |
-| 04/11 | a publicar | API, sincronização com WorkManager, atribuição de técnicos |
+| 04/11 | [entrega-11-08](https://github.com/0xmaiev/FixTag/tree/entrega-11-08) | API, sincronização com WorkManager, atribuição de técnicos |
 | 06/12 | a publicar | Cidadãos, espaços públicos e mapa de ocorrências |
 
 ## Estrutura do repositório
 
 - `android/`: a app, com as variantes `demo` (sem servidor) e `full` (com a API)
+- `apk/`: apks para ambas as variantes, `demo` (sem servidor) e `full` (com a API)
 - `backend/`: a API REST (Rust, Axum e PostgreSQL) usada pela variante `full`
 - `docs/`: protocolo experimental, especificação da API e diagramas
 

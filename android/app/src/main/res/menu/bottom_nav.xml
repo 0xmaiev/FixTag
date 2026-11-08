@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_machines"
         android:title="@string/machines_fragment_title"/>
     <item
+        android:id="@+id/members"
+        android:icon="@drawable/ic_user"
+        android:title="@string/members_fragment_title"/>
+    <item
         android:id="@+id/organizations"
         android:icon="@drawable/ic_organization"
         android:title="@string/organizations_fragment_title"/>

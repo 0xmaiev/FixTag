@@ -25,6 +25,12 @@
     <fragment android:id="@+id/new_machine"
         android:name="com.example.fixtag.ui.fragments.NewMachineFragment"
         android:label="@string/new_machine_fragment_title" />
+    <fragment android:id="@+id/members"
+        android:name="com.example.fixtag.ui.fragments.MembersFragment"
+        android:label="@string/members_fragment_title" />
+    <fragment android:id="@+id/new_member"
+        android:name="com.example.fixtag.ui.fragments.NewMemberFragment"
+        android:label="@string/new_member_fragment_title" />
     <fragment android:id="@+id/new_organization"
         android:name="com.example.fixtag.ui.fragments.NewOrganizationFragment"
         android:label="@string/new_organization_fragment_title" />

@@ -6,4 +6,8 @@
     <item name="new_incident" type="id"/>
     <item name="new_machine" type="id"/>
     <item name="new_organization" type="id"/>
+    <item name="new_member" type="id"/>
+    <item name="members" type="id"/>
+    <item name="login" type="id"/>
+    <item name="password_change" type="id"/>
 </resources>

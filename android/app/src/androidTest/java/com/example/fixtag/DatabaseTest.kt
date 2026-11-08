@@ -44,6 +44,8 @@ class DatabaseTest {
         orgDao = db.getOrganizationDao()
         machineDao = db.getMachineDao()
         userDao = db.getUserDao()
+        incidentDao = db.getIncidentDao()
+        updateDao = db.getIncidentUpdateDao()
     }
 
     @After
@@ -56,6 +58,7 @@ class DatabaseTest {
         val org = Organization.create(
             Uuid.random(),
             "Test Org",
+            "123456789"
         )
         orgDao.upsert(org)
         val byName = orgDao.findOrganizationsByName("Test Org")
@@ -67,16 +70,23 @@ class DatabaseTest {
 
     @Test
     fun writeMachine() = runTest {
-        val org = orgDao.findOrganizationsByName("Test Org").single()
+        // every test starts from an empty database, and the machine's foreign key needs the organization
+        val org = Organization.create(Uuid.random(), "Test Org", "123456790")
+        orgDao.upsert(org)
         val machine = Machine.create(
             Uuid.random(),
             org.id,
-            "FT-0001",
-            "Prensa"
+            org.id,
+            "FT-1000",
+            "Prensa 100T"
         )
         machineDao.upsert(machine)
-        val byName = machineDao.findMachinesByModel("Prensa")
-        assertEquals(machine, byName.single() )
+        val byName = machineDao.findMachinesByModel("Prensa 100T").single()
+        assertEquals(machine.id, byName.id )
+        assertEquals(machine.organizationId, byName.organizationId )
+        assertEquals(machine.manufacturerId, byName.manufacturerId )
+        assertEquals(machine.model, byName.model)
+        assertEquals(machine.serialNumber, byName.serialNumber)
     }
 
     @Test
@@ -84,9 +94,10 @@ class DatabaseTest {
         val user = User(
             Uuid.random(),
             Uuid.random(),
+            OrganizationKind.Cliente,
             "Jorge",
             "jorge@fixtag.test",
-            UserRole.Operator
+            UserRole.Operador
         )
         userDao.upsert(user)
         val byName = userDao.findUsersByName("Jorge")

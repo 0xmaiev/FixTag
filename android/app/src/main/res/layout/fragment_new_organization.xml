@@ -31,45 +31,186 @@
             app:cardElevation="2dp">
 
             <LinearLayout
-                android:id="@+id/organizationFormLayout"
+                android:id="@+id/organizationSectionLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/nameLabel"
+                    android:id="@+id/organizationSectionTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
                     android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
                     android:gravity="start"
-                    android:text="@string/label_name"
+                    android:text="@string/organization_section_title"
                     android:textAlignment="viewStart"
                     android:textSize="16sp" />
 
                 <LinearLayout
-                    android:id="@+id/organizationNameLayout"
+                    android:id="@+id/organizationFormLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/nameLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="10dp"
+                        android:gravity="start"
+                        android:text="@string/label_name"
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:id="@+id/organizationNameLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="fill|fill_horizontal"
+                            android:height="25dp"
+                            android:autofillHints="name"
+                            android:elegantTextHeight="false"
+                            android:gravity="fill|fill_horizontal"
+                            android:hint="@string/name_hint"
+                            android:inputType="text"
+                            android:labelFor="@string/label_name"
+                            android:lineHeight="25dp"
+                            android:minHeight="25dp"
+                            android:textSize="18sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/managerFormLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/nifLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="10dp"
+                        android:gravity="start"
+                        android:text="@string/label_nif"
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:id="@+id/organizationNifLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/nif"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="fill|fill_horizontal"
+                            android:height="25dp"
+                            android:elegantTextHeight="false"
+                            android:gravity="fill|fill_horizontal"
+                            android:hint="@string/nif_hint"
+                            android:inputType="number"
+                            android:labelFor="@string/label_nif"
+                            android:lineHeight="25dp"
+                            android:minHeight="25dp"
+                            android:textSize="18sp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/managerSectionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:gravity="start"
+                    android:text="@string/manager_section_title"
+                    android:textAlignment="viewStart"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:id="@+id/organizationManagerLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/managerNameLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="10dp"
+                        android:gravity="start"
+                        android:text="@string/label_name"
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp" />
 
                     <EditText
-                        android:id="@+id/name"
+                        android:id="@+id/managerName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="fill|fill_horizontal"
-                        android:height="25dp"
                         android:autofillHints="name"
-                        android:elegantTextHeight="false"
-                        android:gravity="fill|fill_horizontal"
-                        android:hint="@string/name_hint"
-                        android:inputType="text"
-                        android:labelFor="@string/label_name"
-                        android:lineHeight="25dp"
-                        android:minHeight="25dp"
+                        android:hint="@string/manager_name_hint"
+                        android:inputType="textPersonName|textCapWords"
+                        android:minHeight="48dp"
                         android:textSize="18sp" />
 
+                    <TextView
+                        android:id="@+id/managerEmailLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_marginStart="10dp"
+                        android:gravity="start"
+                        android:text="@string/label_email"
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp" />
+
+                    <LinearLayout
+                        android:id="@+id/managerEmailLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/managerEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="fill|fill_horizontal"
+                            android:height="25dp"
+                            android:autofillHints="emailAddress"
+                            android:elegantTextHeight="false"
+                            android:gravity="fill|fill_horizontal"
+                            android:hint="@string/manager_email_hint"
+                            android:inputType="textEmailAddress"
+                            android:labelFor="@string/label_email"
+                            android:lineHeight="25dp"
+                            android:minHeight="25dp"
+                            android:textSize="18sp" />
+
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

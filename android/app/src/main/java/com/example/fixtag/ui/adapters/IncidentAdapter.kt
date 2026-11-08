@@ -19,6 +19,7 @@ import com.example.fixtag.data.model.IncidentAndMachine
 import com.example.fixtag.data.model.IncidentSeverity
 import com.example.fixtag.data.model.IncidentStatus
 import com.example.fixtag.data.model.SyncStatus
+import com.example.fixtag.data.model.isLocalOnly
 import com.example.fixtag.ui.INCIDENT_ID_KEY
 import com.example.fixtag.ui.showSeverity
 
@@ -48,7 +49,7 @@ class IncidentAdapter(
         fun bind(data: IncidentAndMachine) {
             modelTextView.text = data.machine.model
             serialNumberTextView.text = data.machine.serialNumber
-            deleteButton.isVisible = onDelete != null && data.incident.syncStatus == SyncStatus.Pending
+            deleteButton.isVisible = onDelete != null && data.incident.isLocalOnly
             deleteButton.setOnClickListener { onDelete?.invoke(data.incident) }
             severityTextView.text = data.incident.severity.toString()
             severityTextView.showSeverity(data.incident.severity)
@@ -67,7 +68,8 @@ class IncidentAdapter(
             val syncStatus = when(data.incident.syncStatus) {
                 SyncStatus.Pending ->  itemView.context.getString(R.string.stored_locally)
                 else -> {
-                    val elapsed = DateUtils.getRelativeTimeSpanString( data.incident.createdAt.toEpochMilliseconds())
+                    // when the operator reported it, which can be hours before it reached the server
+                    val elapsed = DateUtils.getRelativeTimeSpanString( data.incident.reportedAt.toEpochMilliseconds())
                     elapsed
                 }
             }

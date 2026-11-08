@@ -2,25 +2,31 @@
 <resources>
 
     <string name="app_desc">Assistência técnica de máquinas industriais</string>
-    <string name="demo_login_operator">Operador</string>
-    <string name="demo_login_assistance">Assistência</string>
+    <string name="demo_login_operator">Cliente</string>
+    <string name="demo_login_assistance">Fabricante</string>
+    <string name="location_permission_needed">Permissão de localização é necessária.</string>
     <string name="camera_permission_needed">Permissão da câmara é necessária.</string>
     <string name="mic_permission_needed">Permissão do microfone é necessária.</string>
     <string name="label_password">Palavra-passe</string>
     <string name="action_sign_in">Entrar</string>
     <string name="action_register">Registar</string>
     <string name="forgot_password">Esqueci a palavra-passe</string>
+    <string name="label_nif">NIF</string>
     <string name="label_name">Nome</string>
     <string name="label_model">Modelo</string>
     <string name="label_serial_number">Número de série</string>
     <string name="label_description">Descrição</string>
     <string name="empty_organization_error">Organização tem de estar selecionada</string>
     <string name="empty_machine_error">Máquina tem de estar selecionada</string>
+    <string name="empty_nif_error">NIF não pode estar vazio</string>
+    <string name="invalid_nif_error">NIF inválido</string>
     <string name="empty_name_error">Nome não pode ser vazio</string>
     <string name="empty_model_error">Modelo não pode ser vazio</string>
     <string name="empty_serial_number_error">Número de série não pode ser vazio</string>
     <string name="empty_description_error">Descrição de texto ou áudio é necessária.</string>
+    <string name="nif_hint">NIF da organização</string>
     <string name="name_hint">Nome da organização</string>
+    <string name="manager_email_hint">Email do gestor da organização</string>
     <string name="model_hint">Modelo da máquina</string>
     <string name="serial_number_hint">Número de série da máquina</string>
     <string name="activity_login_title">Entrar</string>
@@ -40,10 +46,15 @@
     <string name="organization_saved">Organização guardada com sucesso.</string>
     <string name="no_organization_selected">Sem organização selecionada</string>
     <string name="pending_organizations_push_failed">Erro a enviar dados de organização.</string>
+    <string name="members_fragment_title">Membros</string>
+    <string name="new_member_fragment_title">Novo membro</string>
+    <string name="members_fetch_failed">Erro a buscar membros.</string>
+    <string name="member_save_failed">Erro a salvar membro.</string>
+    <string name="member_saved">Membro guardado com sucesso.</string>
+    <string name="no_member_selected">Sem membro selecionado</string>
+    <string name="pending_member_push_failed">Erro a enviar dados de membros</string>
     <string name="technician_select_dialog_title">Selecione um técnico</string>
-    <string name="technicians_fetch_failed">Erro a buscar técnicos.</string>
     <string name="organization_select_dialog_title">Selecione uma organização</string>
-    <string name="organization_fetch_failed">Erro a buscar organizações.</string>
     <string name="machine_select_dialog_title">Selecione uma máquina.</string>
     <string name="machines_fragment_title">Máquinas</string>
     <string name="new_incident_fragment_title">Nova ocorrência</string>
@@ -77,8 +88,11 @@
     <plurals name="technician_open_incidents">
         <item quantity="one">%d ocorrência aberta</item>
         <item quantity="many">%d ocorrências abertas</item>
+        <item quantity="other">%d ocorrências abertas</item>
     </plurals>
     <string name="settings">Definições</string>
+    <string name="organization_section_title">Organização</string>
+    <string name="location_section_title">Localização</string>
     <string name="photos_section_title">Fotos</string>
     <string name="messages_section_title">Mensagens</string>
     <string name="incidents_section_title">Ocorrências</string>
@@ -87,13 +101,17 @@
     <string name="status_section_title">Estado</string>
     <string name="response_section_title">Resposta</string>
     <string name="add_incident_update">Adicionar informação</string>
+    <string name="manager_section_title">Gestor</string>
     <string name="associated_organization_section_title">Organização associada</string>
     <string name="associated_machine_section_title">Máquina associada</string>
+    <string name="associated_technician_section_title">Técnico associado</string>
     <string name="select">Selecionar</string>
     <string name="save">Guardar</string>
     <string name="remove">Remover</string>
     <string name="delete">Apagar</string>
     <string name="cancel">Cancelar</string>
+    <string name="logout">Sair</string>
+    <string name="grab_location">Apanhar localização</string>
     <string name="record_audio">Gravar áudio</string>
     <string name="take_photo">Capturar foto</string>
     <string name="switch_profile">Trocar perfil</string>
@@ -101,4 +119,58 @@
     <string name="delete_pending_message">«%1$s» ainda não foi enviado, por isso só existe neste dispositivo. Não é possível desfazer.</string>
     <string name="delete_machine_in_use">Apague primeiro as ocorrências desta máquina.</string>
     <string name="delete_organization_in_use">Apague primeiro as máquinas desta organização.</string>
+    <!-- roles, as each form and list shows them -->
+    <string name="role_admin">Administrador</string>
+    <string name="role_operator">Operador</string>
+    <string name="role_technician">Técnico</string>
+    <string name="role_assistance">Assistência</string>
+    <string name="role_manager">Gestor</string>
+
+    <!-- incident detail: edit, updates and the technician -->
+    <string name="edit">Editar</string>
+    <string name="edit_incident_fragment_title">Editar ocorrência</string>
+    <string name="no_technician_assigned">Ainda sem técnico atribuído</string>
+    <string name="update_message_hint">Mensagem (opcional com um novo estado)</string>
+    <string name="update_status_unchanged">Manter estado</string>
+    <string name="update_empty_error">Escreva uma mensagem ou escolha um novo estado.</string>
+    <string name="update_assigned_to">Atribuída a %s</string>
+    <string name="update_saved">Atualização guardada.</string>
+
+    <!-- members and client registration -->
+    <string name="label_role">Função</string>
+    <string name="empty_role_error">Escolha uma função</string>
+    <string name="email_taken_error">Esse e-mail já tem conta</string>
+    <string name="serial_number_taken_error">Outra máquina tem esse número de série</string>
+    <string name="manager_name_hint">Nome do gestor</string>
+    <string name="nif_manufacturer_error">Esse NIF é de um fabricante</string>
+    <string name="client_linked">%s já estava registada e passa a ter também a sua organização como fornecedor.</string>
+    <string name="failed_to_get_location">Não foi possível obter a localização.</string>
+
+    <!-- demo login -->
+    <string name="demo_pick_profile">Escolha um perfil</string>
+
+    <!-- alteração da palavra-passe -->
+    <string name="login_fragment_title">Entrar</string>
+    <string name="password_change_fragment_title">Alterar palavra-passe</string>
+    <string name="confirm">Confirmar</string>
+    <string name="password_change_intro">A sua conta ainda tem a palavra-passe temporária com que foi criada. Escolha uma nova para continuar.</string>
+    <string name="label_current_password">Palavra-passe atual</string>
+    <string name="label_new_password">Nova palavra-passe</string>
+    <string name="new_password_hint">Pelo menos 8 caracteres</string>
+    <string name="current_password_empty_error">Introduza a palavra-passe atual</string>
+    <string name="current_password_wrong_error">A palavra-passe atual está errada</string>
+    <string name="new_password_too_short_error">Use pelo menos 8 caracteres</string>
+    <string name="new_password_unchanged_error">Escolha uma palavra-passe diferente da atual</string>
+    <string name="password_change_failed">Não foi possível alterar a palavra-passe. Verifique a ligação e tente novamente.</string>
+    <string name="password_changed">Palavra-passe alterada</string>
+
+    <!-- palavra-passe temporária de uma conta nova -->
+    <string name="account_created_title">Conta criada</string>
+    <string name="temporary_password_intro">Entregue estes dados a %1$s. A palavra-passe só é mostrada agora, e será trocada por uma nova no primeiro início de sessão.</string>
+    <string name="label_temporary_password">Palavra-passe temporária</string>
+    <string name="copy_password">Copiar palavra-passe</string>
+    <string name="password_copied">Palavra-passe copiada</string>
+    <string name="done">Concluído</string>
+    <string name="registration_failed">Não foi possível registar o cliente. O registo precisa de ligação ao servidor.</string>
+    <string name="member_creation_failed">Não foi possível criar a conta. Criar contas precisa de ligação ao servidor.</string>
 </resources>

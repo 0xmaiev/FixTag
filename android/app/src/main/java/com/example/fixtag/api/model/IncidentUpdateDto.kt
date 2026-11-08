@@ -1,7 +1,7 @@
 package com.example.fixtag.api.model
 
+import com.example.fixtag.data.model.IncidentStatus
 import com.google.gson.annotations.SerializedName
-import kotlin.time.Instant
 
 data class IncidentUpdateDto(
     val id: String,
@@ -14,7 +14,7 @@ data class IncidentUpdateDto(
     @SerializedName("message")
     val message: String?,
     @SerializedName("new_status")
-    val newStatus: String?,
+    val newStatus: IncidentStatus?,
     @SerializedName("assigned_to")
     val assignedTo: String?,
     @SerializedName("assigned_to_name")

@@ -1,13 +1,19 @@
 use {
+    crate::models::AttachmentKind,
+    chrono::{DateTime, Utc},
     serde::{Deserialize, Serialize},
     uuid::Uuid,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+/// Metadata of an uploaded file, the content is served by `GET /attachments/{id}`.
+#[derive(Debug, Serialize, Deserialize, sqlx::FromRow, utoipa::ToSchema)]
 pub struct Attachment {
     pub id: Uuid,
-    pub attachment_id: Uuid,
-    pub kind: String,
+    pub incident_id: Uuid,
+    pub kind: AttachmentKind,
+    pub content_type: String,
+    #[serde(skip)]
     pub storage_key: String,
-    pub size_bytes: u64,
+    pub size_bytes: i64,
+    pub created_at: DateTime<Utc>,
 }

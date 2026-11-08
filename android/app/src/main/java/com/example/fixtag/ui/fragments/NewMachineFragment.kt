@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -24,6 +25,8 @@ import com.example.fixtag.ui.ItemViewModelFactory
 import com.example.fixtag.ui.ORGANIZATION_ID_KEY
 import com.example.fixtag.ui.SELECT_ORGANIZATION_REQUEST_KEY
 import com.example.fixtag.ui.dialogs.OrganizationSelectDialogFragment
+import com.example.fixtag.ui.main.MainViewModel
+import com.example.fixtag.ui.main.MainViewModelFactory
 import com.example.fixtag.ui.viewmodels.InputBaseViewModel
 import com.example.fixtag.ui.viewmodels.NewMachineViewModel
 import com.google.android.material.appbar.MaterialToolbar
@@ -34,6 +37,11 @@ class NewMachineFragment: Fragment() {
 
     companion object {
         fun newInstance() = NewIncidentFragment()
+    }
+
+    private val mainViewModel: MainViewModel by activityViewModels {
+        val app = requireContext().applicationContext as FixTag
+        MainViewModelFactory(app.repository, app.syncScheduler)
     }
 
     private val viewModel: NewMachineViewModel by viewModels {
@@ -81,7 +89,11 @@ class NewMachineFragment: Fragment() {
         }
         // create the machine
         createMachine.setOnClickListener {
-            viewModel.submit(model.text.toString(), serialNumber.text.toString())
+            viewModel.submit(
+                mainViewModel.organizationId.value!!,
+                    model.text.toString(),
+                serialNumber.text.toString()
+            )
         }
         // set listener for result from ´OrganizationSelectDialogFragment`
         childFragmentManager.setFragmentResultListener(
@@ -94,8 +106,8 @@ class NewMachineFragment: Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
+                    // the button stays enabled: submit() checks again, and typing clears an error
                     viewModel.form.collect { form ->
-                        createMachine.isEnabled = form.isDataValid
                         organization.error = form.organizationError?.let { getString(it) }
                         model.error = form.modelError?.let { getString(it) }
                         serialNumber.error = form.serialNumberError?.let { getString(it) }

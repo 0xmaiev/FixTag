@@ -1,27 +1,16 @@
-use axum::{
-    Router, middleware,
-    routing::{get, post, put},
-};
-use clap::Parser;
-use clap_derive::Parser;
-use fixtag_api::{
-    auth::auth,
-    config::Config,
-    routes::{
-        attachments::fetch_attachment,
-        devices::register_token,
-        health::health,
-        incidents::{
-            add_attachment, create_incident, fetch_incident_by_id, fetch_incidents, update_incident,
-        },
-        login::login,
-        refresh::refresh,
+use {
+    clap::{Parser, Subcommand},
+    fixtag_api::{
+        DEV_SEED, MIGRATOR, auth::hash_password, config::Config, openapi::ApiDoc, routes::router,
+        state::State,
     },
-    state::State,
+    sqlx::postgres::PgPoolOptions,
+    std::path::PathBuf,
+    tracing_subscriber::EnvFilter,
+    utoipa::OpenApi,
 };
-use std::path::PathBuf;
 
-const DEFAULT_CONFIG_PATH: &'static str = "~/.fixtag/config.json";
+const DEFAULT_CONFIG_PATH: &str = "~/.fixtag/config.json";
 
 #[derive(Parser, Debug)]
 #[command(version, about)]
@@ -29,44 +18,73 @@ struct Cli {
     /// Path to the config file
     #[arg(short, long, default_value = DEFAULT_CONFIG_PATH)]
     path: PathBuf,
+    #[command(subcommand)]
+    command: Option<Command>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Command {
+    /// Run the API server (the default)
+    Serve,
+    /// Apply migrations and insert the demo organizations, users and machines
+    Seed,
+    /// Print the OpenAPI spec as JSON
+    Openapi,
+    /// Print the argon2 hash of a password, to insert users by hand
+    HashPassword { password: String },
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Cli::parse();
 
+    // commands that don't need the config or the database
+    match &args.command {
+        Some(Command::Openapi) => {
+            println!("{}", ApiDoc::openapi().to_pretty_json()?);
+            return Ok(());
+        }
+        Some(Command::HashPassword { password }) => {
+            println!("{}", hash_password(password)?);
+            return Ok(());
+        }
+        _ => {}
+    }
+
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "fixtag_api=info,tower_http=debug".into()),
+        )
+        .init();
+
     let config = Config::load(args.path)?;
 
-    let state = State::init();
+    let db = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&config.database_url)
+        .await?;
+    MIGRATOR.run(&db).await?;
 
-    let app = Router::new()
-        .route("/", get(health))
-        // auth
-        .route("/login", post(login))
-        .route("/refresh", post(refresh))
-        // devices
-        .route("/devices", post(register_token))
-        // attachments
-        .route("/attachments/{id}", get(fetch_attachment))
-        // incidents
-        .route("/incidents/{id}", put(create_incident))
-        .route("/incidents/{id}/update", post(update_incident))
-        .route(
-            "/incidents/{id}/attachments/{attachment_id}",
-            post(add_attachment),
-        )
-        .route("/incidents/{id}", get(fetch_incident_by_id))
-        .route("/incidents", get(fetch_incidents))
-        .route_layer(middleware::from_fn_with_state(state.clone(), auth))
-        .with_state(state);
+    if let Some(Command::Seed) = args.command {
+        sqlx::raw_sql(DEV_SEED).execute(&db).await?;
+        println!("seeded demo data, every demo user's password is \"fixtag123\"");
+        return Ok(());
+    }
+
+    let state = State::init(db, &config);
+    let app = router(state);
 
     let addr = format!("0.0.0.0:{}", config.port);
 
-    println!("starting server on {}", addr);
+    tracing::info!("starting server on {}", addr);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(async {
+            let _ = tokio::signal::ctrl_c().await;
+        })
+        .await?;
 
     Ok(())
 }

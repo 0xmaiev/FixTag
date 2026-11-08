@@ -1,0 +1,6 @@
+{
+    "port": "8090",
+    "database_url": "postgres://fixtag:fixtag@localhost:5433/fixtag",
+    "jwt_secret": "change-me-to-a-long-random-string-at-least-32-chars",
+    "storage_dir": "./data/attachments"
+}

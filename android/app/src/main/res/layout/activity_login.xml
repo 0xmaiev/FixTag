@@ -41,101 +41,22 @@
             android:textSize="16sp" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/LoginFormLayout"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/login_nav_host"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="25dp"
-        android:minHeight="400dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/emailTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="25dp"
-            android:text="@string/label_email" />
-
-        <EditText
-            android:id="@+id/etEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="@string/prompt_email"
-            android:hint="@string/prompt_email"
-            android:inputType="textEmailAddress"
-            android:minHeight="50dp"
-            android:selectAllOnFocus="true" />
-
-        <TextView
-            android:id="@+id/passwordTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/label_password" />
-
-        <EditText
-            android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="@string/prompt_password"
-            android:hint="@string/prompt_password"
-            android:imeActionLabel="@string/action_sign_in"
-            android:imeOptions="actionDone"
-            android:inputType="textPassword"
-            android:minHeight="50dp"
-            android:selectAllOnFocus="true" />
-
-        <Button
-            android:id="@+id/login"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|start|center_horizontal|center_vertical"
-            android:layout_marginBottom="25dp"
-            android:enabled="false"
-            android:foregroundGravity="center_vertical|center|center_horizontal"
-            android:gravity="center|center_horizontal|center_vertical"
-            android:text="@string/action_sign_in" />
-
-        <ProgressBar
-            android:id="@+id/loading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="64dp"
-            android:layout_marginBottom="64dp"
-            android:visibility="gone" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/demoProfiles"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:visibility="gone">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/demoOperator"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/demo_login_operator" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/demoAssistance"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/demo_login_assistance" />
-    </LinearLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true" />
 
     <LinearLayout
         android:id="@+id/FooterLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="100dp"
-        android:layout_marginTop="200dp"
         android:layout_marginEnd="100dp"
         android:orientation="horizontal"
-        android:textAlignment="center">
+        android:gravity="center">
 
         <TextView
             android:id="@+id/tvFooterAppName"
@@ -143,7 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/app_name"
-            android:textAlignment="textEnd"
+            android:textAlignment="textStart"
             android:textSize="14sp" />
 
         <TextView
@@ -152,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/app_ver"
-            android:textAlignment="textStart"
+            android:textAlignment="textEnd"
             android:textSize="14sp" />
     </LinearLayout>
 
